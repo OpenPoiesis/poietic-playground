@@ -537,6 +537,20 @@ func delete_selection():
 	selection.clear()
 	queue_sync()
 
+func copy_selection():
+	var pasteboard_text = Global.design.copy_selection(selection.get_ids())
+	DisplayServer.clipboard_set(pasteboard_text)
+
+func cut_selection():
+	copy_selection()
+	delete_selection()
+
+func paste_from_text(text: String):
+	var trans = Global.design.new_transaction()
+	var ids = trans.paste_from_text(text)
+	Global.design.accept(trans)
+	selection.replace(ids)
+
 func remove_midpoints_in_selection():
 	if selection.is_empty():
 		return
