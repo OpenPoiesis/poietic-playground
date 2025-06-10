@@ -71,6 +71,7 @@ func _ready():
 	# Tell everyone about demo design
 	# Global.design.design_changed.emit()
 	update_status_text()
+	_update_simulation_menu()
 	
 	print("Done initializing main.")
 
@@ -130,6 +131,7 @@ func set_result(result):
 	Global.result = result
 	player.result = result
 	canvas.sync_indicators(result)
+	_update_simulation_menu()
 
 
 func clear_result():
@@ -137,6 +139,7 @@ func clear_result():
 	Global.result = null
 	Global.player.result = null
 	canvas.clear_indicators()
+	_update_simulation_menu()
 	
 func _on_simulation_player_step():
 	canvas.update_indicator_values(player)
@@ -462,6 +465,12 @@ func toggle_run():
 	else:
 		Global.player.run()
 
+func export_result_csv():
+	if Global.result == null:
+		return
+	%CsvExportDialog.configure(Global.result, canvas.selection)
+	%CsvExportDialog.show()
+
 func debug_dump():
 	prints("=== DEBUG DUMP BEGIN ===")
 	var ids: PackedInt64Array = []
@@ -570,3 +579,24 @@ func _on_view_menu_id_pressed(id):
 		1: pass # separator
 		2: toggle_value_indicators()
 		_: printerr("Unknown View menu id: ", id)
+
+func _on_simulation_menu_id_pressed(id):
+	match id:
+		6: export_result_csv()
+		_: printerr("Unknown Simulation menu id: ", id)
+
+func _on_csv_export_requested(file_path: String, option: CSVExportDialog.ExportOption, result: PoieticResult, objects: PackedInt64Array):
+	var export_objects: PackedInt64Array = []
+	match option:
+		CSVExportDialog.ExportOption.ALL:
+			export_objects = result.get_computed_object_ids()
+		CSVExportDialog.ExportOption.ALL_INCLUDING_INTERNAL:
+			export_objects = []
+		CSVExportDialog.ExportOption.SELECTED_NODES:
+			export_objects = objects
+
+	design_ctrl.write_to_csv(file_path, result, export_objects)
+
+func _update_simulation_menu():
+	var has_result = Global.result != null
+	%MenuBar/SimulationMenu.set_item_disabled(6, not has_result)

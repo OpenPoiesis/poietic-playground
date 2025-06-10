@@ -1,0 +1,51 @@
+[gd_scene load_steps=3 format=3 uid="uid://qnhs6whvruh2"]
+
+[ext_resource type="Script" uid="uid://cj4vrgwqgjbk6" path="res://gui/csv_export_dialog.gd" id="1_csv_dialog"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_y6w2c"]
+
+[node name="CsvExportDialog" type="ConfirmationDialog"]
+title = "Export Result to CSV"
+initial_position = 1
+size = Vector2i(320, 240)
+ok_button_text = "Export"
+script = ExtResource("1_csv_dialog")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 312.0
+offset_bottom = 192.0
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Choose what to export:"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ExportAllButton" type="CheckBox" parent="VBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+button_group = SubResource("ButtonGroup_y6w2c")
+text = "All"
+
+[node name="ExportSelectedButton" type="CheckBox" parent="VBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+button_group = SubResource("ButtonGroup_y6w2c")
+text = "Selected nodes"
+
+[node name="ExportAllWithInternalButton" type="CheckBox" parent="VBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+button_group = SubResource("ButtonGroup_y6w2c")
+text = "All with internal state"
+
+[connection signal="canceled" from="." to="." method="_on_canceled"]
+[connection signal="confirmed" from="." to="." method="_on_confirmed"]

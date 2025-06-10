@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://fhtvpa30rrel"]
+[gd_scene load_steps=11 format=3 uid="uid://fhtvpa30rrel"]
 
 [ext_resource type="Script" uid="uid://dr8beg2t8bd1u" path="res://main.gd" id="1_2q6io"]
 [ext_resource type="PackedScene" uid="uid://tems4qsdoox" path="res://gui/main_bar.tscn" id="2_kek77"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://b0cmycvjsiv00" path="res://gui/result_panel.tscn" id="5_272bh"]
 [ext_resource type="PackedScene" uid="uid://d0a2hpaex46gj" path="res://tool/canvas_prompt_manager.tscn" id="6_272bh"]
 [ext_resource type="PackedScene" uid="uid://c3kn0jiqoe5fm" path="res://gui/control_bar.tscn" id="7_kek77"]
+[ext_resource type="PackedScene" uid="uid://qnhs6whvruh2" path="res://gui/csv_export_dialog.tscn" id="8_csv_dialog"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
@@ -172,11 +173,16 @@ script = ExtResource("2_lulh0")
 [node name="SimulationPlayer" type="PoieticPlayer" parent="."]
 step_duration = 0.01
 
+[node name="CsvExportDialog" parent="." instance=ExtResource("8_csv_dialog")]
+unique_name_in_owner = true
+
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/EditMenu" to="." method="_on_edit_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/DiagramMenu" to="." method="_on_diagram_menu_id_pressed"]
+[connection signal="id_pressed" from="MenuBar/SimulationMenu" to="." method="_on_simulation_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/ViewMenu" to="." method="_on_view_menu_id_pressed"]
 [connection signal="dir_selected" from="FileDialog" to="." method="_on_file_dialog_dir_selected"]
 [connection signal="file_selected" from="FileDialog" to="." method="_on_file_dialog_file_selected"]
 [connection signal="files_selected" from="FileDialog" to="." method="_on_file_dialog_files_selected"]
 [connection signal="simulation_player_step" from="SimulationPlayer" to="." method="_on_simulation_player_step"]
+[connection signal="export_requested" from="CsvExportDialog" to="." method="_on_csv_export_requested"]
