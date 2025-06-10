@@ -174,8 +174,8 @@ func _unhandled_input(event):
 		redo()
 	elif event.is_action_pressed("select-all"):
 		select_all()
-	#elif event.is_action_pressed("ui_cut"):
-		#cut_selection()
+	elif event.is_action_pressed("ui_cut"):
+		cut_selection()
 	elif event.is_action_pressed("ui_copy"):
 		copy_selection()
 	elif event.is_action_pressed("ui_paste"):
@@ -384,6 +384,9 @@ func paste():
 func copy_selection():
 	canvas.copy_selection()
 
+func cut_selection():
+	canvas.cut_selection()
+
 func select_all():
 	var ids = canvas.all_diagram_object_ids()
 	canvas.selection.replace(ids)
@@ -547,9 +550,9 @@ func _on_edit_menu_id_pressed(id):
 		0: undo()
 		1: redo()
 		2: pass # separator
-		6: printerr("TODO: Cut not implemented")
+		6: cut_selection()
 		7: copy_selection()
-		8: printerr("TODO: Paste not implemented")
+		8: paste()
 		3: delete_selection()
 		4: pass # separator
 		5: select_all()

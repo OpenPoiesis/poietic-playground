@@ -1,6 +1,6 @@
 class_name Pictogram extends Object
 
-const placeable_nodes = ["Stock", "FlowRate", "Auxiliary", "GraphicalFunction", "Smooth", "Delay"]
+const placeable_nodes = ["Stock", "FlowRate", "Auxiliary", "Cloud", "GraphicalFunction", "Smooth", "Delay"]
 
 const tile_size = 30
 const default_image_scale = 1.0

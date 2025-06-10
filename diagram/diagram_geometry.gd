@@ -272,3 +272,9 @@ static func merge_polygons(polygons: Array[PackedVector2Array]) -> Array[PackedV
 		if not merged_this_round:
 			merged.append(current)
 	return merged
+
+static func centroid(points: PackedVector2Array) -> Vector2:
+	var result := Vector2.ZERO
+	for point in points:
+		result += point
+	return result / points.size()

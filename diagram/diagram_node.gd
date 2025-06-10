@@ -25,6 +25,9 @@ var display_value: Variant = 0.0:
 @export var name_label: Label
 @export var formula_label: Label
 @export var value_indicator: ValueIndicator
+@export var has_value_indicator: bool
+@export var has_name: bool
+@export var has_formula: bool
 @export var indicator_offset = 30
 
 # TODO: Physics
@@ -66,6 +69,10 @@ func _update_from_design_object(object: PoieticObject):
 	if formula is String:
 		formula_label.text = formula
 
+	self.has_value_indicator = object.has_trait("NumericIndicator")
+	self.has_name = object.has_trait("Name")
+	self.has_formula = object.has_trait("Formula")
+	
 	queue_layout()
 
 func _ready():
@@ -95,7 +102,11 @@ func _process(_delta):
 	if children_needs_update:
 		update_children()
 		children_needs_update = false
-	value_indicator.visible = Global.show_value_indicators
+	value_indicator.visible = self.has_value_indicator and Global.show_value_indicators
+	if name_label:
+		name_label.visible = self.has_name
+	if formula_label:
+		formula_label.visible = self.has_formula
 
 func bounding_box() -> Rect2:
 	var rect = shape.get_rect()

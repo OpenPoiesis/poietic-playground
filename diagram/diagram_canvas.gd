@@ -255,8 +255,11 @@ func set_charts_visible(flag: bool):
 ##
 func hit_target(hit_position: Vector2) -> HitTarget:
 	var targets: Array[HitTarget] = []
+	var children = get_children()
 	
-	for child in get_children():
+	# TODO: Also sort by z-index
+	children.reverse()
+	for child in children:
 		if child is not DiagramObject:
 			continue
 
@@ -322,7 +325,9 @@ func old_hit_target(hit_position: Vector2) -> HitTarget:
 ## See also: `hit_target(hit_position)`
 ##
 func hit_object(hit_position: Vector2) -> DiagramObject:
-	for child in get_children():
+	var children = get_children()
+	children.reverse()
+	for child in children:
 		if child is not DiagramObject:
 			continue
 		if child.contains_point(hit_position):
@@ -548,6 +553,7 @@ func cut_selection():
 func paste_from_text(text: String):
 	var trans = Global.design.new_transaction()
 	var ids = trans.paste_from_text(text)
+	
 	Global.design.accept(trans)
 	selection.replace(ids)
 

@@ -55,6 +55,7 @@ static func _load_pictograms():
 		Pictogram.new("Stock", rectangle),
 		Pictogram.new("FlowRate", flow_shape),
 		Pictogram.new("Auxiliary", circle),
+		Pictogram.new("Cloud", rectangle),
 		Pictogram.new("GraphicalFunction", circle),
 		Pictogram.new("Smooth", square),
 		Pictogram.new("Delay", square)

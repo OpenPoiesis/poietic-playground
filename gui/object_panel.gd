@@ -55,7 +55,8 @@ func _on_tool_changed(tool: CanvasTool):
 		pass # unknown tool
 
 func load_node_pictograms():
-	var placeable_node_types: Array[String] = ["Stock", "FlowRate", "Auxiliary", "Delay", "Smooth"]
+	# TODO: Load this from metamodel
+	var placeable_node_types: Array[String] = ["Stock", "FlowRate", "Auxiliary", "Cloud", "Delay", "Smooth"]
 	clear()
 	for name in placeable_node_types:
 		var pictogram = Global.get_pictogram(name)

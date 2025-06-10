@@ -23,7 +23,6 @@ func update_items():
 	item_grid = %ItemGrid
 	for child in item_grid.get_children():
 		item_grid.remove_child(child)
-		
 	for pictogram in Global.get_placeable_pictograms():
 		add_item(pictogram)
 
