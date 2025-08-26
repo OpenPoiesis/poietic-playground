@@ -50,25 +50,3 @@ func get_magnet(name: String) -> Magnet:
 		if magnet.name == name:
 			return magnet
 	return null
-	
-func nearest_magnet(point: Vector2) -> Magnet:
-	var offset_point = point + offset
-	var nearest: Magnet = null
-	var min_dist: float = 0.0
-	for i in range(len(magnets)):
-		var magnet = magnets[i]
-		var dist = magnet.position.distance_to(point)
-		if not min_dist:
-			min_dist = dist
-			nearest = magnet
-		elif dist < min_dist:
-			min_dist = dist
-			nearest = magnet
-	return nearest
-
-func nearest_connection(point: Vector2) -> Vector2:
-	if magnets and len(magnets) > 0:
-		var magnet = nearest_magnet(point)
-		return magnet.position
-	else:
-		return Vector2()

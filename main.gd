@@ -19,6 +19,8 @@ const default_window_size = Vector2(1280, 720)
 var design_ctrl: PoieticDesignController
 
 @onready var canvas: DiagramCanvas = $Canvas
+@onready var new_canvas: PoieticCanvas = $NewCanvas
+@onready var diagram_controller: PoieticDiagramController = $DiagramController
 @onready var prompt_manager: CanvasPromptManager = %Gui/CanvasPromptManager
 
 @onready var inspector_panel: InspectorPanel = %InspectorPanel
@@ -63,6 +65,8 @@ func _ready():
 	design_ctrl.simulation_failed.connect(self._on_simulation_failure)
 	canvas.canvas_view_changed.connect(self._on_canvas_view_changed)
 
+	# TODO: NEW diagram controller
+	diagram_controller.initialize(design_ctrl, new_canvas)
 	# Load demo design
 	var path = "res://resources/new_canvas_demo_design.json"
 	var data = FileAccess.get_file_as_bytes(path)

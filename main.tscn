@@ -13,6 +13,10 @@
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
+file_dialog_mode = null
+design_path = null
+last_opened_design_path = null
+last_import_path = null
 
 [node name="MenuBar" type="MenuBar" parent="."]
 unique_name_in_owner = true
@@ -175,6 +179,10 @@ step_duration = 0.01
 
 [node name="CsvExportDialog" parent="." instance=ExtResource("8_csv_dialog")]
 unique_name_in_owner = true
+
+[node name="DiagramController" type="PoieticDiagramController" parent="."]
+
+[node name="NewCanvas" type="PoieticCanvas" parent="."]
 
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/EditMenu" to="." method="_on_edit_menu_id_pressed"]
