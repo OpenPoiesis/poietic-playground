@@ -18,8 +18,7 @@ const default_window_size = Vector2(1280, 720)
 
 var design_ctrl: PoieticDesignController
 
-@onready var canvas: DiagramCanvas = $Canvas
-@onready var new_canvas: PoieticCanvas = $NewCanvas
+@onready var canvas: PoieticCanvas = $Canvas
 @onready var diagram_controller: PoieticDiagramController = $DiagramController
 @onready var prompt_manager: CanvasPromptManager = %Gui/CanvasPromptManager
 
@@ -50,13 +49,14 @@ func _ready():
 	_initialize_main_menu()
 		
 	design_ctrl = PoieticDesignController.new()
+	diagram_controller.initialize(design_ctrl, canvas)
 	
 	Global.initialize(design_ctrl, player)
 	initialize_tools()
 	control_bar.initialize(design_ctrl, player)
 	result_panel.initialize(design_ctrl, player, canvas)
 	inspector_panel.initialize(design_ctrl, player, canvas)
-	prompt_manager.initialize(canvas)
+	prompt_manager.initialize(diagram_controller)
 
 	design_ctrl.design_changed.connect(self._on_design_changed)
 	design_ctrl.design_reset.connect(self._on_design_reset)
@@ -65,8 +65,6 @@ func _ready():
 	design_ctrl.simulation_failed.connect(self._on_simulation_failure)
 	canvas.canvas_view_changed.connect(self._on_canvas_view_changed)
 
-	# TODO: NEW diagram controller
-	diagram_controller.initialize(design_ctrl, new_canvas)
 	# Load demo design
 	var path = "res://resources/new_canvas_demo_design.json"
 	var data = FileAccess.get_file_as_bytes(path)
@@ -90,13 +88,13 @@ func initialize_menu_bar():
 
 func initialize_tools():
 	object_panel.hide()
-	Global.selection_tool.initialize(canvas, design_ctrl, prompt_manager)
+	Global.selection_tool.initialize(diagram_controller, design_ctrl, prompt_manager)
 	Global.selection_tool.object_panel = object_panel
-	Global.place_tool.initialize(canvas, design_ctrl, prompt_manager)
+	Global.place_tool.initialize(diagram_controller, design_ctrl, prompt_manager)
 	Global.place_tool.object_panel = object_panel
-	Global.connect_tool.initialize(canvas, design_ctrl, prompt_manager)
+	Global.connect_tool.initialize(diagram_controller, design_ctrl, prompt_manager)
 	Global.connect_tool.object_panel = object_panel
-	Global.pan_tool.initialize(canvas, design_ctrl, prompt_manager)
+	Global.pan_tool.initialize(diagram_controller, design_ctrl, prompt_manager)
 	Global.pan_tool.object_panel = object_panel
 
 func _initialize_main_menu():
@@ -106,7 +104,6 @@ func _initialize_main_menu():
 
 func _on_design_changed(has_issues: bool):
 	# FIXME: Fix selection so that object IDs match
-	canvas.sync_design()
 	update_status_text()
 	if has_issues:
 		clear_result()
@@ -134,7 +131,7 @@ func _on_canvas_view_changed(offset: Vector2, zoom_level: float):
 func set_result(result):
 	Global.result = result
 	player.result = result
-	canvas.sync_indicators(result)
+	diagram_controller.sync_indicators(result)
 	_update_simulation_menu()
 
 
@@ -218,7 +215,6 @@ func _unhandled_input(event):
 	elif event.is_action_pressed("cancel"):
 		prompt_manager.close()
 		Global.close_modal(Global.modal_node)
-
 
 func update_status_text():
 	var stats = Global.design.debug_stats
@@ -458,7 +454,7 @@ func toggle_value_indicators():
 	save_settings()
 
 func zoom_actual():
-	canvas.set_zoom_level(1.0, get_global_mouse_position())
+	canvas.set_zoom(1.0, get_global_mouse_position())
 	canvas.update_canvas_view()
 
 # Simulation Menu

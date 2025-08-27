@@ -10,7 +10,7 @@ signal editing_cancelled(object_id: int)
 ##
 @export var edited_object_id: int = -1
 
-@export var canvas: DiagramCanvas
+@export var canvas: PoieticCanvas
 @export var prompt_manager: CanvasPromptManager
 
 var _original_center: Vector2
@@ -18,7 +18,7 @@ var _target_width: float = 0.0
 var _is_active: bool = false
 
 
-func initialize(canvas: DiagramCanvas, manager: CanvasPromptManager):
+func initialize(canvas: PoieticCanvas, manager: CanvasPromptManager):
 	self.canvas = canvas
 	self.prompt_manager = manager
 

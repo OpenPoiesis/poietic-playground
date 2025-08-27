@@ -1,8 +1,7 @@
-[gd_scene load_steps=11 format=3 uid="uid://fhtvpa30rrel"]
+[gd_scene load_steps=10 format=3 uid="uid://fhtvpa30rrel"]
 
 [ext_resource type="Script" uid="uid://dr8beg2t8bd1u" path="res://main.gd" id="1_2q6io"]
 [ext_resource type="PackedScene" uid="uid://tems4qsdoox" path="res://gui/main_bar.tscn" id="2_kek77"]
-[ext_resource type="Script" uid="uid://dsl1jswuemr1e" path="res://diagram/diagram_canvas.gd" id="2_lulh0"]
 [ext_resource type="PackedScene" uid="uid://l7uejktm712d" path="res://gui/tool_bar.tscn" id="3_qq1bh"]
 [ext_resource type="PackedScene" uid="uid://dgupp2doqjm1a" path="res://inspector/inspector_panel.tscn" id="4_uq7uj"]
 [ext_resource type="PackedScene" uid="uid://bbsf0e6jye3uf" path="res://gui/object_panel.tscn" id="5_4c57u"]
@@ -13,10 +12,6 @@
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
-file_dialog_mode = null
-design_path = null
-last_opened_design_path = null
-last_import_path = null
 
 [node name="MenuBar" type="MenuBar" parent="."]
 unique_name_in_owner = true
@@ -169,8 +164,7 @@ grow_vertical = 0
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Canvas" type="Node2D" parent="."]
-script = ExtResource("2_lulh0")
+[node name="Canvas" type="PoieticCanvas" parent="."]
 
 [node name="FileDialog" type="FileDialog" parent="."]
 
@@ -181,8 +175,6 @@ step_duration = 0.01
 unique_name_in_owner = true
 
 [node name="DiagramController" type="PoieticDiagramController" parent="."]
-
-[node name="NewCanvas" type="PoieticCanvas" parent="."]
 
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/EditMenu" to="." method="_on_edit_menu_id_pressed"]

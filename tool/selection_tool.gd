@@ -25,6 +25,8 @@ func tool_released():
 		prompt_manager.close()
 	
 func input_began(event: InputEvent, pointer_position: Vector2) -> bool:
+	print("HERE INPTSDSF A")
+	
 	var target: DiagramCanvas.HitTarget = canvas.hit_target(pointer_position)
 	# TODO: Do not close formula editor
 	prompt_manager.close()

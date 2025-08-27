@@ -1,7 +1,8 @@
 class_name CanvasTool extends Node
 
 # FIXME: REFACTORING BEGIN
-var canvas: DiagramCanvas
+var canvas: PoieticCanvas
+var diagram_controller: PoieticDiagramController
 var design: PoieticDesignController
 var prompt_manager: CanvasPromptManager
 
@@ -13,8 +14,9 @@ var last_selected_object_identifier: String = ""
 var initial_pointer_position: Vector2 = Vector2()
 var is_engaged: bool = false
 
-func initialize(canvas: DiagramCanvas, design: PoieticDesignController, prompt_manager: CanvasPromptManager):
-	self.canvas = canvas
+func initialize(diagram_controller: PoieticDiagramController, design: PoieticDesignController, prompt_manager: CanvasPromptManager):
+	self.diagram_controller = diagram_controller
+	self.canvas = diagram_controller.canvas
 	self.design = design
 	self.prompt_manager = prompt_manager
 

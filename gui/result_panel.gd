@@ -4,13 +4,13 @@ class_name ResultPanel extends Node
 
 @export var design_ctrl: PoieticDesignController
 @export var player: PoieticPlayer
-@export var canvas: DiagramCanvas
+@export var canvas: PoieticCanvas
 
 @onready var chart_container: Container = %ChartContainer
 
 @export var result_panel: Node
 
-func initialize(design_ctrl: PoieticDesignController, player: PoieticPlayer, canvas: DiagramCanvas):
+func initialize(design_ctrl: PoieticDesignController, player: PoieticPlayer, canvas: PoieticCanvas):
 	self.design_ctrl = design_ctrl
 	self.player = player
 	self.canvas = canvas
