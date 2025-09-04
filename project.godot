@@ -47,9 +47,9 @@ version_control/autoload_on_startup=true
 
 [global_group]
 
-diagram_connections=""
-diagram_nodes=""
 live_charts=""
+diagram_connectors=""
+diagram_blocks=""
 
 [gui]
 

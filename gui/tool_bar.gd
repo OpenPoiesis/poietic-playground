@@ -5,10 +5,6 @@ class_name ToolBar extends PanelContainer
 @onready var connection_tool_button: Button = %ConnectToolButton
 @onready var pan_tool_button: Button = %PanToolButton
 
-func _ready():
-	Global.tool_changed.connect(_on_tool_changed)
-	Global.change_tool(Global.selection_tool)
-	
 func _on_tool_changed(tool: CanvasTool):
 	if tool is SelectionTool:
 		selection_tool_button.set_pressed_no_signal(true)

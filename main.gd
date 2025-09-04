@@ -16,18 +16,19 @@ const DEFAULT_DESIGN_PATH = "user://design.poietic"
 const SETTINGS_FILE = "user://settings.cfg"
 const default_window_size = Vector2(1280, 720)
 
-var design_ctrl: PoieticDesignController
+@onready var application: PoieticApplication = $PoieticApplication
+@onready var canvas: DiagramCanvas = $Canvas
+@onready var diagram_controller: DiagramController = $DiagramController
 
-@onready var canvas: PoieticCanvas = $Canvas
-@onready var diagram_controller: PoieticDiagramController = $DiagramController
 @onready var prompt_manager: CanvasPromptManager = %Gui/CanvasPromptManager
 
 @onready var inspector_panel: InspectorPanel = %InspectorPanel
 @onready var object_panel: ObjectPanel = %Gui/ObjectPanel
 
 @onready var result_panel: PanelContainer = %ResultPanel
-@onready var player: PoieticPlayer = $SimulationPlayer
+@onready var player: ResultPlayer = $SimulationPlayer
 @onready var control_bar: PanelContainer = %PlayerControlBar
+@onready var tool_bar: ToolBar = %Gui/ToolBar
 
 func _init():
 	pass
@@ -47,17 +48,25 @@ func _ready():
 	get_viewport().connect("size_changed", _on_window_resized)
 	
 	_initialize_main_menu()
-		
-	design_ctrl = PoieticDesignController.new()
-	diagram_controller.initialize(design_ctrl, canvas)
 	
-	Global.initialize(design_ctrl, player)
-	initialize_tools()
-	control_bar.initialize(design_ctrl, player)
-	result_panel.initialize(design_ctrl, player, canvas)
-	inspector_panel.initialize(design_ctrl, player, canvas)
-	prompt_manager.initialize(diagram_controller)
+	# FIXME: This wiring is too convoluted/complex
+	diagram_controller = DiagramController.new()
+	diagram_controller.canvas = canvas
+	diagram_controller.design_controller = application.design_controller
+	application.diagram_controller = diagram_controller
+	diagram_controller.initialize(application.design_controller, canvas)
+	
+	Global.initialize(application, player)
+	application.diagram_controller = diagram_controller
+	application.tool_changed.connect(tool_bar._on_tool_changed)
+	application.change_tool(application.selection_tool)
+	
+	control_bar.initialize(application.design_controller, player)
+	result_panel.initialize(application.design_controller, player, canvas)
+	inspector_panel.initialize(application.design_controller, player, canvas)
+	prompt_manager.initialize(application.diagram_controller)
 
+	var design_ctrl = application.design_controller
 	design_ctrl.design_changed.connect(self._on_design_changed)
 	design_ctrl.design_reset.connect(self._on_design_reset)
 	design_ctrl.simulation_started.connect(self._on_simulation_started)
@@ -86,16 +95,6 @@ func initialize_menu_bar():
 	print("Using Godot's built-in main menu")
 	%MenuBar.prefer_global_menu = false
 
-func initialize_tools():
-	object_panel.hide()
-	Global.selection_tool.initialize(diagram_controller, design_ctrl, prompt_manager)
-	Global.selection_tool.object_panel = object_panel
-	Global.place_tool.initialize(diagram_controller, design_ctrl, prompt_manager)
-	Global.place_tool.object_panel = object_panel
-	Global.connect_tool.initialize(diagram_controller, design_ctrl, prompt_manager)
-	Global.connect_tool.object_panel = object_panel
-	Global.pan_tool.initialize(diagram_controller, design_ctrl, prompt_manager)
-	Global.pan_tool.object_panel = object_panel
 
 func _initialize_main_menu():
 	# Add working shortcuts here
@@ -148,16 +147,16 @@ func _on_simulation_player_step():
 func _unhandled_input(event):
 	# TODO: Document inputs
 	if event.is_action_pressed("selection-tool"):
-		Global.change_tool(Global.selection_tool)
+		Global.app.change_tool(Global.app.selection_tool)
 	elif event.is_action_pressed("place-tool"):
-		Global.change_tool(Global.place_tool)
+		Global.app.change_tool(Global.app.place_tool)
 	elif event.is_action_pressed("connect-tool"):
-		Global.change_tool(Global.connect_tool)
+		Global.app.change_tool(Global.app.connect_tool)
 	elif event.is_action_pressed("pan-tool"):
-		if Global.current_tool is PanTool:
-			Global.change_tool(Global.previous_tool)
+		if Global.app.current_tool is PanTool:
+			Global.app.change_tool(Global.app.previous_tool)
 		else:
-			Global.change_tool(Global.pan_tool)
+			Global.app.change_tool(Global.app.pan_tool)
 
 	# File
 	elif event.is_action_pressed("new-design"):
@@ -357,10 +356,10 @@ func import_foreign_frame():
 	$FileDialog.show()
 
 func import_foreign_frame_from(path: String):
-	design_ctrl.import_from_path(path)
+	application.design_controller.import_from_path(path)
 
 func import_foreign_frame_from_data(data: PackedByteArray):
-	design_ctrl.import_from_data(data)
+	application.design_controller.import_from_data(data)
 
 # Edit Menu
 # -------------------------------------------------------------------------
@@ -479,7 +478,7 @@ func debug_dump():
 	else:
 		ids = canvas.selection.get_ids()
 	for key in ids:
-		var dia_object: DiagramObject = canvas.diagram_objects[key]
+		var dia_object: DiagramCanvasObject = canvas.diagram_objects[key]
 		var object: PoieticObject = Global.design.get_object(dia_object.object_id)
 		if not object:
 			printerr("Canvas object without design object: ", dia_object.object_id)
@@ -595,7 +594,7 @@ func _on_csv_export_requested(file_path: String, option: CSVExportDialog.ExportO
 		CSVExportDialog.ExportOption.SELECTED_NODES:
 			export_objects = objects
 
-	design_ctrl.write_to_csv(file_path, result, export_objects)
+	application.design_controller.write_to_csv(file_path, result, export_objects)
 
 func _update_simulation_menu():
 	var has_result = Global.result != null

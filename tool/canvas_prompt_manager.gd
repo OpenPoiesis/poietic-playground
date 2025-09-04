@@ -13,10 +13,10 @@ class_name CanvasPromptManager extends Node
 @onready var issue_prompt: IssuePrompt = $IssuePrompt
 
 var current_prompt: Control = null
-var diagram_ctrl: PoieticDiagramController = null
-var canvas: PoieticCanvas = null
+var diagram_ctrl: DiagramController = null
+var canvas: DiagramCanvas = null
 
-func initialize(diagram_ctrl: PoieticDiagramController):
+func initialize(diagram_ctrl: DiagramController):
 	self.diagram_ctrl = diagram_ctrl
 	self.canvas = diagram_ctrl.canvas
 	formula_prompt.initialize(canvas, self)

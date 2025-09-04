@@ -9,11 +9,11 @@ class_name InspectorPanel extends PanelContainer
 
 var selection: PoieticSelection
 
-@export var design_ctrl: PoieticDesignController
-@export var player: PoieticPlayer
-@export var canvas: PoieticCanvas
+@export var design_ctrl: DesignController
+@export var player: ResultPlayer
+@export var canvas: DiagramCanvas
 
-func initialize(design_ctrl: PoieticDesignController, player: PoieticPlayer, canvas: PoieticCanvas):
+func initialize(design_ctrl: DesignController, player: ResultPlayer, canvas: DiagramCanvas):
 	self.design_ctrl = design_ctrl
 	self.player = player
 	self.canvas = canvas

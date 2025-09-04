@@ -3,34 +3,28 @@ extends Node
 # View Preferences
 var show_value_indicators: bool = true
 
-# Canvas Tools
-var selection_tool = SelectionTool.new()
-var place_tool = PlaceTool.new()
-var connect_tool = ConnectTool.new()
-var pan_tool = PanTool.new()
-
-var current_tool: CanvasTool = selection_tool
-var previous_tool: CanvasTool = selection_tool
-
 # Poietic Backend
-var design: PoieticDesignController
+var app: PoieticApplication
+# TODO: Old architecture
+var design: DesignController
+
+# var design: PoieticDesignController
 var result: PoieticResult
-var player: PoieticPlayer
+var player: ResultPlayer
 
 # Application State
 var modal_node: Node = null
 var canvas: DiagramCanvas = null
 
-signal tool_changed(tool: CanvasTool)
-
 static var _all_pictograms: Dictionary[String,Pictogram] = {}
 static var default_pictogram: Pictogram
 
-func initialize(design: PoieticDesignController, player: PoieticPlayer):
+func initialize(app: PoieticApplication, player: ResultPlayer):
 	# TODO: Refactor
 	print("Initializing globals ...")
 
-	self.design = design
+	self.app = app
+	self.design = app.design_controller
 	self.player = player
 
 	InspectorTraitPanel._initialize_panels()
@@ -100,14 +94,6 @@ func close_modal(node: Node):
 	if modal_node:
 		get_gui().remove_child(modal_node)
 		modal_node = null
-
-func change_tool(tool: CanvasTool) -> void:
-	if current_tool:
-		current_tool.tool_released()
-		previous_tool = current_tool
-	current_tool = tool
-	current_tool.tool_selected()
-	tool_changed.emit(tool)
 
 func _notification(what):
 	if what == Node.NOTIFICATION_WM_CLOSE_REQUEST:

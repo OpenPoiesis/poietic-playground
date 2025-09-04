@@ -7,10 +7,10 @@ class_name ControlBar extends PanelContainer
 @onready var time_field: Label = %TimeField
 @onready var end_time_field: LineEdit = %EndTimeField
 
-@export var design_ctrl: PoieticDesignController
-@export var player: PoieticPlayer
+@export var design_ctrl: DesignController
+@export var player: ResultPlayer
 
-func initialize(design_ctrl: PoieticDesignController, player: PoieticPlayer):
+func initialize(design_ctrl: DesignController, player: ResultPlayer):
 	self.design_ctrl = design_ctrl
 	self.player = player
 	design_ctrl.design_changed.connect(_on_design_changed)

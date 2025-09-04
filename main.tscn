@@ -164,17 +164,17 @@ grow_vertical = 0
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Canvas" type="PoieticCanvas" parent="."]
+[node name="Canvas" type="DiagramCanvas" parent="."]
 
 [node name="FileDialog" type="FileDialog" parent="."]
 
-[node name="SimulationPlayer" type="PoieticPlayer" parent="."]
+[node name="SimulationPlayer" type="ResultPlayer" parent="."]
 step_duration = 0.01
 
 [node name="CsvExportDialog" parent="." instance=ExtResource("8_csv_dialog")]
 unique_name_in_owner = true
 
-[node name="DiagramController" type="PoieticDiagramController" parent="."]
+[node name="PoieticApplication" type="PoieticApplication" parent="."]
 
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/EditMenu" to="." method="_on_edit_menu_id_pressed"]
@@ -184,5 +184,4 @@ unique_name_in_owner = true
 [connection signal="dir_selected" from="FileDialog" to="." method="_on_file_dialog_dir_selected"]
 [connection signal="file_selected" from="FileDialog" to="." method="_on_file_dialog_file_selected"]
 [connection signal="files_selected" from="FileDialog" to="." method="_on_file_dialog_files_selected"]
-[connection signal="simulation_player_step" from="SimulationPlayer" to="." method="_on_simulation_player_step"]
 [connection signal="export_requested" from="CsvExportDialog" to="." method="_on_csv_export_requested"]

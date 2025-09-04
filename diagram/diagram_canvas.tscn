@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://uq6hic0cr3fr"]
-
-[ext_resource type="Script" uid="uid://dsl1jswuemr1e" path="res://diagram/diagram_canvas.gd" id="1_br64u"]
-
-[node name="DiagramCanvas" type="Node2D"]
-script = ExtResource("1_br64u")
