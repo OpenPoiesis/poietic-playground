@@ -4,7 +4,7 @@ static var _trait_panels: Dictionary[String,InspectorTraitPanel] = {}
 
 signal set_object_attribute(trait_name: String, name: String, value: Variant)
 
-var selection: PoieticSelection
+var selection: SelectionManager
 
 static func _initialize_panels():
 	_trait_panels = {

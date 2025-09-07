@@ -40,7 +40,7 @@ static var context_items: Array[ContextItem] = [
 #	ContextItem.new("Delete", [], true),
 ]
 
-func open(selection: PoieticSelection, desired_position: Vector2):
+func open(selection: SelectionManager, desired_position: Vector2):
 	var traits = Global.design.get_shared_traits(selection)
 	var count = selection.count()
 	var has_issues = false

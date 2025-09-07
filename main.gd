@@ -108,8 +108,9 @@ func _on_design_changed(has_issues: bool):
 		clear_result()
 
 func _on_design_reset():
-	canvas.clear_design()
-	canvas.selection.clear()
+	diagram_controller.clear_canvas()
+	# FIXME: Move selection manager to main
+	diagram_controller.design_controller.selection_manager.clear()
 	update_status_text()
 
 func _on_simulation_started():

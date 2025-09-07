@@ -7,7 +7,7 @@ class_name InspectorPanel extends PanelContainer
 # @onready var primary_attribute_icon = %PrimaryAttributeIcon
 @onready var traits_container = %TraitsContainer
 
-var selection: PoieticSelection
+var selection: SelectionManager
 
 @export var design_ctrl: DesignController
 @export var player: ResultPlayer
@@ -18,12 +18,12 @@ func initialize(design_ctrl: DesignController, player: ResultPlayer, canvas: Dia
 	self.player = player
 	self.canvas = canvas
 	
-	selection = canvas.selection
+	selection = design_ctrl.selection_manager
 
 	design_ctrl.design_changed.connect(_on_design_changed)
 	design_ctrl.simulation_finished.connect(_on_simulation_success)
 	design_ctrl.simulation_failed.connect(_on_simulation_failed)
-	canvas.selection.selection_changed.connect(_on_selection_changed)
+	design_ctrl.selection_manager.selection_changed.connect(_on_selection_changed)
 
 func _on_simulation_success(result):
 	chart.update_from_result(result)

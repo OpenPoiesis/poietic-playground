@@ -72,10 +72,11 @@ func open_attribute_editor_for(object_id: int, attribute: String):
 		string_value = ""
 	open_attribute_editor(object_id, string_value, position, attribute)
 
-func open_context_menu(selection: PoieticSelection, desired_position: Vector2):
+func open_context_menu(selection: SelectionManager, desired_position: Vector2):
 	# var menu: PanelContainer = preload("res://gui/context_menu.tscn").instantiate()
 	close()
 	current_prompt = context_menu
+	# FIXME: Open this
 	context_menu.open(selection, adjust_position(context_menu, desired_position))
 
 

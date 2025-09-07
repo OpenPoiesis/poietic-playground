@@ -18,7 +18,7 @@ func initialize(design_ctrl: DesignController, player: ResultPlayer, canvas: Dia
 	design_ctrl.design_changed.connect(_on_design_changed)
 	design_ctrl.simulation_finished.connect(_on_simulation_success)
 	design_ctrl.simulation_failed.connect(_on_simulation_failed)
-	canvas.selection.selection_changed.connect(_on_selection_changed)
+	design_ctrl.selection_manager.selection_changed.connect(_on_selection_changed)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
