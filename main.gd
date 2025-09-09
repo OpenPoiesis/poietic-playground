@@ -224,10 +224,10 @@ func update_status_text():
 	text += " undo: " + str(stats["undo_frames"])
 	text += " redo: " + str(stats["redo_frames"])
 	text += " | Current ID: " + str(stats["current_frame"])
-	if stats["diagram_nodes"] == stats["nodes"]:
+	if stats["diagram_blocks"] == stats["nodes"]:
 		text += " nodes: " + str(stats["nodes"])
 	else:
-		text += " nodes: " + str(stats["diagram_nodes"]) + "/" + str(stats["nodes"])
+		text += " nodes: " + str(stats["diagram_blocks"]) + "/" + str(stats["nodes"])
 	text += " edges: " + str(stats["edges"])
 	text += "\n"
 	text += "Design issues: " + str(stats["design_issues"])
