@@ -36,12 +36,12 @@ func open_label_editor(object_id: int, text: String, center: Vector2):
 	label_prompt.open(object_id, text, center)
 
 func open_name_editor_for(object_id: int):
-	var node = canvas.get_diagram_node(object_id)
-	if not node:
-		push_warning("Unknown node for name editor. ID: ", object_id)
+	var object: PoieticObject = Global.design.get_object(object_id)
+	if object == null:
 		return
-	var center = Vector2(node.global_position.x, node.name_label.global_position.y)
-	open_label_editor(node.object_id, node.object_name, center)
+	var position = canvas.prompt_position(object_id)
+	var formula = object.get_attribute("formula")
+	open_label_editor(object_id, object.object_name, position)
 
 func open_formula_editor(object_id: int, text: String, center: Vector2):
 	close()
@@ -49,8 +49,10 @@ func open_formula_editor(object_id: int, text: String, center: Vector2):
 	formula_prompt.open(object_id, text, center)
 
 func open_formula_editor_for(object_id: int):
-	var position = canvas.default_prompt_position(object_id)
 	var object: PoieticObject = Global.design.get_object(object_id)
+	if object == null:
+		return
+	var position = canvas.prompt_position(object_id)
 	var formula = object.get_attribute("formula")
 	open_formula_editor(object_id, formula, position)
 

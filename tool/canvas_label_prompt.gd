@@ -27,8 +27,8 @@ func open(object_id: int, text: String, center: Vector2):
 	self.edited_object_id = object_id
 	self.text = text
 	
-	var node = canvas.get_diagram_node(object_id)
-	node.begin_label_edit()
+	var block = canvas.represented_block(object_id)
+	block.hide_labels()
 	
 	_original_center = center
 	_target_width = calculate_editor_width()

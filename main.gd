@@ -382,17 +382,18 @@ func delete_selection():
 
 func paste():
 	var text = DisplayServer.clipboard_get()
-	canvas.paste_from_text(text)
-
+	application.design_controller.paste_from_text(text)
+	
 func copy_selection():
-	canvas.copy_selection()
+	var pasteboard_text = application.design_controller.copy_selection_as_text()
+	DisplayServer.clipboard_set(pasteboard_text)
 
 func cut_selection():
-	canvas.cut_selection()
+	copy_selection()
+	delete_selection()
 
 func select_all():
-	var ids = canvas.all_diagram_object_ids()
-	canvas.selection.replace(ids)
+	application.diagram_controller.select_all()
 
 # Diagram Menu
 # -------------------------------------------------------------------------
@@ -403,34 +404,35 @@ func auto_connect_parameters():
 func remove_midpoints():
 	canvas.remove_midpoints_in_selection()
 
+# TODO: Rename to edit_secondary_attribute
 func edit_primary_attribute():
 	# TODO: Beep
-	var ids = canvas.selection.get_ids()
-	if len(ids) != 1:
+	var single_id = application.design_controller.selection_manager.selection_of_one()
+	if single_id == null:
 		return
-	var object = Global.design.get_object(ids[0])
+	var object = Global.design.get_object(single_id)
 	
 	if not object:
 		return
 	elif object.has_trait("Formula"):
-		prompt_manager.open_formula_editor_for(ids[0])
+		prompt_manager.open_formula_editor_for(single_id)
 	elif object.has_trait("Delay"):
-		prompt_manager.open_attribute_editor_for(ids[0], "delay_duration")
+		prompt_manager.open_attribute_editor_for(single_id, "delay_duration")
 	elif object.has_trait("Smooth"):
-		prompt_manager.open_attribute_editor_for(ids[0], "window_time")
+		prompt_manager.open_attribute_editor_for(single_id, "window_time")
 
 func edit_name():
 	# TODO: Beep
-	var ids = canvas.selection.get_ids()
-	if len(ids) != 1:
+	var single_id = application.design_controller.selection_manager.selection_of_one()
+	if single_id == null:
 		return
-	var object = Global.design.get_object(ids[0])
+	var object = Global.design.get_object(single_id)
 	if not object:
 		return
 	if not object.has_trait("Name"):
 		return
 
-	prompt_manager.open_name_editor_for(ids[0])
+	prompt_manager.open_name_editor_for(single_id)
 
 # View Menu
 # -------------------------------------------------------------------------
