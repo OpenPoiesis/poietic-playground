@@ -86,6 +86,7 @@ func _on_text_changed(new_text: String):
 	_target_width = calculate_editor_width()
 
 func _on_text_submitted(new_text: String):
+	print("TEXT SUBMITTED")
 	if !_is_active:
 		return
 		

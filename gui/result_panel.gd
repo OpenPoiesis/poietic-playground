@@ -41,7 +41,7 @@ func sync_charts():
 	for child in chart_container.get_children():
 		child.queue_free()
 		
-	var ids = design_ctrl.get_object_ids("Chart")
+	var ids = design_ctrl.objects_of_type("Chart")
 	ids = design_ctrl.vaguely_ordered(ids, "order")
 	for id in ids:
 		var chart_object = design_ctrl.get_object(id)

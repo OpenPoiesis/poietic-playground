@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Poietic Playground"
 run/main_scene="res://main.tscn"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -53,11 +53,11 @@ diagram_blocks=""
 
 [gui]
 
-theme/custom="uid://dws6dqiic6wt"
-theme/custom_font="uid://6y6i5dhrvmps"
 theme/default_font_antialiasing=2
 theme/default_font_multichannel_signed_distance_field=true
 theme/default_font_generate_mipmaps=true
+theme/custom="uid://dws6dqiic6wt"
+theme/custom_font="uid://6y6i5dhrvmps"
 
 [input]
 

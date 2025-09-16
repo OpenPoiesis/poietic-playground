@@ -8,6 +8,9 @@ enum FileDialogMode {
 	SAVE_DESIGN,
 }
 
+const NEW_DESIGN_TEMPLATE_PATH = "res://resources/new_canvas_demo_design.json"
+
+
 @export var file_dialog_mode: FileDialogMode = FileDialogMode.OPEN_DESIGN
 @export var design_path: String = ""
 @export var last_opened_design_path: String = ""
@@ -18,7 +21,7 @@ const default_window_size = Vector2(1280, 720)
 
 @onready var application: PoieticApplication = $PoieticApplication
 @onready var canvas: DiagramCanvas = $Canvas
-@onready var diagram_controller: DiagramController = $DiagramController
+@onready var canvas_ctrl: CanvasController
 
 @onready var prompt_manager: CanvasPromptManager = %Gui/CanvasPromptManager
 
@@ -31,7 +34,7 @@ const default_window_size = Vector2(1280, 720)
 @onready var tool_bar: ToolBar = %Gui/ToolBar
 
 func _init():
-	pass
+	InspectorPanel.instantiate_default_panels()
 
 func _ready():
 	prints("Screen DPI:", DisplayServer.screen_get_dpi(), 
@@ -48,23 +51,20 @@ func _ready():
 	get_viewport().connect("size_changed", _on_window_resized)
 	
 	_initialize_main_menu()
-	
-	# FIXME: This wiring is too convoluted/complex
-	diagram_controller = DiagramController.new()
-	diagram_controller.canvas = canvas
-	diagram_controller.design_controller = application.design_controller
-	application.diagram_controller = diagram_controller
-	diagram_controller.initialize(application.design_controller, canvas)
+	prints("BOOO1: ", application.design_controller, player)
+
+	canvas_ctrl = CanvasController.new()
+	canvas_ctrl.initialize(application.design_controller, canvas)
+	application.canvas_controller = canvas_ctrl
 	
 	Global.initialize(application, player)
-	application.diagram_controller = diagram_controller
 	application.tool_changed.connect(tool_bar._on_tool_changed)
 	application.change_tool(application.selection_tool)
-	
+	prints("BOOO: ", application.design_controller, player)
 	control_bar.initialize(application.design_controller, player)
 	result_panel.initialize(application.design_controller, player, canvas)
-	inspector_panel.initialize(application.design_controller, player, canvas)
-	prompt_manager.initialize(application.diagram_controller)
+	inspector_panel.initialize(application.design_controller, player)
+	prompt_manager.initialize(application.canvas_controller)
 
 	var design_ctrl = application.design_controller
 	design_ctrl.design_changed.connect(self._on_design_changed)
@@ -75,12 +75,9 @@ func _ready():
 	canvas.canvas_view_changed.connect(self._on_canvas_view_changed)
 
 	# Load demo design
-	var path = "res://resources/new_canvas_demo_design.json"
-	var data = FileAccess.get_file_as_bytes(path)
+	var data = FileAccess.get_file_as_bytes(NEW_DESIGN_TEMPLATE_PATH)
 	import_foreign_frame_from_data(data)
 	
-	# Tell everyone about demo design
-	# Global.design.design_changed.emit()
 	update_status_text()
 	_update_simulation_menu()
 	
@@ -108,9 +105,9 @@ func _on_design_changed(has_issues: bool):
 		clear_result()
 
 func _on_design_reset():
-	diagram_controller.clear_canvas()
+	canvas_ctrl.clear_canvas()
 	# FIXME: Move selection manager to main
-	diagram_controller.design_controller.selection_manager.clear()
+	canvas_ctrl.design_controller.selection_manager.clear()
 	update_status_text()
 
 func _on_simulation_started():
@@ -131,7 +128,7 @@ func _on_canvas_view_changed(offset: Vector2, zoom_level: float):
 func set_result(result):
 	Global.result = result
 	player.result = result
-	diagram_controller.sync_indicators(result)
+	canvas_ctrl.sync_indicators(result)
 	_update_simulation_menu()
 
 
@@ -217,7 +214,7 @@ func _unhandled_input(event):
 		Global.close_modal(Global.modal_node)
 
 func update_status_text():
-	var stats = Global.design.debug_stats
+	var stats = application.design_controller.debug_stats
 	
 	var text = ""
 	text += "Frames: " + str(stats["frames"])
@@ -393,7 +390,7 @@ func cut_selection():
 	delete_selection()
 
 func select_all():
-	application.diagram_controller.select_all()
+	application.canvas_ctrl.select_all()
 
 # Diagram Menu
 # -------------------------------------------------------------------------

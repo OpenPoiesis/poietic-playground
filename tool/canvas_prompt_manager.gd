@@ -13,22 +13,22 @@ class_name CanvasPromptManager extends Node
 @onready var issue_prompt: IssuePrompt = $IssuePrompt
 
 var current_prompt: Control = null
-var diagram_ctrl: DiagramController = null
+var canvas_ctrl: CanvasController = null
 var canvas: DiagramCanvas = null
 
-func initialize(diagram_ctrl: DiagramController):
-	self.diagram_ctrl = diagram_ctrl
-	self.canvas = diagram_ctrl.canvas
+func initialize(canvas_ctrl: CanvasController):
+	self.canvas_ctrl = canvas_ctrl
+	self.canvas = canvas_ctrl.canvas
 	formula_prompt.initialize(canvas, self)
 	label_prompt.initialize(canvas, self)
 	context_menu.initialize(canvas, self)
 	attribute_prompt.initialize(canvas, self)
 
-	label_prompt.editing_submitted.connect(diagram_ctrl._on_label_edit_submitted)
-	label_prompt.editing_cancelled.connect(diagram_ctrl._on_label_edit_cancelled)
-	formula_prompt.formula_editing_submitted.connect(diagram_ctrl._on_formula_edit_submitted)
-	formula_prompt.formula_editing_cancelled.connect(diagram_ctrl._on_formula_edit_cancelled)
-	attribute_prompt.attribute_editing_submitted.connect(diagram_ctrl._on_attribute_edit_submitted)
+	label_prompt.editing_submitted.connect(canvas_ctrl._on_label_edit_submitted)
+	label_prompt.editing_cancelled.connect(canvas_ctrl._on_label_edit_cancelled)
+	formula_prompt.formula_editing_submitted.connect(canvas_ctrl._on_formula_edit_submitted)
+	formula_prompt.formula_editing_cancelled.connect(canvas_ctrl._on_formula_edit_cancelled)
+	attribute_prompt.attribute_editing_submitted.connect(canvas_ctrl._on_attribute_edit_submitted)
 
 func open_label_editor(object_id: int, text: String, center: Vector2):
 	close()

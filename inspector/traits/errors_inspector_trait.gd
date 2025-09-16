@@ -18,7 +18,7 @@ func on_selection_changed():
 		return
 
 	var object = selection.get_ids()[0]
-	var issues:Array[PoieticIssue] = Global.design.issues_for_object(object)
+	var issues:Array[PoieticIssue] = design_ctrl.issues_for_object(object)
 	if len(issues) > 0:
 		tab_container.current_tab = 2
 		for issue in issues:

@@ -13,3 +13,13 @@ class_name CanvasPrompt extends Control
 func initialize(canvas: DiagramCanvas, manager: CanvasPromptManager):
 	self.canvas = canvas
 	self.prompt_manager = manager
+
+func NEW_open(position: Vector2, attribute: String, object: Variant):
+	pass
+	
+func NEW_close():
+	pass
+	
+func NEW_cancel():
+	pass
+	

@@ -6,7 +6,7 @@ var show_value_indicators: bool = true
 # Poietic Backend
 var app: PoieticApplication
 # TODO: Old architecture
-var design: DesignController
+var canvas_ctrl: CanvasController
 
 # var design: PoieticDesignController
 var result: PoieticResult
@@ -24,10 +24,8 @@ func initialize(app: PoieticApplication, player: ResultPlayer):
 	print("Initializing globals ...")
 
 	self.app = app
-	self.design = app.design_controller
 	self.player = player
 
-	InspectorTraitPanel._initialize_panels()
 	self._load_pictograms()
 
 static func _load_pictograms():

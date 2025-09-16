@@ -26,7 +26,7 @@ func update_delay_duration(value: int):
 	return
 	var trans = Global.design.new_transaction()
 	
-	for id in selection.get_ids():
+	for id in selection:
 		trans.set_attribute(id, "delay_duration", value)
 
 	Global.design.accept(trans)
