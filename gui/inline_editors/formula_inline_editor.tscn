@@ -1,12 +1,12 @@
 [gd_scene load_steps=6 format=3 uid="uid://bnmc02p3i33q2"]
 
-[ext_resource type="Script" uid="uid://ck4fq6cbpmv40" path="res://tool/formula_prompt.gd" id="1_dqs07"]
+[ext_resource type="Script" uid="uid://ck4fq6cbpmv40" path="res://gui/inline_editors/formula_inline_editor.gd" id="1_dqs07"]
 [ext_resource type="Theme" uid="uid://dws6dqiic6wt" path="res://resources/default.tres" id="1_xuxp2"]
 [ext_resource type="Texture2D" uid="uid://bi5sowqe2mcj3" path="res://resources/icons/white/formula.png" id="2_o6d35"]
 [ext_resource type="Texture2D" uid="uid://2sk33kpt62hb" path="res://resources/icons/white/cancel.png" id="3_xuxp2"]
 [ext_resource type="Texture2D" uid="uid://ijgs3brho08s" path="res://resources/icons/white/ok.png" id="4_fl0tg"]
 
-[node name="FormulaPrompt" type="PanelContainer"]
+[node name="FormulaInlineEditor" type="PanelContainer"]
 offset_right = 262.0
 offset_bottom = 58.0
 theme = ExtResource("1_xuxp2")

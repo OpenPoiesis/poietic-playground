@@ -1,8 +1,8 @@
-class_name IssuePrompt extends CanvasPrompt
+class_name IssuesPopup extends CanvasInlineEditor
 
 @onready var issue_list: ItemList = %IssueList
 
-func open(object_id: int, issues: Array[PoieticIssue], center: Vector2):
+func open2(object_id: int, issues: Array[PoieticIssue], center: Vector2):
 	assert(object_id != null, "Edited object ID not provided")
 	
 	global_position = Vector2(center.x - self.size.x / 2, center.y)

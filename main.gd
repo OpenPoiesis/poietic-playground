@@ -23,8 +23,6 @@ const default_window_size = Vector2(1280, 720)
 @onready var canvas: DiagramCanvas = $Canvas
 @onready var canvas_ctrl: CanvasController
 
-@onready var prompt_manager: CanvasPromptManager = %Gui/CanvasPromptManager
-
 @onready var inspector_panel: InspectorPanel = %InspectorPanel
 @onready var object_panel: ObjectPanel = %Gui/ObjectPanel
 
@@ -56,6 +54,9 @@ func _ready():
 	canvas_ctrl = CanvasController.new()
 	canvas_ctrl.initialize(application.design_controller, canvas)
 	application.canvas_controller = canvas_ctrl
+	initialize_inline_editors(canvas_ctrl)
+	%ContextMenu.initialize(canvas_ctrl)
+
 	
 	Global.initialize(application, player)
 	application.tool_changed.connect(tool_bar._on_tool_changed)
@@ -64,7 +65,6 @@ func _ready():
 	control_bar.initialize(application.design_controller, player)
 	result_panel.initialize(application.design_controller, player, canvas)
 	inspector_panel.initialize(application.design_controller, player)
-	prompt_manager.initialize(application.canvas_controller)
 
 	var design_ctrl = application.design_controller
 	design_ctrl.design_changed.connect(self._on_design_changed)
@@ -82,6 +82,23 @@ func _ready():
 	_update_simulation_menu()
 	
 	print("Done initializing main.")
+
+func initialize_inline_editors(canvas_ctrl: CanvasController):
+	var name_editor = $Gui/InlineEditors/NameInlineEditor
+	name_editor.initialize(canvas_ctrl)
+	canvas_ctrl.register_inline_editor("name", name_editor)
+
+	var formula_editor = $Gui/InlineEditors/FormulaInlineEditor
+	formula_editor.initialize(canvas_ctrl)
+	canvas_ctrl.register_inline_editor("formula", formula_editor)
+
+	var numeric_attr_editor = $Gui/InlineEditors/NumericAttributeInlineEditor
+	numeric_attr_editor.initialize(canvas_ctrl)
+	canvas_ctrl.register_inline_editor("numeric_attribute", numeric_attr_editor)
+
+	var issues_popup = $Gui/InlineEditors/IssuesPopup
+	# issues_popup.initialize(canvas_ctrl)
+	canvas_ctrl.register_inline_editor("issues", issues_popup)
 
 func initialize_menu_bar():
 	# TODO: Not sure what is going on here. On Ubuntu the menu is not displayed.
@@ -136,7 +153,8 @@ func clear_result():
 	Global.player.stop()
 	Global.result = null
 	Global.player.result = null
-	canvas.clear_indicators()
+	# FIXME: Re-add this:
+	# canvas.clear_indicators()
 	_update_simulation_menu()
 	
 func _on_simulation_player_step():
@@ -210,8 +228,7 @@ func _unhandled_input(event):
 		debug_dump()
 
 	elif event.is_action_pressed("cancel"):
-		prompt_manager.close()
-		Global.close_modal(Global.modal_node)
+		canvas_ctrl.close_inline_popup()
 
 func update_status_text():
 	var stats = application.design_controller.debug_stats
@@ -297,7 +314,7 @@ func save_settings():
 
 func new_design():
 	design_path = ""
-	Global.design.new_design()
+	application.design_controller.new_design()
 
 func open_design():
 	$FileDialog.file_mode = FileDialog.FileMode.FILE_MODE_OPEN_FILE
@@ -335,7 +352,7 @@ func save_design():
 	var path: String
 	if design_path != "":
 		print("Saving design: ", design_path)
-		Global.design.save_to_path(design_path)
+		application.design_controller.save_to_path(design_path)
 	else:
 		save_design_as()
 	
@@ -363,14 +380,14 @@ func import_foreign_frame_from_data(data: PackedByteArray):
 # -------------------------------------------------------------------------
 
 func undo():
-	if Global.design.can_undo():
-		Global.design.undo()
+	if application.design_controller.can_undo():
+		application.design_controller.undo()
 	else:
 		printerr("Trying to undo while having nothing to undo")
 
 func redo():
-	if Global.design.can_redo():
-		Global.design.redo()
+	if application.design_controller.can_redo():
+		application.design_controller.redo()
 	else:
 		printerr("Trying to redo while having nothing to redo")
 
@@ -396,40 +413,37 @@ func select_all():
 # -------------------------------------------------------------------------
 
 func auto_connect_parameters():
-	Global.design.auto_connect_parameters(PackedInt64Array())
+	application.design_controller.auto_connect_parameters(PackedInt64Array())
 
 func remove_midpoints():
 	canvas.remove_midpoints_in_selection()
 
+func get_current_selection() -> PackedInt64Array:
+	return application.design_controller.selection_manager.get_ids()
+	
 # TODO: Rename to edit_secondary_attribute
 func edit_primary_attribute():
 	# TODO: Beep
-	var single_id = application.design_controller.selection_manager.selection_of_one()
-	if single_id == null:
+	var object: PoieticObject = canvas_ctrl.get_single_selection_object()
+	if object == null:
 		return
-	var object = Global.design.get_object(single_id)
-	
-	if not object:
-		return
+		
 	elif object.has_trait("Formula"):
-		prompt_manager.open_formula_editor_for(single_id)
+		canvas_ctrl.open_inline_editor("formula", object.object_id, "formula")
 	elif object.has_trait("Delay"):
-		prompt_manager.open_attribute_editor_for(single_id, "delay_duration")
+		canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "delay_duration")
 	elif object.has_trait("Smooth"):
-		prompt_manager.open_attribute_editor_for(single_id, "window_time")
+		canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "window_time")
 
 func edit_name():
 	# TODO: Beep
-	var single_id = application.design_controller.selection_manager.selection_of_one()
-	if single_id == null:
-		return
-	var object = Global.design.get_object(single_id)
-	if not object:
+	var object: PoieticObject = canvas_ctrl.get_single_selection_object()
+	if object == null:
 		return
 	if not object.has_trait("Name"):
 		return
-
-	prompt_manager.open_name_editor_for(single_id)
+	prints("EDIT NAME ", object)
+	canvas_ctrl.open_inline_editor("name", object.object_id, "name")
 
 # View Menu
 # -------------------------------------------------------------------------
@@ -479,7 +493,7 @@ func debug_dump():
 		ids = canvas.selection.get_ids()
 	for key in ids:
 		var dia_object: DiagramCanvasObject = canvas.diagram_objects[key]
-		var object: PoieticObject = Global.design.get_object(dia_object.object_id)
+		var object: PoieticObject = application.design_controller.get_object(dia_object.object_id)
 		if not object:
 			printerr("Canvas object without design object: ", dia_object.object_id)
 			continue
@@ -497,7 +511,7 @@ func _on_file_dialog_files_selected(paths):
 		FileDialogMode.IMPORT_FRAME:
 			for path in paths:
 				print("Import frame: ", path)
-				Global.design.import_from_path(path)
+				application.design_controller.import_from_path(path)
 				last_import_path = path
 				save_settings()
 		FileDialogMode.OPEN_DESIGN:
@@ -511,7 +525,7 @@ func _on_file_dialog_dir_selected(path):
 	match file_dialog_mode:
 		FileDialogMode.IMPORT_FRAME:
 			print("Import frame: ", path)
-			Global.design.import_from_path(path)
+			application.design_controller.import_from_path(path)
 			last_import_path = path
 			save_settings()
 		FileDialogMode.OPEN_DESIGN:
@@ -525,19 +539,19 @@ func _on_file_dialog_file_selected(path):
 	match file_dialog_mode:
 		FileDialogMode.IMPORT_FRAME:
 			print("Import frame: ", path)
-			Global.design.import_from_path(path)
+			application.design_controller.import_from_path(path)
 			last_import_path = path
 			save_settings()
 		FileDialogMode.OPEN_DESIGN:
 			print("Open design: ", path)
-			Global.design.load_from_path(path)
+			application.design_controller.load_from_path(path)
 			self.design_path = path
 			self.last_opened_design_path = path
 			save_settings()
 
 		FileDialogMode.SAVE_DESIGN:
 			print("Save design: ", path)
-			Global.design.save_to_path(path)
+			application.design_controller.save_to_path(path)
 			self.design_path = path
 		_:
 			push_warning("Unhandled file selection mode: ", file_dialog_mode)

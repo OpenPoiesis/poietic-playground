@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://d2n4g00qw1ua"]
 
-[ext_resource type="Script" uid="uid://b3oswwsrguyar" path="res://tool/context_menu.gd" id="1_hqv6p"]
+[ext_resource type="Script" uid="uid://b3oswwsrguyar" path="res://gui/context_menu.gd" id="1_hqv6p"]
 [ext_resource type="Texture2D" uid="uid://cohqeh37sychv" path="res://resources/icons/white/delete.png" id="1_t6t3t"]
 [ext_resource type="Texture2D" uid="uid://bi5sowqe2mcj3" path="res://resources/icons/white/formula.png" id="2_tp02x"]
 [ext_resource type="Texture2D" uid="uid://clvwdolwxpfkg" path="res://resources/icons/white/time-window.png" id="4_h5fj0"]

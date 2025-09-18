@@ -4,49 +4,22 @@
 ## Prompt manager opens and closes prompts, makes sure only one prompt is open and hands-off
 ## prompt results in form of signals.
 ##
-class_name CanvasPromptManager extends Node
+class_name DEPRECATED_CanvasPromptManager extends Node
 
-@onready var formula_prompt: FormulaPrompt = $FormulaPrompt
-@onready var label_prompt: CanvasLabelPrompt = $LabelPrompt
-@onready var attribute_prompt: AttributePrompt = $AttributePrompt
+@onready var formula_prompt: FormulaInlineEditor = $FormulaPrompt
+@onready var label_prompt: NameInlineEditor = $LabelPrompt
+@onready var attribute_prompt: NumericAttributeEditor = $AttributePrompt
 @onready var context_menu: ContextMenu = $ContextMenu
-@onready var issue_prompt: IssuePrompt = $IssuePrompt
+@onready var issue_prompt: IssuesPopup = $IssuePrompt
 
 var current_prompt: Control = null
 var canvas_ctrl: CanvasController = null
 var canvas: DiagramCanvas = null
 
-func initialize(canvas_ctrl: CanvasController):
-	self.canvas_ctrl = canvas_ctrl
-	self.canvas = canvas_ctrl.canvas
-	formula_prompt.initialize(canvas, self)
-	label_prompt.initialize(canvas, self)
-	context_menu.initialize(canvas, self)
-	attribute_prompt.initialize(canvas, self)
-
-	label_prompt.editing_submitted.connect(canvas_ctrl._on_label_edit_submitted)
-	label_prompt.editing_cancelled.connect(canvas_ctrl._on_label_edit_cancelled)
-	formula_prompt.formula_editing_submitted.connect(canvas_ctrl._on_formula_edit_submitted)
-	formula_prompt.formula_editing_cancelled.connect(canvas_ctrl._on_formula_edit_cancelled)
-	attribute_prompt.attribute_editing_submitted.connect(canvas_ctrl._on_attribute_edit_submitted)
-
-func open_label_editor(object_id: int, text: String, center: Vector2):
-	close()
-	current_prompt = label_prompt
-	label_prompt.open(object_id, text, center)
-
-func open_name_editor_for(object_id: int):
-	var object: PoieticObject = Global.design.get_object(object_id)
-	if object == null:
-		return
-	var position = canvas.prompt_position(object_id)
-	var formula = object.get_attribute("formula")
-	open_label_editor(object_id, object.object_name, position)
-
 func open_formula_editor(object_id: int, text: String, center: Vector2):
 	close()
 	current_prompt = formula_prompt
-	formula_prompt.open(object_id, text, center)
+	formula_prompt.open(object_id, "formula", text, center)
 
 func open_formula_editor_for(object_id: int):
 	var object: PoieticObject = Global.design.get_object(object_id)
@@ -61,7 +34,7 @@ func open_attribute_editor(object_id: int, text: String, center: Vector2, attrib
 	current_prompt = attribute_prompt
 	
 	attribute_prompt.set_label(attribute)
-	attribute_prompt.open(object_id, text, center, attribute)
+	attribute_prompt.open(object_id, attribute, text, center)
 
 func open_attribute_editor_for(object_id: int, attribute: String):
 	var position = canvas.default_prompt_position(object_id)

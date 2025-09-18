@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://fhtvpa30rrel"]
+[gd_scene load_steps=14 format=3 uid="uid://fhtvpa30rrel"]
 
 [ext_resource type="Script" uid="uid://dr8beg2t8bd1u" path="res://main.gd" id="1_2q6io"]
 [ext_resource type="PackedScene" uid="uid://tems4qsdoox" path="res://gui/main_bar.tscn" id="2_kek77"]
@@ -6,9 +6,13 @@
 [ext_resource type="PackedScene" uid="uid://dgupp2doqjm1a" path="res://inspector/inspector_panel.tscn" id="4_uq7uj"]
 [ext_resource type="PackedScene" uid="uid://bbsf0e6jye3uf" path="res://gui/object_panel.tscn" id="5_4c57u"]
 [ext_resource type="PackedScene" uid="uid://b0cmycvjsiv00" path="res://gui/result_panel.tscn" id="5_272bh"]
-[ext_resource type="PackedScene" uid="uid://d0a2hpaex46gj" path="res://tool/canvas_prompt_manager.tscn" id="6_272bh"]
 [ext_resource type="PackedScene" uid="uid://c3kn0jiqoe5fm" path="res://gui/control_bar.tscn" id="7_kek77"]
 [ext_resource type="PackedScene" uid="uid://qnhs6whvruh2" path="res://gui/csv_export_dialog.tscn" id="8_csv_dialog"]
+[ext_resource type="PackedScene" uid="uid://d2n4g00qw1ua" path="res://gui/context_menu.tscn" id="8_kek77"]
+[ext_resource type="PackedScene" uid="uid://dtfxusuxjmcsy" path="res://gui/inline_editors/name_inline_editor.tscn" id="9_dg77c"]
+[ext_resource type="PackedScene" uid="uid://bnmc02p3i33q2" path="res://gui/inline_editors/formula_inline_editor.tscn" id="10_ycdy4"]
+[ext_resource type="PackedScene" uid="uid://1vmwbqdssvhd" path="res://gui/inline_editors/numeric_attribute_inline_editor.tscn" id="11_w48qg"]
+[ext_resource type="PackedScene" uid="uid://vqxepyllje5n" path="res://gui/inline_editors/issues_popup.tscn" id="12_ycdy4"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
@@ -149,8 +153,6 @@ offset_top = 335.0
 offset_bottom = 455.0
 grow_vertical = 1
 
-[node name="CanvasPromptManager" parent="Gui" instance=ExtResource("6_272bh")]
-
 [node name="BottomPanel" type="PanelContainer" parent="Gui"]
 anchors_preset = 12
 anchor_top = 1.0
@@ -163,6 +165,24 @@ grow_vertical = 0
 [node name="ResultPanel" parent="Gui/BottomPanel" instance=ExtResource("5_272bh")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="ContextMenu" parent="Gui" instance=ExtResource("8_kek77")]
+unique_name_in_owner = true
+visible = false
+
+[node name="InlineEditors" type="Node" parent="Gui"]
+
+[node name="NameInlineEditor" parent="Gui/InlineEditors" instance=ExtResource("9_dg77c")]
+visible = false
+
+[node name="FormulaInlineEditor" parent="Gui/InlineEditors" instance=ExtResource("10_ycdy4")]
+visible = false
+
+[node name="NumericAttributeInlineEditor" parent="Gui/InlineEditors" instance=ExtResource("11_w48qg")]
+visible = false
+
+[node name="IssuesPopup" parent="Gui/InlineEditors" instance=ExtResource("12_ycdy4")]
+visible = false
 
 [node name="Canvas" type="DiagramCanvas" parent="."]
 

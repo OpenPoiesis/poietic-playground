@@ -1,10 +1,9 @@
-class_name ContextMenu extends CanvasPrompt
+class_name ContextMenu extends Control
 
 # signal context_menu_item_selected(item: int)
 # signal context_menu_cancelled()
 
 @onready var items_container: HBoxContainer = %ItemsContainer
-var _is_active: bool = false
 
 class ContextItem:
 	var name: String
@@ -30,6 +29,19 @@ class ContextItem:
 			if self.traits.has(name):
 				return true
 		return false
+
+@export var canvas_ctrl: CanvasController
+@export var selection: PackedInt64Array
+
+func initialize(canvas_ctrl: CanvasController):
+	self.canvas_ctrl = canvas_ctrl
+
+func get_single_selection_object() -> PoieticObject:
+	if len(selection) != 1:
+		return null
+	else:
+		var single_id = selection[0]
+		return canvas_ctrl.design_controller.get_object(single_id)
 
 static var context_items: Array[ContextItem] = [
 	ContextItem.new("ResetHandles", ["DiagramConnector"], true),
@@ -71,51 +83,48 @@ func _on_name_button_pressed():
 	pass
 
 func _on_formula_button_pressed():
-	print("Formula pressed")
-	var ids = canvas.selection.get_ids()
-	assert(len(ids)> 0)
-	if len(ids) != 1:
-		push_warning("Requested formula edit for multiple objects, using first one in the selection")
-
-	self.close()
-
-	prompt_manager.open_formula_editor_for(ids[0])
+	var single_id = canvas_ctrl.design_controller.selection_manager.selection_of_one()
+	if single_id == null:
+		return
+	var object = canvas_ctrl.design_controller.get_object(single_id)
+	
+	if not object:
+		return
+	if not object.has_trait("Formula"):
+		return
+		
+	canvas_ctrl.open_inline_editor("formula", single_id, "formula")
 	
 func _on_auto_button_pressed():
 	self.close()
-	# FIXME: [REFACTORING] Move to change controller
+	var ids = canvas_ctrl.design_controller.selection_manager.get_ids()
+
 	# FIXME: [REFACTORING] Use selection as provided originally (IMPORTANT!)
-	Global.design.auto_connect_parameters(canvas.selection.get_ids())
+	canvas_ctrl.design_controller.auto_connect_parameters(ids)
 
 
 func _on_delete_button_pressed():
 	self.close()
 	# FIXME: [REFACTORING] Move to change controller
-	canvas.delete_selection()
+	canvas_ctrl.design_controller.delete_selection()
 
 
 func _on_reset_button_pressed():
 	self.close()
 	# FIXME: [REFACTORING] Move to change controller
-	canvas.remove_midpoints_in_selection()
+	canvas_ctrl.design_controller.remove_connector_midpoints_in_selection()
 
 
 func _on_edit_delay_pressed():
-	var ids = canvas.selection.get_ids()
-	assert(len(ids)> 0)
-	if len(ids) != 1:
-		push_warning("Requested value edit for multiple objects, using first one in the selection")
-
 	self.close()
-
-	prompt_manager.open_attribute_editor_for(ids[0], "delay_duration")
+	var object = canvas_ctrl.get_single_selection_object()
+	if object == null:
+		return
+	canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "delay_duration")
 
 func _on_edit_smooth_window_pressed():
-	var ids = canvas.selection.get_ids()
-	assert(len(ids)> 0)
-	if len(ids) != 1:
-		push_warning("Requested value edit for multiple objects, using first one in the selection")
-
 	self.close()
-
-	prompt_manager.open_attribute_editor_for(ids[0], "window_time")
+	var object = canvas_ctrl.get_single_selection_object()
+	if object == null:
+		return
+	canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "window_time")

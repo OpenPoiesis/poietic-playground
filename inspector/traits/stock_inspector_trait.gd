@@ -17,12 +17,12 @@ func on_selection_changed():
 		allows_negative_check.set_state_no_signal(TriStateCheckButton.State.INDETERMINATE)
 
 func update_allows_negative(flag: bool):
-	var trans = Global.design.new_transaction()
+	var trans = design_ctrl.new_transaction()
 	
 	for id in selection:
 		trans.set_attribute(id, "allows_negative", flag)
 
-	Global.design.accept(trans)
+	design_ctrl.accept(trans)
 
 func _on_allows_negative_check_toggled(toggled_on):
 	update_allows_negative(toggled_on)
