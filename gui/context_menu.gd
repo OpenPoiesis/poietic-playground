@@ -52,12 +52,12 @@ static var context_items: Array[ContextItem] = [
 #	ContextItem.new("Delete", [], true),
 ]
 
-func open(selection: SelectionManager, desired_position: Vector2):
-	var traits = Global.design.get_shared_traits(selection)
-	var count = selection.count()
+func update(selection: PackedInt64Array):
+	var traits = canvas_ctrl.design_controller.get_shared_traits(selection)
 	var has_issues = false
-	for id in selection.get_ids():
-		if !Global.design.issues_for_object(id).is_empty():
+	var count = len(selection)
+	for id in selection:
+		if !canvas_ctrl.design_controller.issues_for_object(id).is_empty():
 			has_issues = true
 			break
 
@@ -70,14 +70,6 @@ func open(selection: SelectionManager, desired_position: Vector2):
 		child.visible = flag
 
 	self.reset_size()
-
-	self.global_position = Vector2(desired_position.x - get_rect().size.x/2, desired_position.y)
-	self.set_process(true)
-	self.show()
-
-func close():
-	self.set_process(false)
-	self.hide()
 
 func _on_name_button_pressed():
 	pass
@@ -96,7 +88,7 @@ func _on_formula_button_pressed():
 	canvas_ctrl.open_inline_editor("formula", single_id, "formula")
 	
 func _on_auto_button_pressed():
-	self.close()
+	canvas_ctrl.close_inline_popup()
 	var ids = canvas_ctrl.design_controller.selection_manager.get_ids()
 
 	# FIXME: [REFACTORING] Use selection as provided originally (IMPORTANT!)
@@ -104,26 +96,26 @@ func _on_auto_button_pressed():
 
 
 func _on_delete_button_pressed():
-	self.close()
+	canvas_ctrl.close_inline_popup()
 	# FIXME: [REFACTORING] Move to change controller
 	canvas_ctrl.design_controller.delete_selection()
 
 
 func _on_reset_button_pressed():
-	self.close()
+	canvas_ctrl.close_inline_popup()
 	# FIXME: [REFACTORING] Move to change controller
 	canvas_ctrl.design_controller.remove_connector_midpoints_in_selection()
 
 
 func _on_edit_delay_pressed():
-	self.close()
+	canvas_ctrl.close_inline_popup()
 	var object = canvas_ctrl.get_single_selection_object()
 	if object == null:
 		return
 	canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "delay_duration")
 
 func _on_edit_smooth_window_pressed():
-	self.close()
+	canvas_ctrl.close_inline_popup()
 	var object = canvas_ctrl.get_single_selection_object()
 	if object == null:
 		return

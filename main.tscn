@@ -187,6 +187,7 @@ visible = false
 [node name="Canvas" type="DiagramCanvas" parent="."]
 
 [node name="FileDialog" type="FileDialog" parent="."]
+use_native_dialog = true
 
 [node name="SimulationPlayer" type="ResultPlayer" parent="."]
 step_duration = 0.01

@@ -56,6 +56,7 @@ func _ready():
 	application.canvas_controller = canvas_ctrl
 	initialize_inline_editors(canvas_ctrl)
 	%ContextMenu.initialize(canvas_ctrl)
+	canvas_ctrl.context_menu = %ContextMenu
 
 	
 	Global.initialize(application, player)
