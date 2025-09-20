@@ -124,6 +124,14 @@ offset_top = 161.0
 offset_bottom = 269.0
 grow_vertical = 1
 
+[node name="ToolObjectPalette" parent="Gui" instance=ExtResource("5_4c57u")]
+anchors_preset = 0
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_top = 335.0
+offset_bottom = 455.0
+grow_vertical = 1
+
 [node name="StatusText" type="Label" parent="Gui"]
 anchors_preset = 3
 anchor_left = 1.0
@@ -144,14 +152,6 @@ unique_name_in_owner = true
 offset_left = -240.0
 offset_top = -172.0
 offset_bottom = 132.0
-
-[node name="ObjectPanel" parent="Gui" instance=ExtResource("5_4c57u")]
-anchors_preset = 0
-anchor_top = 0.0
-anchor_bottom = 0.0
-offset_top = 335.0
-offset_bottom = 455.0
-grow_vertical = 1
 
 [node name="BottomPanel" type="PanelContainer" parent="Gui"]
 anchors_preset = 12
@@ -187,6 +187,7 @@ visible = false
 [node name="Canvas" type="DiagramCanvas" parent="."]
 
 [node name="FileDialog" type="FileDialog" parent="."]
+access = 2
 use_native_dialog = true
 
 [node name="SimulationPlayer" type="ResultPlayer" parent="."]

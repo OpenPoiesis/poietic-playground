@@ -1,6 +1,6 @@
 class_name ObjectPanel extends PanelContainer
 
-signal selection_changed(identifier: String)
+signal palette_item_changed(identifier: String)
 
 @onready var object_list: GridContainer = $ObjectList
 var prototype_item: Button
@@ -16,7 +16,7 @@ var selected_item: String = "":
 				item.set_pressed_no_signal(false)
 			
 		selected_item = value
-		selection_changed.emit(selected_item)
+		palette_item_changed.emit(selected_item)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -32,8 +32,6 @@ func _ready():
 	prototype_item = item
 
 	clear()
-	# Global.tool_changed.connect(_on_tool_changed)
-	# hide()
 
 func clear():
 	var children = object_list.get_children()
@@ -41,19 +39,6 @@ func clear():
 		object_list.remove_child(child)
 	items.clear()
 	
-func _on_tool_changed(tool: CanvasTool):
-	if tool is SelectionTool:
-		self.hide()
-		pass
-	elif tool is PlaceTool:
-		self.show()
-		load_node_pictograms()
-	elif tool is ConnectTool:
-		self.show()
-		load_connector_pictograms()
-	else:
-		pass # unknown tool
-
 func load_node_pictograms():
 	# TODO: Load this from metamodel
 	var placeable_node_types: Array[String] = ["Stock", "FlowRate", "Auxiliary", "Cloud", "Delay", "Smooth"]

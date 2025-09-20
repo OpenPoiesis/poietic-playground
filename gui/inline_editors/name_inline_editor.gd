@@ -15,7 +15,11 @@ func open(object_id: int, attribute: String, value: Variant):
 		return
 
 	self.object_id = object_id
-	edit_field.text = String(value)
+	if value == null:
+		edit_field.text = ""
+	else:
+		var string_value = String(value)
+		edit_field.text = string_value
 	
 	var block = canvas_ctrl.canvas.represented_block(object_id)
 	block.begin_label_edit()

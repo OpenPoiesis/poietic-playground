@@ -24,12 +24,12 @@ const default_window_size = Vector2(1280, 720)
 @onready var canvas_ctrl: CanvasController
 
 @onready var inspector_panel: InspectorPanel = %InspectorPanel
-@onready var object_panel: ObjectPanel = %Gui/ObjectPanel
 
 @onready var result_panel: PanelContainer = %ResultPanel
 @onready var player: ResultPlayer = $SimulationPlayer
 @onready var control_bar: PanelContainer = %PlayerControlBar
 @onready var tool_bar: ToolBar = %Gui/ToolBar
+@onready var tool_object_palette = %Gui/ToolObjectPalette
 
 func _init():
 	InspectorPanel.instantiate_default_panels()
@@ -49,7 +49,6 @@ func _ready():
 	get_viewport().connect("size_changed", _on_window_resized)
 	
 	_initialize_main_menu()
-	prints("BOOO1: ", application.design_controller, player)
 
 	canvas_ctrl = CanvasController.new()
 	canvas_ctrl.initialize(application.design_controller, canvas)
@@ -62,7 +61,9 @@ func _ready():
 	Global.initialize(application, player)
 	application.tool_changed.connect(tool_bar._on_tool_changed)
 	application.change_tool(application.selection_tool)
-	prints("BOOO: ", application.design_controller, player)
+	application.tool_changed.connect(self._on_tool_changed)
+	$Gui/ToolObjectPalette.palette_item_changed.connect(self._on_tool_palette_item_changed)
+
 	control_bar.initialize(application.design_controller, player)
 	result_panel.initialize(application.design_controller, player, canvas)
 	inspector_panel.initialize(application.design_controller, player)
@@ -115,6 +116,27 @@ func _initialize_main_menu():
 	# Add working shortcuts here
 	# $MenuBar/FileMenu.set_item_accelerator(0, KEY_MASK_META + KEY_N)
 	pass
+
+func _on_tool_changed(tool: CanvasTool):
+	if tool is SelectionTool:
+		tool_object_palette.hide()
+		pass
+	elif tool is PlaceTool:
+		tool_object_palette.load_node_pictograms()
+		if tool.palette_item_identifier != null:
+			tool_object_palette.selected_item = tool.palette_item_identifier
+		tool_object_palette.show()
+	elif tool is ConnectTool:
+		tool_object_palette.load_connector_pictograms()
+		if tool.palette_item_identifier != null:
+			tool_object_palette.selected_item = tool.palette_item_identifier
+		tool_object_palette.show()
+	else:
+		tool_object_palette.hide()
+
+func _on_tool_palette_item_changed(item: String):
+	prints("--- Tool palette item changed: ", item)
+	application.current_tool.palette_item_identifier = item
 
 func _on_design_changed(has_issues: bool):
 	# FIXME: Fix selection so that object IDs match
