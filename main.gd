@@ -9,7 +9,12 @@ enum FileDialogMode {
 }
 
 const NEW_DESIGN_TEMPLATE_PATH = "res://resources/new_canvas_demo_design.json"
-const PICTOGRAMS_PATH = "res://resources/stock_flow_pictograms-jolly.json"
+
+const PICTOGRAM_PATHS: Dictionary[String, String] = {
+	"standard": "res://resources/stock_flow_pictograms.json",
+	"jolly": "res://resources/stock_flow_pictograms-jolly.json",
+}
+const DIAGRAM_STYLE: String = "jolly"
 
 @export var file_dialog_mode: FileDialogMode = FileDialogMode.OPEN_DESIGN
 @export var design_path: String = ""
@@ -52,6 +57,10 @@ func _ready():
 
 	canvas_ctrl = CanvasController.new()
 	canvas_ctrl.initialize(application.design_controller, canvas)
+
+	var picto_path = PICTOGRAM_PATHS[DIAGRAM_STYLE]
+	canvas_ctrl.load_pictograms(picto_path)
+	
 	application.canvas_controller = canvas_ctrl
 	initialize_inline_editors(canvas_ctrl)
 	%ContextMenu.initialize(canvas_ctrl)
@@ -436,7 +445,7 @@ func cut_selection():
 
 func select_all():
 	# FIXME: Not working
-	application.canvas_ctrl.select_all()
+	application.canvas_controller.select_all()
 
 # Diagram Menu
 # -------------------------------------------------------------------------
