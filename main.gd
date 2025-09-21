@@ -9,7 +9,7 @@ enum FileDialogMode {
 }
 
 const NEW_DESIGN_TEMPLATE_PATH = "res://resources/new_canvas_demo_design.json"
-
+const PICTOGRAMS_PATH = "res://resources/stock_flow_pictograms-jolly.json"
 
 @export var file_dialog_mode: FileDialogMode = FileDialogMode.OPEN_DESIGN
 @export var design_path: String = ""
@@ -399,6 +399,11 @@ func import_foreign_frame_from(path: String):
 func import_foreign_frame_from_data(data: PackedByteArray):
 	application.design_controller.import_from_data(data)
 
+func export_svg_image():
+	pass
+	#application.design_controller.export_svg_image(file_path, result, export_objects)
+
+
 # Edit Menu
 # -------------------------------------------------------------------------
 
@@ -430,6 +435,7 @@ func cut_selection():
 	delete_selection()
 
 func select_all():
+	# FIXME: Not working
 	application.canvas_ctrl.select_all()
 
 # Diagram Menu
@@ -588,6 +594,7 @@ func _on_file_menu_id_pressed(id):
 		2: save_design()
 		5: save_design_as()
 		4: import_foreign_frame()
+		6: export_svg_image()
 		_: printerr("Unknown File menu id: ", id)
 
 func _on_edit_menu_id_pressed(id):

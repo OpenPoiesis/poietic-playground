@@ -16,6 +16,10 @@
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
+file_dialog_mode = null
+design_path = null
+last_opened_design_path = null
+last_import_path = null
 
 [node name="MenuBar" type="MenuBar" parent="."]
 unique_name_in_owner = true
@@ -30,7 +34,7 @@ grow_horizontal = 2
 
 [node name="FileMenu" type="PopupMenu" parent="MenuBar"]
 title = "File"
-item_count = 6
+item_count = 7
 item_0/text = "New"
 item_0/id = 0
 item_1/text = "Open..."
@@ -43,6 +47,8 @@ item_4/id = 3
 item_4/separator = true
 item_5/text = "Import..."
 item_5/id = 4
+item_6/text = "Export as SVG Image"
+item_6/id = 6
 
 [node name="EditMenu" type="PopupMenu" parent="MenuBar"]
 title = "Edit"
