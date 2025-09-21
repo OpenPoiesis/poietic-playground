@@ -3,9 +3,6 @@ class_name FormulaInlineEditor extends CanvasInlineEditor
 @onready var formula_field: LineEdit = %FormulaField
 @export var grow_duration: float = 0.05
 
-
-var _original_center: Vector2
-var _target_width: float = 0.0
 var _is_active: bool = false
 
 func open(object_id: int, attribute: String, value: Variant):

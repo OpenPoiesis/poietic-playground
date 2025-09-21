@@ -60,9 +60,9 @@ func _ready():
 	
 	Global.initialize(application, player)
 	application.tool_changed.connect(tool_bar._on_tool_changed)
-	application.change_tool(application.selection_tool)
 	application.tool_changed.connect(self._on_tool_changed)
 	$Gui/ToolObjectPalette.palette_item_changed.connect(self._on_tool_palette_item_changed)
+	application.change_tool(application.selection_tool)
 
 	control_bar.initialize(application.design_controller, player)
 	result_panel.initialize(application.design_controller, player, canvas)
