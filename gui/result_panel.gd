@@ -3,17 +3,17 @@ class_name ResultPanel extends Node
 # TODO: Use group "live_charts" for chart nodes for updating
 
 @export var design_ctrl: DesignController
+@export var canvas_ctrl: CanvasController
 @export var player: ResultPlayer
-@export var canvas: DiagramCanvas
 
 @onready var chart_container: Container = %ChartContainer
 
 @export var result_panel: Node
 
-func initialize(design_ctrl: DesignController, player: ResultPlayer, canvas: DiagramCanvas):
+func initialize(design_ctrl: DesignController, player: ResultPlayer, canvas_ctrl: CanvasController):
 	self.design_ctrl = design_ctrl
+	self.canvas_ctrl = canvas_ctrl
 	self.player = player
-	self.canvas = canvas
 	
 	design_ctrl.design_changed.connect(_on_design_changed)
 	design_ctrl.simulation_finished.connect(_on_simulation_success)
@@ -90,7 +90,7 @@ func update_chart_item_data(item: ResultChartItem, result: PoieticResult):
 		item.chart_label.text = ", ".join(names)
 
 func _on_add_chart_button_pressed():
-	var ids = canvas.selection.get_ids()
+	var ids = design_ctrl.selection_manager.get_ids()
 	if not ids:
 		push_error("Result IDs are null")
 		return

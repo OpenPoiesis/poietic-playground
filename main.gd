@@ -6,6 +6,7 @@ enum FileDialogMode {
 	IMPORT_FRAME,
 	OPEN_DESIGN,
 	SAVE_DESIGN,
+	EXPORT_DIAGRAM_SVG,
 }
 
 const NEW_DESIGN_TEMPLATE_PATH = "res://resources/new_canvas_demo_design.json"
@@ -20,6 +21,7 @@ const DIAGRAM_STYLE: String = "jolly"
 @export var design_path: String = ""
 @export var last_opened_design_path: String = ""
 @export var last_import_path: String = ""
+@export var last_export_path: String = ""
 const DEFAULT_DESIGN_PATH = "user://design.poietic"
 const SETTINGS_FILE = "user://settings.cfg"
 const default_window_size = Vector2(1280, 720)
@@ -74,7 +76,7 @@ func _ready():
 	application.change_tool(application.selection_tool)
 
 	control_bar.initialize(application.design_controller, player)
-	result_panel.initialize(application.design_controller, player, canvas)
+	result_panel.initialize(application.design_controller, player, canvas_ctrl)
 	inspector_panel.initialize(application.design_controller, player)
 
 	var design_ctrl = application.design_controller
@@ -410,7 +412,16 @@ func import_foreign_frame_from_data(data: PackedByteArray):
 
 func export_svg_image():
 	pass
-	#application.design_controller.export_svg_image(file_path, result, export_objects)
+	$FileDialog.file_mode = FileDialog.FileMode.FILE_MODE_SAVE_FILE
+	$FileDialog.title = "Export SVG Image"
+	$FileDialog.ok_button_text = "Export"	
+	$FileDialog.filters = ["*.svg"]
+	self.file_dialog_mode = FileDialogMode.EXPORT_DIAGRAM_SVG
+
+	if last_export_path != "":
+		$FileDialog.current_path = last_export_path
+
+	$FileDialog.show()
 
 
 # Edit Menu
@@ -591,6 +602,10 @@ func _on_file_dialog_file_selected(path):
 			print("Save design: ", path)
 			application.design_controller.save_to_path(path)
 			self.design_path = path
+			
+		FileDialogMode.EXPORT_DIAGRAM_SVG:
+			print("Export SVG: ", path)
+			application.design_controller.export_svg_diagram(path, canvas_ctrl)
 		_:
 			push_warning("Unhandled file selection mode: ", file_dialog_mode)
 
