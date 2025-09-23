@@ -428,19 +428,19 @@ func export_svg_image():
 # -------------------------------------------------------------------------
 
 func undo():
-	if application.design_controller.can_undo():
-		application.design_controller.undo()
+	if application.can_undo():
+		application.undo()
 	else:
 		printerr("Trying to undo while having nothing to undo")
 
 func redo():
-	if application.design_controller.can_redo():
-		application.design_controller.redo()
+	if application.can_redo():
+		application.redo()
 	else:
 		printerr("Trying to redo while having nothing to redo")
 
 func delete_selection():
-	canvas.delete_selection()
+	application.canvas_controller.delete_selection()
 
 func paste():
 	var text = DisplayServer.clipboard_get()
@@ -465,7 +465,7 @@ func auto_connect_parameters():
 	application.design_controller.auto_connect_parameters(PackedInt64Array())
 
 func remove_midpoints():
-	canvas.remove_midpoints_in_selection()
+	application.design_controller.remove_midpoints_in_selection()
 
 func get_current_selection() -> PackedInt64Array:
 	return application.design_controller.selection_manager.get_ids()
