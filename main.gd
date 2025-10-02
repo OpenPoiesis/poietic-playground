@@ -453,7 +453,6 @@ func cut_selection():
 	delete_selection()
 
 func select_all():
-	# FIXME: Not working
 	application.canvas_controller.select_all()
 
 # Diagram Menu

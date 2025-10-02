@@ -17,24 +17,12 @@ func initialize(design_ctrl: DesignController, player: ResultPlayer, canvas_ctrl
 	
 	design_ctrl.design_changed.connect(_on_design_changed)
 	design_ctrl.simulation_finished.connect(_on_simulation_success)
-	design_ctrl.simulation_failed.connect(_on_simulation_failed)
-	design_ctrl.selection_manager.selection_changed.connect(_on_selection_changed)
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
 
 func _on_design_changed(has_issues: bool):
 	sync_charts()
 
 func _on_simulation_success(result):
 	update_data(result)
-	
-func _on_simulation_failed():
-	pass
-	
-func _on_selection_changed(selection):
-	pass
 
 func sync_charts():
 	# Important: We do not update data here, that can be updated if we have the result
@@ -97,7 +85,7 @@ func _on_add_chart_button_pressed():
 	add_chart(ids)
 
 func add_chart(series_ids: PackedInt64Array):
-	# TODO: Make sures that seris is a numeric object
+	# TODO: Make sure that series is a numeric object
 	# TODO: Add chart order
 	if series_ids.is_empty():
 		return

@@ -71,9 +71,6 @@ func update(selection: PackedInt64Array):
 
 	self.reset_size()
 
-func _on_name_button_pressed():
-	pass
-
 func _on_formula_button_pressed():
 	var single_id = canvas_ctrl.design_controller.selection_manager.selection_of_one()
 	if single_id == null:

@@ -41,8 +41,7 @@ func update_player_state():
 
 func _on_simulation_success(result: PoieticResult):
 	end_time_field.text = str(result.end_time)
-	pass
-	
+
 func _on_simulation_failure():
 	pass
 

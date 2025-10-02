@@ -155,7 +155,7 @@ func _data_changed():
 	pass
 
 func update_from_result(result: PoieticResult) -> void:
-	if not result: # FIXME NOW!!!!!!!
+	if not result: # TODO: Investigate when update is requested without result
 		return
 	clear_series()
 	for id in series_ids:
