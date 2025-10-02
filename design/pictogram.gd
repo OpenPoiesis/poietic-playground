@@ -1,3 +1,8 @@
+# DEPRECATED: This class is no longer used. Pictograms are now rendered by Swift.
+# See: CanvasController.get_pictogram_texture()
+#
+# This file is kept temporarily for backward compatibility but will be removed.
+
 class_name Pictogram extends Object
 
 const placeable_nodes = ["Stock", "FlowRate", "Auxiliary", "Cloud", "GraphicalFunction", "Smooth", "Delay"]

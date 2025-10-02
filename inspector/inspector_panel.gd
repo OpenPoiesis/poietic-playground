@@ -118,7 +118,7 @@ func inspect_design():
 		traits_container.remove_child(child)
 
 	
-	# TODO: Use Global.design.get_design_object()
+	# TODO: Use Global.app.design_controller.get_object()
 	# Design Info Attributes:
 	#	- title
 	#   - abstract

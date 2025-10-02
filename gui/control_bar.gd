@@ -98,11 +98,11 @@ func _on_end_time_field_text_submitted(new_text):
 	if params and params.get_attribute("end_time") == end_time:
 		return
 
-	var trans: PoieticTransaction = Global.design.new_transaction()
+	var trans: PoieticTransaction = Global.app.design_controller.new_transaction()
 
 	if params:
 		trans.set_attribute(params.object_id, "end_time", end_time)
 	else:
 		trans.create_object("Simulation", {"end_time": end_time})
 
-	Global.design.accept(trans)
+	Global.app.design_controller.accept(trans)

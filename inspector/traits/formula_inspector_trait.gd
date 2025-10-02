@@ -6,7 +6,7 @@ var _is_updating: bool = false
 @onready var formula_field: TextEdit = $VBoxContainer/FormulaField
 
 func on_selection_changed():
-	var distinct_values = Global.design.get_distinct_values(selection, "formula")
+	var distinct_values = Global.app.design_controller.get_distinct_values(selection, "formula")
 
 	if len(distinct_values) == 0:
 		formula_field.text = ""
@@ -21,12 +21,12 @@ func _on_formula_field_text_set():
 	
 func update_formula():
 	var text = formula_field.text
-	var trans = Global.design.new_transaction()
+	var trans = Global.app.design_controller.new_transaction()
 	
 	for id in selection.get_ids():
 		trans.set_attribute(id, "formula", text)
 
-	Global.design.accept(trans)
+	Global.app.design_controller.accept(trans)
 
 func _on_formula_field_gui_input(event):
 	if event is InputEventKey:

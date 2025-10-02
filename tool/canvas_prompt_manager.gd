@@ -22,7 +22,7 @@ func open_formula_editor(object_id: int, text: String, center: Vector2):
 	formula_prompt.open(object_id, "formula", text, center)
 
 func open_formula_editor_for(object_id: int):
-	var object: PoieticObject = Global.design.get_object(object_id)
+	var object: PoieticObject = Global.app.design_controller.get_object(object_id)
 	if object == null:
 		return
 	var position = canvas.prompt_position(object_id)
@@ -38,7 +38,7 @@ func open_attribute_editor(object_id: int, text: String, center: Vector2, attrib
 
 func open_attribute_editor_for(object_id: int, attribute: String):
 	var position = canvas.default_prompt_position(object_id)
-	var object: PoieticObject = Global.design.get_object(object_id)
+	var object: PoieticObject = Global.app.design_controller.get_object(object_id)
 	var value = object.get_attribute(attribute)
 	var string_value: String
 	if value:
@@ -60,8 +60,8 @@ func open_issues_for(object_id: int):
 	current_prompt = issue_prompt
 
 	var position = canvas.default_prompt_position(object_id)
-	var object: PoieticObject = Global.design.get_object(object_id)
-	var issues = Global.design.issues_for_object(object_id)
+	var object: PoieticObject = Global.app.design_controller.get_object(object_id)
+	var issues = Global.app.design_controller.issues_for_object(object_id)
 	
 	issue_prompt.open(object_id, issues, position)
 

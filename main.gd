@@ -177,7 +177,6 @@ func _on_canvas_view_changed(offset: Vector2, zoom_level: float):
 	update_status_text()
 
 func set_result(result):
-	Global.result = result
 	player.result = result
 	canvas_ctrl.sync_indicators(result)
 	_update_simulation_menu()
@@ -185,7 +184,6 @@ func set_result(result):
 
 func clear_result():
 	Global.player.stop()
-	Global.result = null
 	Global.player.result = null
 	# FIXME: Re-add this:
 	# canvas.clear_indicators()
@@ -528,9 +526,9 @@ func toggle_run():
 		Global.player.run()
 
 func export_result_csv():
-	if Global.result == null:
+	if Global.player.result == null:
 		return
-	%CsvExportDialog.configure(Global.result, canvas.selection)
+	%CsvExportDialog.configure(Global.player.result, canvas.selection)
 	%CsvExportDialog.show()
 
 func debug_dump():
@@ -665,5 +663,5 @@ func _on_csv_export_requested(file_path: String, option: CSVExportDialog.ExportO
 	application.design_controller.write_to_csv(file_path, result, export_objects)
 
 func _update_simulation_menu():
-	var has_result = Global.result != null
+	var has_result = Global.player.result != null
 	%MenuBar/SimulationMenu.set_item_disabled(6, not has_result)
