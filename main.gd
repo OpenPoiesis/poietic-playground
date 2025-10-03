@@ -67,7 +67,7 @@ func _ready():
 	initialize_inline_editors(canvas_ctrl)
 	%ContextMenu.initialize(canvas_ctrl)
 	canvas_ctrl.context_menu = %ContextMenu
-
+	canvas_ctrl.issues_popup = $Gui/InlineEditors/IssuesPopup
 	
 	Global.initialize(application, player)
 	application.tool_changed.connect(tool_bar._on_tool_changed)
@@ -110,8 +110,7 @@ func initialize_inline_editors(canvas_ctrl: CanvasController):
 	canvas_ctrl.register_inline_editor("numeric_attribute", numeric_attr_editor)
 
 	var issues_popup = $Gui/InlineEditors/IssuesPopup
-	# issues_popup.initialize(canvas_ctrl)
-	canvas_ctrl.register_inline_editor("issues", issues_popup)
+	issues_popup.initialize(canvas_ctrl)
 
 func initialize_menu_bar():
 	# TODO: Not sure what is going on here. On Ubuntu the menu is not displayed.

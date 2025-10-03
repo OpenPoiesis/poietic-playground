@@ -16,10 +16,6 @@
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
-file_dialog_mode = null
-design_path = null
-last_opened_design_path = null
-last_import_path = null
 
 [node name="MenuBar" type="MenuBar" parent="."]
 unique_name_in_owner = true
