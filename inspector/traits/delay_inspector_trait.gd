@@ -22,8 +22,6 @@ func on_selection_changed():
 		duration_input.value = 0	
 
 func update_delay_duration(value: int):
-	print("Update delay: ", value, " (NOT REALLY)")
-	return
 	var trans = Global.app.design_controller.new_transaction()
 	
 	for id in selection:

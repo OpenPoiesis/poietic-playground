@@ -58,9 +58,6 @@ func calculate_editor_width() -> float:
 func _ready():
 	hide()
 	set_process(false)
-	edit_field.focus_exited.connect(_on_focus_exited)
-	edit_field.text_changed.connect(_on_text_changed)
-	edit_field.text_submitted.connect(_on_text_submitted)
 
 func _process(delta):
 	var target_position = Vector2(_original_center.x - _target_width/2, global_position.y)

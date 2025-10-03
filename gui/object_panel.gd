@@ -1,3 +1,4 @@
+# TODO: Rename to ObjectPalette
 class_name ObjectPanel extends PanelContainer
 
 signal palette_item_changed(identifier: String)
@@ -5,13 +6,14 @@ signal palette_item_changed(identifier: String)
 @onready var palette: Palette = %Palette
 
 var selected_item: String = "":
+	get:
+		return palette.selected_item.item_data
 	set(value):
 		palette.select_by_data(value)
 		selected_item = value
 		palette_item_changed.emit(selected_item)
 
 func _ready():
-	# Create and configure palette
 	palette.item_selected.connect(_on_palette_item_selected)
 
 func clear():
@@ -36,6 +38,7 @@ func load_connector_pictograms():
 	palette.add_texture_item("Parameter", param_texture, "Parameter")
 
 func _on_palette_item_selected(item: Variant):
-	# var type_name = item.get_meta(&"object_type_name")
-	# selected_item = type_name
-	print("--- Palette item pressed: ", item)
+	if item as String:
+		palette_item_changed.emit(item)
+	else:
+		printerr("Invalid object palette item: ", item)
