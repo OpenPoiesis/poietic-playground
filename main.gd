@@ -73,7 +73,7 @@ func _ready():
 	application.tool_changed.connect(tool_bar._on_tool_changed)
 	application.tool_changed.connect(self._on_tool_changed)
 	$Gui/ToolObjectPalette.palette_item_changed.connect(self._on_tool_palette_item_changed)
-	application.change_tool(application.selection_tool)
+	application.switch_tool(application.selection_tool)
 
 	control_bar.initialize(application.design_controller, player)
 	result_panel.initialize(application.design_controller, player, canvas_ctrl)
@@ -194,16 +194,16 @@ func _on_simulation_player_step():
 func _unhandled_input(event):
 	# TODO: Document inputs
 	if event.is_action_pressed("selection-tool"):
-		Global.app.change_tool(Global.app.selection_tool)
+		Global.app.switch_tool(Global.app.selection_tool)
 	elif event.is_action_pressed("place-tool"):
-		Global.app.change_tool(Global.app.place_tool)
+		Global.app.switch_tool(Global.app.place_tool)
 	elif event.is_action_pressed("connect-tool"):
-		Global.app.change_tool(Global.app.connect_tool)
+		Global.app.switch_tool(Global.app.connect_tool)
 	elif event.is_action_pressed("pan-tool"):
 		if Global.app.current_tool is PanTool:
-			Global.app.change_tool(Global.app.previous_tool)
+			Global.app.switch_tool(Global.app.previous_tool)
 		else:
-			Global.app.change_tool(Global.app.pan_tool)
+			Global.app.switch_tool(Global.app.pan_tool)
 
 	# File
 	elif event.is_action_pressed("new-design"):
