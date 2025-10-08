@@ -24,8 +24,8 @@ func open(object_id: int, attribute: String, value: Variant):
 	var block = canvas_ctrl.canvas.represented_block(object_id)
 	block.begin_label_edit()
 	
-	_original_center = position
 	_target_width = calculate_editor_width()
+	_original_center = position + Vector2(+_target_width / 2, 0)
 	edit_field.size.x = _target_width
 	#global_position = Vector2(position.x - _target_width / 2, position.y)
 	

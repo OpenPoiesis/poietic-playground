@@ -6,15 +6,9 @@ class_name FormulaInlineEditor extends CanvasInlineEditor
 var _is_active: bool = false
 
 func open(object_id: int, attribute: String, value: Variant):
-	prints("--- open formula: ", object_id, attribute, value)
 	self.object_id = object_id
 	self.original_value = String(value)
 	%FormulaField.text = self.original_value
-	
-	#_original_center = position
-	#_target_width = self.size.x # calculate_editor_width()
-	#self.size.x = _target_width
-	#global_position = Vector2(position.x - _target_width / 2, position.y)
 	
 	%FormulaField.grab_focus()
 	%FormulaField.select_all()

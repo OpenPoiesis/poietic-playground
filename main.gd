@@ -259,7 +259,11 @@ func _unhandled_input(event):
 		debug_dump()
 
 	elif event.is_action_pressed("cancel"):
-		canvas_ctrl.close_inline_popup()
+		if canvas_ctrl.inline_popup != null:
+			canvas_ctrl.close_inline_popup()
+		elif !canvas_ctrl.design_controller.selection_manager.is_empty():
+			canvas_ctrl.design_controller.selection_manager.clear()
+			
 
 func update_status_text():
 	var stats = application.design_controller.debug_stats

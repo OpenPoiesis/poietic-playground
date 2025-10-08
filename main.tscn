@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://fhtvpa30rrel"]
+[gd_scene load_steps=17 format=3 uid="uid://fhtvpa30rrel"]
 
 [ext_resource type="Script" uid="uid://dr8beg2t8bd1u" path="res://main.gd" id="1_2q6io"]
 [ext_resource type="PackedScene" uid="uid://tems4qsdoox" path="res://gui/main_bar.tscn" id="2_kek77"]
@@ -13,6 +13,9 @@
 [ext_resource type="PackedScene" uid="uid://bnmc02p3i33q2" path="res://gui/inline_editors/formula_inline_editor.tscn" id="10_ycdy4"]
 [ext_resource type="PackedScene" uid="uid://1vmwbqdssvhd" path="res://gui/inline_editors/numeric_attribute_inline_editor.tscn" id="11_w48qg"]
 [ext_resource type="PackedScene" uid="uid://vqxepyllje5n" path="res://gui/inline_editors/issues_popup.tscn" id="12_ycdy4"]
+[ext_resource type="LabelSettings" uid="uid://bj8hu8ys4ktpo" path="res://resources/canvas/primary_label_settings.tres" id="13_2cqfq"]
+[ext_resource type="LabelSettings" uid="uid://jdwy6s22uvti" path="res://resources/canvas/secondary_label_settings.tres" id="14_yaehf"]
+[ext_resource type="LabelSettings" uid="uid://dd2mdehmnioi5" path="res://resources/canvas/invalid_label_settings.tres" id="15_074og"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
@@ -187,6 +190,9 @@ visible = false
 visible = false
 
 [node name="Canvas" type="DiagramCanvas" parent="."]
+primary_label_settings = ExtResource("13_2cqfq")
+secondary_label_settings = ExtResource("14_yaehf")
+invalid_label_settings = ExtResource("15_074og")
 
 [node name="FileDialog" type="FileDialog" parent="."]
 access = 2
