@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://fhtvpa30rrel"]
+[gd_scene load_steps=23 format=3 uid="uid://fhtvpa30rrel"]
 
 [ext_resource type="Script" uid="uid://dr8beg2t8bd1u" path="res://main.gd" id="1_2q6io"]
 [ext_resource type="PackedScene" uid="uid://tems4qsdoox" path="res://gui/main_bar.tscn" id="2_kek77"]
@@ -16,6 +16,29 @@
 [ext_resource type="LabelSettings" uid="uid://bj8hu8ys4ktpo" path="res://resources/canvas/primary_label_settings.tres" id="13_2cqfq"]
 [ext_resource type="LabelSettings" uid="uid://jdwy6s22uvti" path="res://resources/canvas/secondary_label_settings.tres" id="14_yaehf"]
 [ext_resource type="LabelSettings" uid="uid://dd2mdehmnioi5" path="res://resources/canvas/invalid_label_settings.tres" id="15_074og"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2cqfq"]
+bg_color = Color(0.23921569, 0.23921569, 0.23921569, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.91011494, 0.9101149, 0.9101148, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yaehf"]
+bg_color = Color(0.9541064, 0.7441906, 0.2898885, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_getpj"]
+bg_color = Color(0.18334416, 0.6406696, 0.89536387, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_074og"]
+bg_color = Color(0.96731657, 0.22819448, 0.2745823, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cegan"]
+bg_color = Color(0.6440999, 0.37110642, 0.7111772, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_82xsv"]
+bg_color = Color(0.40260392, 0.4026039, 0.40260375, 1)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
@@ -189,10 +212,19 @@ visible = false
 [node name="IssuesPopup" parent="Gui/InlineEditors" instance=ExtResource("12_ycdy4")]
 visible = false
 
-[node name="Canvas" type="DiagramCanvas" parent="."]
+[node name="Canvas" type="DiagramCanvas" parent="." node_paths=PackedStringArray("value_indicator_prototype")]
+value_indicator_prototype = NodePath("ValueIndicator")
 primary_label_settings = ExtResource("13_2cqfq")
 secondary_label_settings = ExtResource("14_yaehf")
 invalid_label_settings = ExtResource("15_074og")
+
+[node name="ValueIndicator" type="ValueIndicator" parent="Canvas"]
+background_style = SubResource("StyleBoxFlat_2cqfq")
+normal_style = SubResource("StyleBoxFlat_yaehf")
+negative_style = SubResource("StyleBoxFlat_getpj")
+overflow_style = SubResource("StyleBoxFlat_074og")
+underflow_style = SubResource("StyleBoxFlat_cegan")
+empty_style = SubResource("StyleBoxFlat_82xsv")
 
 [node name="FileDialog" type="FileDialog" parent="."]
 access = 2
