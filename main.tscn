@@ -214,4 +214,5 @@ unique_name_in_owner = true
 [connection signal="dir_selected" from="FileDialog" to="." method="_on_file_dialog_dir_selected"]
 [connection signal="file_selected" from="FileDialog" to="." method="_on_file_dialog_file_selected"]
 [connection signal="files_selected" from="FileDialog" to="." method="_on_file_dialog_files_selected"]
+[connection signal="simulation_player_step" from="SimulationPlayer" to="." method="_on_simulation_player_step"]
 [connection signal="export_requested" from="CsvExportDialog" to="." method="_on_csv_export_requested"]

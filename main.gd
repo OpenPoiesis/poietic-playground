@@ -189,7 +189,7 @@ func clear_result():
 	_update_simulation_menu()
 	
 func _on_simulation_player_step():
-	canvas.update_indicator_values(player)
+	canvas_ctrl.update_indicator_values(player)
 	
 func _unhandled_input(event):
 	# TODO: Document inputs
