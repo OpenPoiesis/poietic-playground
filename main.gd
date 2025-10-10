@@ -153,6 +153,7 @@ func _on_design_changed(has_issues: bool):
 	update_status_text()
 	if has_issues:
 		clear_result()
+	canvas_ctrl.close_inline_popup()
 
 func _on_design_reset():
 	canvas_ctrl.clear_canvas()
