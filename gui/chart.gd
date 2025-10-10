@@ -3,6 +3,7 @@ class_name Chart extends Control
 var plot_offset: Vector2 = Vector2()
 var _plot_rect: Rect2 = Rect2()
 
+var object_id: int
 ## IDs of objects representing time series.
 ##
 ## `series_ids` is used when data needs to be refreshed automatically.

@@ -30,15 +30,19 @@ func sync_charts():
 		child.queue_free()
 		
 	var ids = design_ctrl.objects_of_type("Chart")
-	ids = design_ctrl.vaguely_ordered(ids, "order")
-	for id in ids:
-		var chart_object = design_ctrl.get_object(id)
+	var ordered_ids = design_ctrl.vaguely_ordered(ids, "order")
+	for chart_id in ordered_ids:
 		var chart_item: ResultChartItem = load("res://gui/result_chart_item.tscn").instantiate()
 		chart_container.add_child(chart_item)
+
+		var chart_object = design_ctrl.get_object(chart_id)
 		var chart: Chart = chart_item.chart
+
+		chart.object_id = chart_id
 		chart.custom_minimum_size.x = 200
 		chart.custom_minimum_size.y = 120
 		chart.add_to_group(&"live_charts")
+
 		sync_chart_from(chart_item, chart_object)
 
 func sync_chart_from(chart_item: ResultChartItem, object: PoieticObject):
@@ -54,7 +58,7 @@ func sync_chart_from(chart_item: ResultChartItem, object: PoieticObject):
 			continue
 		series_ids.append(edge.target)
 	chart_item.chart.series_ids = series_ids
-		
+	
 func update_data(result: PoieticResult):
 	for item in chart_container.get_children():
 		if not item is ResultChartItem:
@@ -80,7 +84,6 @@ func update_chart_item_data(item: ResultChartItem, result: PoieticResult):
 func _on_add_chart_button_pressed():
 	var ids = design_ctrl.selection_manager.get_ids()
 	if not ids:
-		push_error("Result IDs are null")
 		return
 	add_chart(ids)
 
@@ -92,7 +95,7 @@ func add_chart(series_ids: PackedInt64Array):
 		
 	var trans: PoieticTransaction = design_ctrl.new_transaction()
 	var chart_obj_id = trans.create_node("Chart", null, {})
-	
+	prints("--- Creating chart: ", chart_obj_id)
 	for series_id in series_ids:
 		var series_obj = trans.create_edge("ChartSeries", chart_obj_id, series_id)
 		
