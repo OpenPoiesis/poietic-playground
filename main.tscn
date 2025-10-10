@@ -225,6 +225,7 @@ negative_style = SubResource("StyleBoxFlat_getpj")
 overflow_style = SubResource("StyleBoxFlat_074og")
 underflow_style = SubResource("StyleBoxFlat_cegan")
 empty_style = SubResource("StyleBoxFlat_82xsv")
+visible = false
 
 [node name="FileDialog" type="FileDialog" parent="."]
 access = 2

@@ -1,10 +1,15 @@
 class_name ControlBar extends PanelContainer
 
-@onready var reset_button: Button = %ResetButton
-@onready var stop_button: Button = %StopButton
-@onready var run_button: Button = %RunButton
-@onready var loop_button: Button = %LoopButton
-@onready var time_field: Label = %TimeField
+@onready var reset_button: Button = %ControlButtons/ResetButton
+@onready var stop_button: Button = %ControlButtons/StopButton
+@onready var run_button: Button = %ControlButtons/RunButton
+@onready var loop_button: Button = %ControlButtons/LoopButton
+
+@onready var previous_step_button: Button = %ControlButtons/PreviousStepButton
+@onready var next_step_button: Button = %ControlButtons/NextStepButton
+@onready var last_step_button: Button = %ControlButtons/LastStepButton
+
+@onready var time_field: LineEdit = %TimeField
 @onready var end_time_field: LineEdit = %EndTimeField
 
 @export var design_ctrl: DesignController
@@ -19,7 +24,6 @@ func initialize(design_ctrl: DesignController, player: ResultPlayer):
 
 	player.simulation_player_started.connect(update_player_state)
 	player.simulation_player_stopped.connect(update_player_state)
-	player.simulation_player_restarted.connect(update_player_state)
 	player.simulation_player_step.connect(update_player_state)
 
 	update_player_state()
@@ -54,9 +58,21 @@ func _on_simulator_step():
 func _on_simulator_stopped():
 	update_player_state()
 
-func _on_reset_button_pressed():
-	player.stop()
-	player.restart()
+func _on_first_step_button_pressed():
+	player.to_first_step()
+	update_player_state()
+
+func _on_previous_step_button_pressed():
+	player.previous_step()
+	update_player_state()
+
+
+func _on_next_step_button_pressed():
+	player.next_step()
+	update_player_state()
+
+func _on_last_step_button_pressed():
+	player.to_last_step()
 	update_player_state()
 
 func _on_run_button_pressed():
@@ -68,7 +84,6 @@ func _on_stop_button_pressed():
 	if !player.is_running:
 		return
 	player.stop()
-
 
 func _on_loop_button_pressed():
 	player.is_looping = loop_button.button_pressed
@@ -88,6 +103,7 @@ func update_simulation_times():
 			%EndTimeField.text = str(end_time)
 
 func _on_end_time_field_text_submitted(new_text):
+	# FIXME: Move this to controller or send an app action
 	if not new_text.is_valid_float():
 		update_simulation_times()
 		return
@@ -105,3 +121,11 @@ func _on_end_time_field_text_submitted(new_text):
 		trans.create_object("Simulation", {"end_time": end_time})
 
 	Global.app.design_controller.accept(trans)
+
+
+func _on_time_field_text_submitted(new_text: String):
+	if not new_text.is_valid_float():
+		update_simulation_times()
+		return
+	var current_time = float(new_text)
+	player.to_time(current_time)
