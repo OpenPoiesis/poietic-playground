@@ -5,6 +5,7 @@
 [sub_resource type="ButtonGroup" id="ButtonGroup_y6w2c"]
 
 [node name="CsvExportDialog" type="ConfirmationDialog"]
+oversampling_override = 1.0
 title = "Export Result to CSV"
 initial_position = 1
 size = Vector2i(320, 240)

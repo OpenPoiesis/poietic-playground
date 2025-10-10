@@ -1,15 +1,44 @@
-[gd_scene load_steps=11 format=3 uid="uid://fhtvpa30rrel"]
+[gd_scene load_steps=23 format=3 uid="uid://fhtvpa30rrel"]
 
 [ext_resource type="Script" uid="uid://dr8beg2t8bd1u" path="res://main.gd" id="1_2q6io"]
 [ext_resource type="PackedScene" uid="uid://tems4qsdoox" path="res://gui/main_bar.tscn" id="2_kek77"]
-[ext_resource type="Script" uid="uid://dsl1jswuemr1e" path="res://diagram/diagram_canvas.gd" id="2_lulh0"]
 [ext_resource type="PackedScene" uid="uid://l7uejktm712d" path="res://gui/tool_bar.tscn" id="3_qq1bh"]
 [ext_resource type="PackedScene" uid="uid://dgupp2doqjm1a" path="res://inspector/inspector_panel.tscn" id="4_uq7uj"]
 [ext_resource type="PackedScene" uid="uid://bbsf0e6jye3uf" path="res://gui/object_panel.tscn" id="5_4c57u"]
 [ext_resource type="PackedScene" uid="uid://b0cmycvjsiv00" path="res://gui/result_panel.tscn" id="5_272bh"]
-[ext_resource type="PackedScene" uid="uid://d0a2hpaex46gj" path="res://tool/canvas_prompt_manager.tscn" id="6_272bh"]
 [ext_resource type="PackedScene" uid="uid://c3kn0jiqoe5fm" path="res://gui/control_bar.tscn" id="7_kek77"]
 [ext_resource type="PackedScene" uid="uid://qnhs6whvruh2" path="res://gui/csv_export_dialog.tscn" id="8_csv_dialog"]
+[ext_resource type="PackedScene" uid="uid://d2n4g00qw1ua" path="res://gui/context_menu.tscn" id="8_kek77"]
+[ext_resource type="PackedScene" uid="uid://dtfxusuxjmcsy" path="res://gui/inline_editors/name_inline_editor.tscn" id="9_dg77c"]
+[ext_resource type="PackedScene" uid="uid://bnmc02p3i33q2" path="res://gui/inline_editors/formula_inline_editor.tscn" id="10_ycdy4"]
+[ext_resource type="PackedScene" uid="uid://1vmwbqdssvhd" path="res://gui/inline_editors/numeric_attribute_inline_editor.tscn" id="11_w48qg"]
+[ext_resource type="PackedScene" uid="uid://vqxepyllje5n" path="res://gui/inline_editors/issues_popup.tscn" id="12_ycdy4"]
+[ext_resource type="LabelSettings" uid="uid://bj8hu8ys4ktpo" path="res://resources/canvas/primary_label_settings.tres" id="13_2cqfq"]
+[ext_resource type="LabelSettings" uid="uid://jdwy6s22uvti" path="res://resources/canvas/secondary_label_settings.tres" id="14_yaehf"]
+[ext_resource type="LabelSettings" uid="uid://dd2mdehmnioi5" path="res://resources/canvas/invalid_label_settings.tres" id="15_074og"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2cqfq"]
+bg_color = Color(0.23921569, 0.23921569, 0.23921569, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.91011494, 0.9101149, 0.9101148, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yaehf"]
+bg_color = Color(0.9541064, 0.7441906, 0.2898885, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_getpj"]
+bg_color = Color(0.18334416, 0.6406696, 0.89536387, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_074og"]
+bg_color = Color(0.96731657, 0.22819448, 0.2745823, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cegan"]
+bg_color = Color(0.6440999, 0.37110642, 0.7111772, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_82xsv"]
+bg_color = Color(0.40260392, 0.4026039, 0.40260375, 1)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_2q6io")
@@ -27,7 +56,7 @@ grow_horizontal = 2
 
 [node name="FileMenu" type="PopupMenu" parent="MenuBar"]
 title = "File"
-item_count = 6
+item_count = 7
 item_0/text = "New"
 item_0/id = 0
 item_1/text = "Open..."
@@ -40,6 +69,8 @@ item_4/id = 3
 item_4/separator = true
 item_5/text = "Import..."
 item_5/id = 4
+item_6/text = "Export as SVG Image"
+item_6/id = 6
 
 [node name="EditMenu" type="PopupMenu" parent="MenuBar"]
 title = "Edit"
@@ -121,6 +152,14 @@ offset_top = 161.0
 offset_bottom = 269.0
 grow_vertical = 1
 
+[node name="ToolObjectPalette" parent="Gui" instance=ExtResource("5_4c57u")]
+anchors_preset = 0
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_top = 335.0
+offset_bottom = 455.0
+grow_vertical = 1
+
 [node name="StatusText" type="Label" parent="Gui"]
 anchors_preset = 3
 anchor_left = 1.0
@@ -142,16 +181,6 @@ offset_left = -240.0
 offset_top = -172.0
 offset_bottom = 132.0
 
-[node name="ObjectPanel" parent="Gui" instance=ExtResource("5_4c57u")]
-anchors_preset = 0
-anchor_top = 0.0
-anchor_bottom = 0.0
-offset_top = 335.0
-offset_bottom = 455.0
-grow_vertical = 1
-
-[node name="CanvasPromptManager" parent="Gui" instance=ExtResource("6_272bh")]
-
 [node name="BottomPanel" type="PanelContainer" parent="Gui"]
 anchors_preset = 12
 anchor_top = 1.0
@@ -165,16 +194,50 @@ grow_vertical = 0
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Canvas" type="Node2D" parent="."]
-script = ExtResource("2_lulh0")
+[node name="ContextMenu" parent="Gui" instance=ExtResource("8_kek77")]
+unique_name_in_owner = true
+visible = false
+
+[node name="InlineEditors" type="Node" parent="Gui"]
+
+[node name="NameInlineEditor" parent="Gui/InlineEditors" instance=ExtResource("9_dg77c")]
+visible = false
+
+[node name="FormulaInlineEditor" parent="Gui/InlineEditors" instance=ExtResource("10_ycdy4")]
+visible = false
+
+[node name="NumericAttributeInlineEditor" parent="Gui/InlineEditors" instance=ExtResource("11_w48qg")]
+visible = false
+
+[node name="IssuesPopup" parent="Gui/InlineEditors" instance=ExtResource("12_ycdy4")]
+visible = false
+
+[node name="Canvas" type="DiagramCanvas" parent="." node_paths=PackedStringArray("value_indicator_prototype")]
+value_indicator_prototype = NodePath("ValueIndicator")
+primary_label_settings = ExtResource("13_2cqfq")
+secondary_label_settings = ExtResource("14_yaehf")
+invalid_label_settings = ExtResource("15_074og")
+
+[node name="ValueIndicator" type="ValueIndicator" parent="Canvas"]
+background_style = SubResource("StyleBoxFlat_2cqfq")
+normal_style = SubResource("StyleBoxFlat_yaehf")
+negative_style = SubResource("StyleBoxFlat_getpj")
+overflow_style = SubResource("StyleBoxFlat_074og")
+underflow_style = SubResource("StyleBoxFlat_cegan")
+empty_style = SubResource("StyleBoxFlat_82xsv")
+visible = false
 
 [node name="FileDialog" type="FileDialog" parent="."]
+access = 2
+use_native_dialog = true
 
-[node name="SimulationPlayer" type="PoieticPlayer" parent="."]
+[node name="SimulationPlayer" type="ResultPlayer" parent="."]
 step_duration = 0.01
 
 [node name="CsvExportDialog" parent="." instance=ExtResource("8_csv_dialog")]
 unique_name_in_owner = true
+
+[node name="PoieticApplication" type="PoieticApplication" parent="."]
 
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/EditMenu" to="." method="_on_edit_menu_id_pressed"]

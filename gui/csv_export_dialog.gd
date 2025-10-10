@@ -5,7 +5,7 @@ const DEFAULT_EXPORT_FILENAME: String = "export.csv"
 signal export_requested(file_path: String, option: ExportOption, result: PoieticResult, objects: PackedInt64Array)
 
 var result: PoieticResult
-var selection: PoieticSelection
+var selection: SelectionManager
 
 @onready var export_all_button: CheckBox = %ExportAllButton
 @onready var export_all_internal_button: CheckBox = %ExportAllWithInternalButton
@@ -21,7 +21,7 @@ enum ExportOption {
 func _ready():
 	_setup_file_dialog()
 
-func configure(result: PoieticResult, selection: PoieticSelection):
+func configure(result: PoieticResult, selection: SelectionManager):
 	self.result = result
 	self.selection = selection
 	export_selected_button.disabled = selection.is_empty()

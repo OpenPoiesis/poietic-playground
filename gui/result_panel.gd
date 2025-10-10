@@ -2,55 +2,47 @@ class_name ResultPanel extends Node
 
 # TODO: Use group "live_charts" for chart nodes for updating
 
-@export var design_ctrl: PoieticDesignController
-@export var player: PoieticPlayer
-@export var canvas: DiagramCanvas
+@export var design_ctrl: DesignController
+@export var canvas_ctrl: CanvasController
+@export var player: ResultPlayer
 
 @onready var chart_container: Container = %ChartContainer
 
 @export var result_panel: Node
 
-func initialize(design_ctrl: PoieticDesignController, player: PoieticPlayer, canvas: DiagramCanvas):
+func initialize(design_ctrl: DesignController, player: ResultPlayer, canvas_ctrl: CanvasController):
 	self.design_ctrl = design_ctrl
+	self.canvas_ctrl = canvas_ctrl
 	self.player = player
-	self.canvas = canvas
 	
 	design_ctrl.design_changed.connect(_on_design_changed)
 	design_ctrl.simulation_finished.connect(_on_simulation_success)
-	design_ctrl.simulation_failed.connect(_on_simulation_failed)
-	canvas.selection.selection_changed.connect(_on_selection_changed)
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
 
 func _on_design_changed(has_issues: bool):
 	sync_charts()
 
 func _on_simulation_success(result):
 	update_data(result)
-	
-func _on_simulation_failed():
-	pass
-	
-func _on_selection_changed(selection):
-	pass
 
 func sync_charts():
 	# Important: We do not update data here, that can be updated if we have the result
 	for child in chart_container.get_children():
 		child.queue_free()
 		
-	var ids = design_ctrl.get_object_ids("Chart")
-	ids = design_ctrl.vaguely_ordered(ids, "order")
-	for id in ids:
-		var chart_object = design_ctrl.get_object(id)
+	var ids = design_ctrl.objects_of_type("Chart")
+	var ordered_ids = design_ctrl.vaguely_ordered(ids, "order")
+	for chart_id in ordered_ids:
 		var chart_item: ResultChartItem = load("res://gui/result_chart_item.tscn").instantiate()
 		chart_container.add_child(chart_item)
+
+		var chart_object = design_ctrl.get_object(chart_id)
 		var chart: Chart = chart_item.chart
+
+		chart.object_id = chart_id
 		chart.custom_minimum_size.x = 200
 		chart.custom_minimum_size.y = 120
 		chart.add_to_group(&"live_charts")
+
 		sync_chart_from(chart_item, chart_object)
 
 func sync_chart_from(chart_item: ResultChartItem, object: PoieticObject):
@@ -66,7 +58,7 @@ func sync_chart_from(chart_item: ResultChartItem, object: PoieticObject):
 			continue
 		series_ids.append(edge.target)
 	chart_item.chart.series_ids = series_ids
-		
+	
 func update_data(result: PoieticResult):
 	for item in chart_container.get_children():
 		if not item is ResultChartItem:
@@ -90,21 +82,20 @@ func update_chart_item_data(item: ResultChartItem, result: PoieticResult):
 		item.chart_label.text = ", ".join(names)
 
 func _on_add_chart_button_pressed():
-	var ids = canvas.selection.get_ids()
+	var ids = design_ctrl.selection_manager.get_ids()
 	if not ids:
-		push_error("Result IDs are null")
 		return
 	add_chart(ids)
 
 func add_chart(series_ids: PackedInt64Array):
-	# TODO: Make sures that seris is a numeric object
+	# TODO: Make sure that series is a numeric object
 	# TODO: Add chart order
 	if series_ids.is_empty():
 		return
 		
 	var trans: PoieticTransaction = design_ctrl.new_transaction()
 	var chart_obj_id = trans.create_node("Chart", null, {})
-	
+	prints("--- Creating chart: ", chart_obj_id)
 	for series_id in series_ids:
 		var series_obj = trans.create_edge("ChartSeries", chart_obj_id, series_id)
 		

@@ -5,10 +5,6 @@ class_name ToolBar extends PanelContainer
 @onready var connection_tool_button: Button = %ConnectToolButton
 @onready var pan_tool_button: Button = %PanToolButton
 
-func _ready():
-	Global.tool_changed.connect(_on_tool_changed)
-	Global.change_tool(Global.selection_tool)
-	
 func _on_tool_changed(tool: CanvasTool):
 	if tool is SelectionTool:
 		selection_tool_button.set_pressed_no_signal(true)
@@ -34,13 +30,13 @@ func _on_tool_changed(tool: CanvasTool):
 		push_error("Unknown tool: ", tool)
 
 func _on_selection_tool_button_pressed():
-	Global.change_tool(Global.selection_tool)
+	Global.app.set_tool("selection")
 
 func _on_place_tool_button_pressed():
-	Global.change_tool(Global.place_tool)
+	Global.app.set_tool("place")
 
 func _on_connect_tool_button_pressed():
-	Global.change_tool(Global.connect_tool)
+	Global.app.set_tool("connect")
 
 func _on_pan_tool_button_pressed():
-	Global.change_tool(Global.pan_tool)
+	Global.app.set_tool("pan")

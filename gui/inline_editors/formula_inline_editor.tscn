@@ -1,0 +1,57 @@
+[gd_scene load_steps=6 format=3 uid="uid://bnmc02p3i33q2"]
+
+[ext_resource type="Script" uid="uid://ck4fq6cbpmv40" path="res://gui/inline_editors/formula_inline_editor.gd" id="1_dqs07"]
+[ext_resource type="Theme" uid="uid://dws6dqiic6wt" path="res://resources/default.tres" id="1_xuxp2"]
+[ext_resource type="Texture2D" uid="uid://bi5sowqe2mcj3" path="res://resources/icons/white/formula.png" id="2_o6d35"]
+[ext_resource type="Texture2D" uid="uid://2sk33kpt62hb" path="res://resources/icons/white/cancel.png" id="3_xuxp2"]
+[ext_resource type="Texture2D" uid="uid://ijgs3brho08s" path="res://resources/icons/white/ok.png" id="4_fl0tg"]
+
+[node name="FormulaInlineEditor" type="PanelContainer"]
+offset_right = 262.0
+offset_bottom = 58.0
+theme = ExtResource("1_xuxp2")
+theme_type_variation = &"CanvasPrompt"
+script = ExtResource("1_dqs07")
+metadata/_custom_type_script = "uid://ck4fq6cbpmv40"
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("2_o6d35")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FormulaField" type="LineEdit" parent="MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "1 + 1"
+
+[node name="RejectFormulaButton" type="Button" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+icon = ExtResource("3_xuxp2")
+icon_alignment = 1
+expand_icon = true
+
+[node name="AcceptFormulaButton" type="Button" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+icon = ExtResource("4_fl0tg")
+icon_alignment = 1
+expand_icon = true
+
+[connection signal="text_submitted" from="MarginContainer/HBoxContainer/FormulaField" to="." method="_on_formula_field_text_submitted"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/RejectFormulaButton" to="." method="_on_reject_formula_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/AcceptFormulaButton" to="." method="_on_accept_formula_button_pressed"]

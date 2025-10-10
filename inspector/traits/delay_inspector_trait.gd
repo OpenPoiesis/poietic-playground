@@ -4,7 +4,7 @@ extends InspectorTraitPanel
 
 
 func on_selection_changed():
-	var distinct_duration = Global.design.get_distinct_values(selection, "delay_duration")
+	var distinct_duration = Global.app.design_controller.get_distinct_values(selection, "delay_duration")
 
 	if len(distinct_duration) == 0:
 		duration_input.editable = false
@@ -22,14 +22,12 @@ func on_selection_changed():
 		duration_input.value = 0	
 
 func update_delay_duration(value: int):
-	print("Update delay: ", value, " (NOT REALLY)")
-	return
-	var trans = Global.design.new_transaction()
+	var trans = Global.app.design_controller.new_transaction()
 	
-	for id in selection.get_ids():
+	for id in selection:
 		trans.set_attribute(id, "delay_duration", value)
 
-	Global.design.accept(trans)
+	Global.app.design_controller.accept(trans)
 
 
 func _on_duration_input_value_changed(value):

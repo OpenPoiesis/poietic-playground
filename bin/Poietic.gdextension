@@ -4,11 +4,19 @@ compatibility_minimum = 4.2
 
 
 [libraries]
-macos.debug = "res://bin/libPoieticGodot.dylib"
-macos.arm64 = "res://bin/libPoieticGodot.dylib"
+macos.debug.arm64 = "res://bin/libPoieticGodot.dylib"
+macos.release.arm64 = "res://bin/libPoieticGodot.dylib"
 linux.debug.x86_64 = "res://bin/libPoieticGodot.so"
 linux.release.x86_64 = "res://bin/libPoieticGodot.so"
 linux.debug.arm64 = "res://bin/libPoieticGodot.so"
 linux.release.arm64 = "res://bin/libPoieticGodot.so"
 linux.debug.rv64 = "res://bin/libPoieticGodot.so"
 linux.release.rv64 = "res://bin/libPoieticGodot.so"
+
+[dependencies]
+
+macos.debug.arm64 = { "res://bin/libSwiftGodot.dylib": "" }
+
+macos.release.arm64 = {
+    "res://bin/libSwiftGodot.dylib": ""
+}

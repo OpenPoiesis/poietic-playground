@@ -2,3 +2,7 @@
 .godot/
 /android/
 _sandbox/
+bin/libPoieticGodot.dylib
+bin/libSwiftGodot.dylib
+*.dmg
+

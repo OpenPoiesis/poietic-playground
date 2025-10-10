@@ -1,0 +1,7 @@
+[gd_resource type="LabelSettings" load_steps=2 format=3 uid="uid://bj8hu8ys4ktpo"]
+
+[ext_resource type="FontFile" uid="uid://6y6i5dhrvmps" path="res://resources/fonts/IBMPlexSansCondensed-Light.otf" id="1_lckox"]
+
+[resource]
+font = ExtResource("1_lckox")
+font_size = 14

@@ -6,30 +6,40 @@ enum FileDialogMode {
 	IMPORT_FRAME,
 	OPEN_DESIGN,
 	SAVE_DESIGN,
+	EXPORT_DIAGRAM_SVG,
 }
+
+const NEW_DESIGN_TEMPLATE_PATH = "res://resources/new_canvas_demo_design.json"
+
+const PICTOGRAM_PATHS: Dictionary[String, String] = {
+	"standard": "res://resources/stock_flow_pictograms.json",
+	"jolly": "res://resources/stock_flow_pictograms-jolly.json",
+}
+const DIAGRAM_STYLE: String = "jolly"
 
 @export var file_dialog_mode: FileDialogMode = FileDialogMode.OPEN_DESIGN
 @export var design_path: String = ""
 @export var last_opened_design_path: String = ""
 @export var last_import_path: String = ""
+@export var last_export_path: String = ""
 const DEFAULT_DESIGN_PATH = "user://design.poietic"
 const SETTINGS_FILE = "user://settings.cfg"
 const default_window_size = Vector2(1280, 720)
 
-var design_ctrl: PoieticDesignController
-
+@onready var application: PoieticApplication = $PoieticApplication
 @onready var canvas: DiagramCanvas = $Canvas
-@onready var prompt_manager: CanvasPromptManager = %Gui/CanvasPromptManager
+@onready var canvas_ctrl: CanvasController
 
 @onready var inspector_panel: InspectorPanel = %InspectorPanel
-@onready var object_panel: ObjectPanel = %Gui/ObjectPanel
 
 @onready var result_panel: PanelContainer = %ResultPanel
-@onready var player: PoieticPlayer = $SimulationPlayer
+@onready var player: ResultPlayer = $SimulationPlayer
 @onready var control_bar: PanelContainer = %PlayerControlBar
+@onready var tool_bar: ToolBar = %Gui/ToolBar
+@onready var tool_object_palette = %Gui/ToolObjectPalette
 
 func _init():
-	pass
+	InspectorPanel.instantiate_default_panels()
 
 func _ready():
 	prints("Screen DPI:", DisplayServer.screen_get_dpi(), 
@@ -46,16 +56,30 @@ func _ready():
 	get_viewport().connect("size_changed", _on_window_resized)
 	
 	_initialize_main_menu()
-		
-	design_ctrl = PoieticDesignController.new()
-	
-	Global.initialize(design_ctrl, player)
-	initialize_tools()
-	control_bar.initialize(design_ctrl, player)
-	result_panel.initialize(design_ctrl, player, canvas)
-	inspector_panel.initialize(design_ctrl, player, canvas)
-	prompt_manager.initialize(canvas)
 
+	canvas_ctrl = CanvasController.new()
+	canvas_ctrl.initialize(application.design_controller, canvas)
+
+	var picto_path = PICTOGRAM_PATHS[DIAGRAM_STYLE]
+	canvas_ctrl.load_pictograms(picto_path)
+	
+	application.canvas_controller = canvas_ctrl
+	initialize_inline_editors(canvas_ctrl)
+	%ContextMenu.initialize(canvas_ctrl)
+	canvas_ctrl.context_menu = %ContextMenu
+	canvas_ctrl.issues_popup = $Gui/InlineEditors/IssuesPopup
+	
+	Global.initialize(application, player)
+	application.tool_changed.connect(tool_bar._on_tool_changed)
+	application.tool_changed.connect(self._on_tool_changed)
+	$Gui/ToolObjectPalette.palette_item_changed.connect(self._on_tool_palette_item_changed)
+	application.switch_tool(application.selection_tool)
+
+	control_bar.initialize(application.design_controller, player)
+	result_panel.initialize(application.design_controller, player, canvas_ctrl)
+	inspector_panel.initialize(application.design_controller, player)
+
+	var design_ctrl = application.design_controller
 	design_ctrl.design_changed.connect(self._on_design_changed)
 	design_ctrl.design_reset.connect(self._on_design_reset)
 	design_ctrl.simulation_started.connect(self._on_simulation_started)
@@ -64,16 +88,29 @@ func _ready():
 	canvas.canvas_view_changed.connect(self._on_canvas_view_changed)
 
 	# Load demo design
-	var path = "res://resources/new_canvas_demo_design.json"
-	var data = FileAccess.get_file_as_bytes(path)
+	var data = FileAccess.get_file_as_bytes(NEW_DESIGN_TEMPLATE_PATH)
 	import_foreign_frame_from_data(data)
 	
-	# Tell everyone about demo design
-	# Global.design.design_changed.emit()
 	update_status_text()
 	_update_simulation_menu()
 	
 	print("Done initializing main.")
+
+func initialize_inline_editors(canvas_ctrl: CanvasController):
+	var name_editor = $Gui/InlineEditors/NameInlineEditor
+	name_editor.initialize(canvas_ctrl)
+	canvas_ctrl.register_inline_editor("name", name_editor)
+
+	var formula_editor = $Gui/InlineEditors/FormulaInlineEditor
+	formula_editor.initialize(canvas_ctrl)
+	canvas_ctrl.register_inline_editor("formula", formula_editor)
+
+	var numeric_attr_editor = $Gui/InlineEditors/NumericAttributeInlineEditor
+	numeric_attr_editor.initialize(canvas_ctrl)
+	canvas_ctrl.register_inline_editor("numeric_attribute", numeric_attr_editor)
+
+	var issues_popup = $Gui/InlineEditors/IssuesPopup
+	issues_popup.initialize(canvas_ctrl)
 
 func initialize_menu_bar():
 	# TODO: Not sure what is going on here. On Ubuntu the menu is not displayed.
@@ -84,32 +121,43 @@ func initialize_menu_bar():
 	print("Using Godot's built-in main menu")
 	%MenuBar.prefer_global_menu = false
 
-func initialize_tools():
-	object_panel.hide()
-	Global.selection_tool.initialize(canvas, design_ctrl, prompt_manager)
-	Global.selection_tool.object_panel = object_panel
-	Global.place_tool.initialize(canvas, design_ctrl, prompt_manager)
-	Global.place_tool.object_panel = object_panel
-	Global.connect_tool.initialize(canvas, design_ctrl, prompt_manager)
-	Global.connect_tool.object_panel = object_panel
-	Global.pan_tool.initialize(canvas, design_ctrl, prompt_manager)
-	Global.pan_tool.object_panel = object_panel
 
 func _initialize_main_menu():
 	# Add working shortcuts here
 	# $MenuBar/FileMenu.set_item_accelerator(0, KEY_MASK_META + KEY_N)
 	pass
 
+func _on_tool_changed(tool: CanvasTool):
+	if tool is SelectionTool:
+		tool_object_palette.hide()
+		pass
+	elif tool is PlaceTool:
+		tool_object_palette.load_node_pictograms()
+		if tool.palette_item_identifier != null:
+			tool_object_palette.selected_item = tool.palette_item_identifier
+		tool_object_palette.show()
+	elif tool is ConnectTool:
+		tool_object_palette.load_connector_pictograms()
+		if tool.palette_item_identifier != null:
+			tool_object_palette.selected_item = tool.palette_item_identifier
+		tool_object_palette.show()
+	else:
+		tool_object_palette.hide()
+
+func _on_tool_palette_item_changed(item: String):
+	prints("--- Tool palette item changed: ", item)
+	application.current_tool.palette_item_identifier = item
+
 func _on_design_changed(has_issues: bool):
 	# FIXME: Fix selection so that object IDs match
-	canvas.sync_design()
 	update_status_text()
 	if has_issues:
 		clear_result()
 
 func _on_design_reset():
-	canvas.clear_design()
-	canvas.selection.clear()
+	canvas_ctrl.clear_canvas()
+	# FIXME: Move selection manager to main
+	canvas_ctrl.design_controller.selection_manager.clear()
 	update_status_text()
 
 func _on_simulation_started():
@@ -128,35 +176,34 @@ func _on_canvas_view_changed(offset: Vector2, zoom_level: float):
 	update_status_text()
 
 func set_result(result):
-	Global.result = result
 	player.result = result
-	canvas.sync_indicators(result)
+	canvas_ctrl.sync_indicators(result)
 	_update_simulation_menu()
 
 
 func clear_result():
 	Global.player.stop()
-	Global.result = null
 	Global.player.result = null
-	canvas.clear_indicators()
+	# FIXME: Re-add this:
+	# canvas.clear_indicators()
 	_update_simulation_menu()
 	
 func _on_simulation_player_step():
-	canvas.update_indicator_values(player)
+	canvas_ctrl.update_indicator_values(player)
 	
 func _unhandled_input(event):
 	# TODO: Document inputs
 	if event.is_action_pressed("selection-tool"):
-		Global.change_tool(Global.selection_tool)
+		Global.app.switch_tool(Global.app.selection_tool)
 	elif event.is_action_pressed("place-tool"):
-		Global.change_tool(Global.place_tool)
+		Global.app.switch_tool(Global.app.place_tool)
 	elif event.is_action_pressed("connect-tool"):
-		Global.change_tool(Global.connect_tool)
+		Global.app.switch_tool(Global.app.connect_tool)
 	elif event.is_action_pressed("pan-tool"):
-		if Global.current_tool is PanTool:
-			Global.change_tool(Global.previous_tool)
+		if Global.app.current_tool is PanTool:
+			Global.app.switch_tool(Global.app.previous_tool)
 		else:
-			Global.change_tool(Global.pan_tool)
+			Global.app.switch_tool(Global.app.pan_tool)
 
 	# File
 	elif event.is_action_pressed("new-design"):
@@ -212,22 +259,24 @@ func _unhandled_input(event):
 		debug_dump()
 
 	elif event.is_action_pressed("cancel"):
-		prompt_manager.close()
-		Global.close_modal(Global.modal_node)
-
+		if canvas_ctrl.inline_popup != null:
+			canvas_ctrl.close_inline_popup()
+		elif !canvas_ctrl.design_controller.selection_manager.is_empty():
+			canvas_ctrl.design_controller.selection_manager.clear()
+			
 
 func update_status_text():
-	var stats = Global.design.debug_stats
+	var stats = application.design_controller.debug_stats
 	
 	var text = ""
 	text += "Frames: " + str(stats["frames"])
 	text += " undo: " + str(stats["undo_frames"])
 	text += " redo: " + str(stats["redo_frames"])
 	text += " | Current ID: " + str(stats["current_frame"])
-	if stats["diagram_nodes"] == stats["nodes"]:
+	if stats["diagram_blocks"] == stats["nodes"]:
 		text += " nodes: " + str(stats["nodes"])
 	else:
-		text += " nodes: " + str(stats["diagram_nodes"]) + "/" + str(stats["nodes"])
+		text += " nodes: " + str(stats["diagram_blocks"]) + "/" + str(stats["nodes"])
 	text += " edges: " + str(stats["edges"])
 	text += "\n"
 	text += "Design issues: " + str(stats["design_issues"])
@@ -300,7 +349,7 @@ func save_settings():
 
 func new_design():
 	design_path = ""
-	Global.design.new_design()
+	application.design_controller.new_design()
 
 func open_design():
 	$FileDialog.file_mode = FileDialog.FileMode.FILE_MODE_OPEN_FILE
@@ -338,7 +387,7 @@ func save_design():
 	var path: String
 	if design_path != "":
 		print("Saving design: ", design_path)
-		Global.design.save_to_path(design_path)
+		application.design_controller.save_to_path(design_path)
 	else:
 		save_design_as()
 	
@@ -357,80 +406,93 @@ func import_foreign_frame():
 	$FileDialog.show()
 
 func import_foreign_frame_from(path: String):
-	design_ctrl.import_from_path(path)
+	application.design_controller.import_from_path(path)
 
 func import_foreign_frame_from_data(data: PackedByteArray):
-	design_ctrl.import_from_data(data)
+	application.design_controller.import_from_data(data)
+
+func export_svg_image():
+	pass
+	$FileDialog.file_mode = FileDialog.FileMode.FILE_MODE_SAVE_FILE
+	$FileDialog.title = "Export SVG Image"
+	$FileDialog.ok_button_text = "Export"	
+	$FileDialog.filters = ["*.svg"]
+	self.file_dialog_mode = FileDialogMode.EXPORT_DIAGRAM_SVG
+
+	if last_export_path != "":
+		$FileDialog.current_path = last_export_path
+
+	$FileDialog.show()
+
 
 # Edit Menu
 # -------------------------------------------------------------------------
 
 func undo():
-	if Global.design.can_undo():
-		Global.design.undo()
+	if application.can_undo():
+		application.undo()
 	else:
 		printerr("Trying to undo while having nothing to undo")
 
 func redo():
-	if Global.design.can_redo():
-		Global.design.redo()
+	if application.can_redo():
+		application.redo()
 	else:
 		printerr("Trying to redo while having nothing to redo")
 
 func delete_selection():
-	canvas.delete_selection()
+	application.canvas_controller.delete_selection()
 
 func paste():
 	var text = DisplayServer.clipboard_get()
-	canvas.paste_from_text(text)
-
+	application.design_controller.paste_from_text(text)
+	
 func copy_selection():
-	canvas.copy_selection()
+	var pasteboard_text = application.design_controller.copy_selection_as_text()
+	DisplayServer.clipboard_set(pasteboard_text)
 
 func cut_selection():
-	canvas.cut_selection()
+	copy_selection()
+	delete_selection()
 
 func select_all():
-	var ids = canvas.all_diagram_object_ids()
-	canvas.selection.replace(ids)
+	application.canvas_controller.select_all()
 
 # Diagram Menu
 # -------------------------------------------------------------------------
 
 func auto_connect_parameters():
-	Global.design.auto_connect_parameters(PackedInt64Array())
+	application.design_controller.auto_connect_parameters(PackedInt64Array())
 
 func remove_midpoints():
-	canvas.remove_midpoints_in_selection()
+	application.design_controller.remove_midpoints_in_selection()
 
+func get_current_selection() -> PackedInt64Array:
+	return application.design_controller.selection_manager.get_ids()
+	
+# TODO: Rename to edit_secondary_attribute
 func edit_primary_attribute():
 	# TODO: Beep
-	var ids = canvas.selection.get_ids()
-	if len(ids) != 1:
+	var object: PoieticObject = canvas_ctrl.get_single_selection_object()
+	if object == null:
 		return
-	var object = Global.design.get_object(ids[0])
-	
-	if not object:
-		return
+		
 	elif object.has_trait("Formula"):
-		prompt_manager.open_formula_editor_for(ids[0])
+		canvas_ctrl.open_inline_editor("formula", object.object_id, "formula")
 	elif object.has_trait("Delay"):
-		prompt_manager.open_attribute_editor_for(ids[0], "delay_duration")
+		canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "delay_duration")
 	elif object.has_trait("Smooth"):
-		prompt_manager.open_attribute_editor_for(ids[0], "window_time")
+		canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "window_time")
 
 func edit_name():
 	# TODO: Beep
-	var ids = canvas.selection.get_ids()
-	if len(ids) != 1:
-		return
-	var object = Global.design.get_object(ids[0])
-	if not object:
+	var object: PoieticObject = canvas_ctrl.get_single_selection_object()
+	if object == null:
 		return
 	if not object.has_trait("Name"):
 		return
-
-	prompt_manager.open_name_editor_for(ids[0])
+	prints("EDIT NAME ", object)
+	canvas_ctrl.open_inline_editor("name", object.object_id, "name")
 
 # View Menu
 # -------------------------------------------------------------------------
@@ -454,7 +516,7 @@ func toggle_value_indicators():
 	save_settings()
 
 func zoom_actual():
-	canvas.set_zoom_level(1.0, get_global_mouse_position())
+	canvas.set_zoom(1.0, get_global_mouse_position())
 	canvas.update_canvas_view()
 
 # Simulation Menu
@@ -466,9 +528,9 @@ func toggle_run():
 		Global.player.run()
 
 func export_result_csv():
-	if Global.result == null:
+	if Global.player.result == null:
 		return
-	%CsvExportDialog.configure(Global.result, canvas.selection)
+	%CsvExportDialog.configure(Global.player.result, canvas.selection)
 	%CsvExportDialog.show()
 
 func debug_dump():
@@ -479,8 +541,8 @@ func debug_dump():
 	else:
 		ids = canvas.selection.get_ids()
 	for key in ids:
-		var dia_object: DiagramObject = canvas.diagram_objects[key]
-		var object: PoieticObject = Global.design.get_object(dia_object.object_id)
+		var dia_object: DiagramCanvasObject = canvas.diagram_objects[key]
+		var object: PoieticObject = application.design_controller.get_object(dia_object.object_id)
 		if not object:
 			printerr("Canvas object without design object: ", dia_object.object_id)
 			continue
@@ -498,7 +560,7 @@ func _on_file_dialog_files_selected(paths):
 		FileDialogMode.IMPORT_FRAME:
 			for path in paths:
 				print("Import frame: ", path)
-				Global.design.import_from_path(path)
+				application.design_controller.import_from_path(path)
 				last_import_path = path
 				save_settings()
 		FileDialogMode.OPEN_DESIGN:
@@ -512,7 +574,7 @@ func _on_file_dialog_dir_selected(path):
 	match file_dialog_mode:
 		FileDialogMode.IMPORT_FRAME:
 			print("Import frame: ", path)
-			Global.design.import_from_path(path)
+			application.design_controller.import_from_path(path)
 			last_import_path = path
 			save_settings()
 		FileDialogMode.OPEN_DESIGN:
@@ -526,20 +588,24 @@ func _on_file_dialog_file_selected(path):
 	match file_dialog_mode:
 		FileDialogMode.IMPORT_FRAME:
 			print("Import frame: ", path)
-			Global.design.import_from_path(path)
+			application.design_controller.import_from_path(path)
 			last_import_path = path
 			save_settings()
 		FileDialogMode.OPEN_DESIGN:
 			print("Open design: ", path)
-			Global.design.load_from_path(path)
+			application.design_controller.load_from_path(path)
 			self.design_path = path
 			self.last_opened_design_path = path
 			save_settings()
 
 		FileDialogMode.SAVE_DESIGN:
 			print("Save design: ", path)
-			Global.design.save_to_path(path)
+			application.design_controller.save_to_path(path)
 			self.design_path = path
+			
+		FileDialogMode.EXPORT_DIAGRAM_SVG:
+			print("Export SVG: ", path)
+			application.design_controller.export_svg_diagram(path, canvas_ctrl)
 		_:
 			push_warning("Unhandled file selection mode: ", file_dialog_mode)
 
@@ -552,6 +618,7 @@ func _on_file_menu_id_pressed(id):
 		2: save_design()
 		5: save_design_as()
 		4: import_foreign_frame()
+		6: export_svg_image()
 		_: printerr("Unknown File menu id: ", id)
 
 func _on_edit_menu_id_pressed(id):
@@ -595,8 +662,8 @@ func _on_csv_export_requested(file_path: String, option: CSVExportDialog.ExportO
 		CSVExportDialog.ExportOption.SELECTED_NODES:
 			export_objects = objects
 
-	design_ctrl.write_to_csv(file_path, result, export_objects)
+	application.design_controller.write_to_csv(file_path, result, export_objects)
 
 func _update_simulation_menu():
-	var has_result = Global.result != null
+	var has_result = Global.player.result != null
 	%MenuBar/SimulationMenu.set_item_disabled(6, not has_result)

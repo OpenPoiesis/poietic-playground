@@ -3,6 +3,7 @@ class_name Chart extends Control
 var plot_offset: Vector2 = Vector2()
 var _plot_rect: Rect2 = Rect2()
 
+var object_id: int
 ## IDs of objects representing time series.
 ##
 ## `series_ids` is used when data needs to be refreshed automatically.
@@ -155,7 +156,7 @@ func _data_changed():
 	pass
 
 func update_from_result(result: PoieticResult) -> void:
-	if not result: # FIXME NOW!!!!!!!
+	if not result: # TODO: Investigate when update is requested without result
 		return
 	clear_series()
 	for id in series_ids:

@@ -1,0 +1,7 @@
+[gd_resource type="LabelSettings" load_steps=2 format=3 uid="uid://jdwy6s22uvti"]
+
+[ext_resource type="FontFile" uid="uid://bf4sfp1whyleo" path="res://resources/fonts/IBMPlexSansCondensed-LightItalic.otf" id="1_7rg0v"]
+
+[resource]
+font = ExtResource("1_7rg0v")
+font_color = Color(0.48875153, 0.76673406, 0.906727, 1)

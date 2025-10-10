@@ -1,0 +1,53 @@
+[gd_scene load_steps=3 format=3 uid="uid://vqxepyllje5n"]
+
+[ext_resource type="Script" uid="uid://doi8fk3cpuhrs" path="res://gui/inline_editors/issues_popup.gd" id="1_c8hci"]
+[ext_resource type="Texture2D" uid="uid://ddew5c87g824t" path="res://resources/icons/error.png" id="1_gghgm"]
+
+[node name="IssuesPrompt" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -833.0
+offset_bottom = -737.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_c8hci")
+metadata/_custom_type_script = "uid://doi8fk3cpuhrs"
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_type_variation = &"CanvasPrompt"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/HBoxContainer/MarginContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("1_gghgm")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="IssueList" type="ItemList" parent="PanelContainer/HBoxContainer"]
+unique_name_in_owner = true
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+allow_search = false
+max_text_lines = 2
+auto_width = true
+auto_height = true
