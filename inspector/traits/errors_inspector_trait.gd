@@ -10,14 +10,14 @@ func _ready():
 
 func on_selection_changed():
 	error_list.clear()
-	if selection.count() == 0:
+	if len(selection) == 0:
 		tab_container.current_tab = 0
 		return
-	elif selection.count() > 1:
+	elif len(selection) > 1:
 		tab_container.current_tab = 1
 		return
 
-	var object = selection.get_ids()[0]
+	var object = selection[0]
 	var issues:Array[PoieticIssue] = design_ctrl.issues_for_object(object)
 	if len(issues) > 0:
 		tab_container.current_tab = 2

@@ -1,6 +1,5 @@
 class_name InspectorTraitPanel extends PanelContainer
 
-
 signal set_object_attribute(trait_name: String, name: String, value: Variant)
 
 var selection: PackedInt64Array
@@ -15,4 +14,10 @@ func set_selection(new_selection):
 	on_selection_changed()
 
 func on_selection_changed():
+	pass
+
+func _on_result_updated(result: PoieticResult):
+	pass
+
+func _on_result_removed():
 	pass

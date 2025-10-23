@@ -1,0 +1,51 @@
+[gd_scene load_steps=3 format=3 uid="uid://vye41r2cigpc"]
+
+[ext_resource type="Script" uid="uid://botnbdshgt0d6" path="res://inspector/traits/time_series_inspector_trait.gd" id="1_g58fa"]
+[ext_resource type="Script" uid="uid://cyfyvtcdjamr3" path="res://gui/chart.gd" id="2_g81e4"]
+
+[node name="TimeSeriesInspectorTrait" type="PanelContainer"]
+offset_right = 148.0
+offset_bottom = 152.0
+size_flags_horizontal = 3
+script = ExtResource("1_g58fa")
+metadata/_custom_type_script = "uid://botnbdshgt0d6"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Chart" type="Control" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+script = ExtResource("2_g81e4")
+metadata/_custom_type_script = "uid://cyfyvtcdjamr3"
+
+[node name="StatsContainer" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="MinLabel" type="Label" parent="VBoxContainer/StatsContainer"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Min"
+
+[node name="MinValue" type="Label" parent="VBoxContainer/StatsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0"
+horizontal_alignment = 2
+
+[node name="MaxLabel" type="Label" parent="VBoxContainer/StatsContainer"]
+layout_mode = 2
+text = "Max"
+
+[node name="MaxValue" type="Label" parent="VBoxContainer/StatsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0"
+horizontal_alignment = 2

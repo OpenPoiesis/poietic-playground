@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3 uid="uid://bxxdbnt6854mr"]
+
+[ext_resource type="Script" uid="uid://ct6vbvs58shb0" path="res://inspector/traits/design_inspector_trait.gd" id="1_qmjj8"]
+
+[node name="DesignInspectorTrait" type="PanelContainer"]
+offset_right = 175.0
+offset_bottom = 189.0
+script = ExtResource("1_qmjj8")
+metadata/_custom_type_script = "uid://c4fp11pa5vk7y"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Design Name"
+
+[node name="TitleField" type="LineEdit" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Description" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Description"
+
+[node name="DescriptionField" type="TextEdit" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+placeholder_text = "(no description)"
+
+[connection signal="text_submitted" from="VBoxContainer/TitleField" to="." method="_on_name_field_text_submitted"]
