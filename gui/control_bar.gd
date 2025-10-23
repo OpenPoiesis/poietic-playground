@@ -104,6 +104,7 @@ func update_simulation_times():
 
 func _on_end_time_field_text_submitted(new_text):
 	# FIXME: Move this to controller or send an app action
+	end_time_field.release_focus()
 	if not new_text.is_valid_float():
 		update_simulation_times()
 		return
@@ -124,6 +125,7 @@ func _on_end_time_field_text_submitted(new_text):
 
 
 func _on_time_field_text_submitted(new_text: String):
+	time_field.release_focus()
 	if not new_text.is_valid_float():
 		update_simulation_times()
 		return

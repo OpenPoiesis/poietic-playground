@@ -20,7 +20,7 @@ func on_selection_changed():
 func _on_name_field_text_submitted(new_name):
 	var trans = Global.app.design_controller.new_transaction()
 	
-	for id in selection.get_ids():
+	for id in selection:
 		trans.set_attribute(id, "name", new_name)
 
 	Global.app.design_controller.accept(trans)

@@ -116,7 +116,6 @@ func set_traits(traits: Array[String]):
 func inspect_design():
 	for child in traits_container.get_children():
 		traits_container.remove_child(child)
-
 	
 	# TODO: Use Global.app.design_controller.get_object()
 	# Design Info Attributes:
