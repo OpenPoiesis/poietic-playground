@@ -59,7 +59,6 @@ func clear_series():
 
 func append_series(info: SeriesInfo):
 	self.series_info.append(info)
-	prints("CHART: Appending series of color ", info.color_name)
 	queue_redraw()
 
 func set_series_data(id: int, data: PoieticTimeSeries):
@@ -135,11 +134,8 @@ func _draw_line_plot(info: SeriesInfo):
 	for index in range(0, len(points)):
 		points[index] = points[index]
 	var color = Global.get_adaptable_color(info.color_name, Color.WHITE)
-	prints("CHART: drawing ",info.object_id,
-		   " with color ", color,
-		   " name:", info.color_name,
-		   " type", type_string(typeof(info.color_name)))
-	draw_polyline(points, color, 4.0)
+	if len(points > 1):
+		draw_polyline(points, color, 4.0)
 	
 func screen_curve_for_series(series: PoieticTimeSeries, size: Vector2) -> Curve2D:
 	var curve: Curve2D = Curve2D.new()

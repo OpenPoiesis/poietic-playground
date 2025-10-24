@@ -145,7 +145,6 @@ func _on_tool_changed(tool: CanvasTool):
 		tool_object_palette.hide()
 
 func _on_tool_palette_item_changed(item: String):
-	prints("--- Tool palette item changed: ", item)
 	application.current_tool.palette_item_identifier = item
 
 func _on_design_changed(has_issues: bool):
@@ -492,7 +491,6 @@ func edit_name():
 		return
 	if not object.has_trait("Name"):
 		return
-	prints("EDIT NAME ", object)
 	canvas_ctrl.open_inline_editor("name", object.object_id, "name")
 
 # View Menu

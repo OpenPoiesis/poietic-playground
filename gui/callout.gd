@@ -148,9 +148,9 @@ func set_position_with_target(target_position: Vector2):
 	# HACK: Force size recalculation. This is necessary in Godot 4.4. 
 	# Not sure what is going on here, but when we assign to the `position` then
 	# the size of the control is recalculated.
-	prints("BEFORE: ", self.size, self.get_minimum_size())
+	# prints("BEFORE: ", self.size, self.get_minimum_size())
 	position = position
-	prints("AFTER: ", self.size, self.get_minimum_size())
+	# prints("AFTER: ", self.size, self.get_minimum_size())
 
 	match point_side:
 		PointSide.TOP:

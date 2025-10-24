@@ -45,7 +45,6 @@ func close():
 	object_id = -1
 
 func _on_value_field_text_submitted(new_text):
-	# prints("Value submitted: ", new_text, " for attribute: ", self.edited_attribute)
 	if !is_active:
 		return
 	

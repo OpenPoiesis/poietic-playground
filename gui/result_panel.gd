@@ -108,7 +108,6 @@ func add_chart(series_ids: PackedInt64Array):
 		
 	var trans: PoieticTransaction = design_ctrl.new_transaction()
 	var chart_obj_id = trans.create_node("Chart", null, {})
-	prints("--- Creating chart: ", chart_obj_id)
 	for series_id in series_ids:
 		var series_obj = trans.create_edge("ChartSeries", chart_obj_id, series_id)
 		
