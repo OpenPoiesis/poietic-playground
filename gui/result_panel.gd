@@ -45,19 +45,32 @@ func sync_charts():
 
 		sync_chart_from(chart_item, chart_object)
 
-func sync_chart_from(chart_item: ResultChartItem, object: PoieticObject):
+func sync_chart_from(chart_item: ResultChartItem, chart_object: PoieticObject):
 	# Important: We do not update data here, that can be updated if we have the result
-	var edge_ids = design_ctrl.get_outgoing_ids(object.object_id, "ChartSeries")
+	var edge_ids = design_ctrl.get_outgoing_ids(chart_object.object_id, "ChartSeries")
 	var series_ids: PackedInt64Array = PackedInt64Array()
+
 	if edge_ids.is_empty():
 		push_warning("Chart series is empty")
+
+	chart_item.chart.clear_series()
+
 	for id in edge_ids:
 		var edge: PoieticObject = design_ctrl.get_object(id)
 		if not edge:
-			push_error("Unknown series edge object: ", id)
 			continue
-		series_ids.append(edge.target)
-	chart_item.chart.series_ids = series_ids
+		var series_object: PoieticObject = design_ctrl.get_object(edge.target)
+		if not series_object:
+			continue
+
+		var info = Chart.SeriesInfo.new()
+		info.object_id = series_object.object_id
+		var color_name = series_object.get_attribute("color")
+		if color_name != null:
+			info.color_name = str(color_name)
+		else:
+			info.color_name = ""
+		chart_item.chart.append_series(info)
 	
 func update_data(result: PoieticResult):
 	for item in chart_container.get_children():
@@ -68,13 +81,13 @@ func update_data(result: PoieticResult):
 func update_chart_item_data(item: ResultChartItem, result: PoieticResult):
 	item.chart.update_from_result(result)
 	var names: Array[String] = []
-	for id in item.chart.series_ids:
-		var object: PoieticObject = design_ctrl.get_object(id)
+	for info in item.chart.series_info:
+		var object: PoieticObject = design_ctrl.get_object(info.object_id)
 		if not object:
 			continue
 		var name = object.object_name
 		if not name:
-			name = "unknown"
+			name = "(unknown)"
 		names.append(name)
 	if names.is_empty():
 		item.chart_label.text = "(empty)"

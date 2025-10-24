@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3 uid="uid://ck6ed1o35il5n"]
+
+[ext_resource type="Script" uid="uid://tthrtbrlltdy" path="res://gui/design_object_color_picker.gd" id="1_887jl"]
+
+[node name="DesignObjectColorPicker" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_887jl")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DefaultColorButton" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Default"
+text = "Default"
+
+[node name="ColorGrid" type="GridContainer" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 6

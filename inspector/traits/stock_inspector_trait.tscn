@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://cg1515wjfp04s"]
+[gd_scene load_steps=4 format=3 uid="uid://cg1515wjfp04s"]
 
 [ext_resource type="Script" uid="uid://bjgio5fmql37x" path="res://inspector/traits/stock_inspector_trait.gd" id="1_sl5ee"]
+[ext_resource type="PackedScene" uid="uid://ck6ed1o35il5n" path="res://gui/design_object_color_picker.tscn" id="3_meijf"]
 [ext_resource type="Script" uid="uid://dq551sb5tha7p" path="res://gui/tristate_check_button.gd" id="3_pu7ig"]
 
 [node name="StockInspectorTrait" type="PanelContainer"]
@@ -32,8 +33,14 @@ metadata/_custom_type_script = "uid://dq551sb5tha7p"
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer2"]
 layout_mode = 2
 
-[node name="ColorGridContainer" type="GridContainer" parent="VBoxContainer2"]
+[node name="Label" type="Label" parent="VBoxContainer2"]
+layout_mode = 2
+text = "Color"
+
+[node name="ColorPicker" parent="VBoxContainer2" instance=ExtResource("3_meijf")]
+unique_name_in_owner = true
 layout_mode = 2
 
 [connection signal="pressed" from="VBoxContainer2/FormContainer/AllowsNegativeCheck" to="." method="_on_allows_negative_check_pressed"]
 [connection signal="toggled" from="VBoxContainer2/FormContainer/AllowsNegativeCheck" to="." method="_on_allows_negative_check_toggled"]
+[connection signal="color_selected" from="VBoxContainer2/ColorPicker" to="." method="_on_color_picker_color_selected"]

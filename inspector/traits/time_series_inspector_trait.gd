@@ -1,12 +1,26 @@
 class_name TimeSeriesInspectorTraitPanel extends InspectorTraitPanel
 
-@onready var chart = %Chart
+@onready var chart: Chart = %Chart
 @onready var stats_container = $VBoxContainer/StatsContainer
 
 func on_selection_changed():
 	# Chart
 	# TODO: Check whether having a chart is relevant
-	chart.series_ids = selection
+	chart.clear_series()
+	var series_info: Array[Chart.SeriesInfo] = []
+	for id in selection:
+		var object:PoieticObject = design_ctrl.get_object(id)
+		if object == null:
+			continue
+		var info = Chart.SeriesInfo.new()
+		info.object_id = id
+		var color_name = object.get_attribute("color")
+		if color_name != null:
+			info.color_name = str(color_name)
+		else:
+			info.color_name = ""
+			
+		chart.append_series(info)
 	chart.show()
 	
 	var result = Global.player.result

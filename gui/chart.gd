@@ -4,17 +4,19 @@ var plot_offset: Vector2 = Vector2()
 var _plot_rect: Rect2 = Rect2()
 
 var object_id: int
-## IDs of objects representing time series.
+## Information about the series presented in the chart.
 ##
-## `series_ids` is used when data needs to be refreshed automatically.
-## The attribute is not required if the chart content is managed manually.
-##
-## Note that the series_ids might contain IDs that might not be currently
+## Note: The series might refer to objects which might not be currently
 ## present in the simulation result or a design frame. They should be
-## gracefuly ignored or the user should be non-intrusively notified.
+## gracefuly ignored or the user should be non-intrusively notified in a
+## non-blocking way.
 ##
-var series_ids: PackedInt64Array = PackedInt64Array()
-var data: Array[PoieticTimeSeries] = []
+var series_info: Array[SeriesInfo] = []
+var series_data: Dictionary[int,PoieticTimeSeries] = {}
+
+class SeriesInfo:
+	var object_id: int
+	var color_name: String
 
 # Styling
 @export var x_axis: ChartAxis = ChartAxis.new()
@@ -45,7 +47,8 @@ var data_plot_offset: Vector2
 		_layout_plotting_area()
 		
 func clear_series():
-	data.clear()
+	series_data.clear()
+	series_info.clear()
 	self.x_min = 0
 	self.x_max = 0
 	self.y_min = 0
@@ -54,33 +57,40 @@ func clear_series():
 	self.data_plot_size = Vector2()
 	queue_redraw()
 
-func append_series(series: PoieticTimeSeries):
-	self.x_min = min(x_min, series.time_start)
-	self.x_max = max(x_max, series.time_end)
-	self.y_min = min(y_min, series.data_min)
-	self.y_max = max(y_max, series.data_max)
+func append_series(info: SeriesInfo):
+	self.series_info.append(info)
+	prints("CHART: Appending series of color ", info.color_name)
+	queue_redraw()
+
+func set_series_data(id: int, data: PoieticTimeSeries):
+	# FIXME: This is old single-series chart leftover, update this
+	self.x_min = min(x_min, data.time_start)
+	self.x_max = max(x_max, data.time_end)
+	self.y_min = min(y_min, data.data_min)
+	self.y_max = max(y_max, data.data_max)
 	self.data_plot_offset = Vector2(x_min, y_min)
 	self.data_plot_size = Vector2(x_max - x_min, y_max - y_min)
-	self.data.append(series)
+	self.series_data[data.object_id] = data
 	queue_redraw()
 
 func plot_scale(scale: Vector2) -> Vector2:
 	return scale / data_plot_size
 
 func _init():
-	self.data = []
+	self.series_data = {}
+	self.series_info = []
 
 	minimum_size_changed.connect(self._layout_plotting_area)
 	var x_axis = ChartAxis.new()
 	var y_axis = ChartAxis.new()
-	# _create_demo_data()
 
 func _ready():
 	_layout_plotting_area()
 
 func _draw():
-	if data.is_empty():
+	if series_info.is_empty():
 		return
+		
 	_layout_plotting_area()
 	var size = self.get_rect().size
 	# draw_rect(self.get_rect(), Color.ORANGE, false)
@@ -88,8 +98,8 @@ func _draw():
 	# draw_rect(_plot_rect, Color.ORANGE, false)
 	_draw_grid()
 	_draw_axes()
-	for plot_series in data:
-		_draw_line_plot(plot_series)
+	for info in series_info:
+		_draw_line_plot(info)
 
 func _draw_axes():
 	var bbox = self.get_rect()
@@ -115,13 +125,21 @@ func _draw_grid():
 		draw_line(ptick, ptick - Vector2(+10, 0), y_axis.line_color)
 	pass
 	
-func _draw_line_plot(plot_series: PoieticTimeSeries):
+func _draw_line_plot(info: SeriesInfo):
+	var plot_series: PoieticTimeSeries = series_data[info.object_id]
+	if plot_series == null:
+		return
+		
 	var curve = screen_curve_for_series(plot_series, _plot_rect.size)
 	var points = curve.tessellate()
 	for index in range(0, len(points)):
 		points[index] = points[index]
-
-	draw_polyline(points, Color.WHITE, 4.0)
+	var color = Global.get_adaptable_color(info.color_name, Color.WHITE)
+	prints("CHART: drawing ",info.object_id,
+		   " with color ", color,
+		   " name:", info.color_name,
+		   " type", type_string(typeof(info.color_name)))
+	draw_polyline(points, color, 4.0)
 	
 func screen_curve_for_series(series: PoieticTimeSeries, size: Vector2) -> Curve2D:
 	var curve: Curve2D = Curve2D.new()
@@ -158,9 +176,9 @@ func _data_changed():
 func update_from_result(result: PoieticResult) -> void:
 	if not result: # TODO: Investigate when update is requested without result
 		return
-	clear_series()
-	for id in series_ids:
-		var series = result.time_series(id)
-		if not series:
+	series_data.clear()
+	for info in series_info:
+		var series = result.time_series(info.object_id)
+		if series == null:
 			continue
-		append_series(series)
+		set_series_data(info.object_id, series)
