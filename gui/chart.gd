@@ -134,7 +134,7 @@ func _draw_line_plot(info: SeriesInfo):
 	for index in range(0, len(points)):
 		points[index] = points[index]
 	var color = Global.get_adaptable_color(info.color_name, Color.WHITE)
-	if len(points > 1):
+	if len(points) > 1:
 		draw_polyline(points, color, 4.0)
 	
 func screen_curve_for_series(series: PoieticTimeSeries, size: Vector2) -> Curve2D:

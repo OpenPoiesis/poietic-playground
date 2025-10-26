@@ -465,7 +465,7 @@ func auto_connect_parameters():
 	application.design_controller.auto_connect_parameters(PackedInt64Array())
 
 func remove_midpoints():
-	application.design_controller.remove_midpoints_in_selection()
+	application.design_controller.remove_connector_midpoints_in_selection()
 
 func get_current_selection() -> PackedInt64Array:
 	return application.design_controller.selection_manager.get_ids()
