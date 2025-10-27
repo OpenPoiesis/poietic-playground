@@ -16,7 +16,18 @@ const adaptable_color_names: Array[String] = [
 	"purple", "red", "pink", "brown", "orange", "yellow", "lime", "green", "cyan", "teal", "blue", "indigo"
 ]
 
-
+func get_adaptable_clor_map() -> Dictionary[String,Color]:
+	var dict: Dictionary[String,Color] = {}
+	for name in adaptable_color_names:
+		var index = adaptable_color_names.find(name)
+		if index == -1:
+			continue
+		elif index < len(adaptable_design_colors.colors):
+			dict[name] = adaptable_design_colors.colors[index]
+		else:
+			continue
+	return dict
+	
 func get_adaptable_color(name: String, default_color: Color) -> Color:
 	var index = adaptable_color_names.find(name)
 	if index == -1:

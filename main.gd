@@ -64,7 +64,9 @@ func _ready():
 
 	canvas_ctrl = CanvasController.new()
 	canvas_ctrl.initialize(application.design_controller, canvas)
-
+	var style = DiagramStyle.new()
+	style.adaptable_colors = Global.get_adaptable_clor_map()
+	canvas_ctrl.style = style
 	var picto_path = PICTOGRAM_PATHS[DIAGRAM_STYLE]
 	canvas_ctrl.load_pictograms(picto_path)
 	
