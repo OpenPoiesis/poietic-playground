@@ -25,6 +25,7 @@ static func instantiate_default_panels():
 	settings_panels = {
 		# "Name": preload("res://inspector/traits/name_inspector_trait.tscn").instantiate(),
 		# "Formula": preload("res://inspector/traits/formula_inspector_trait.tscn").instantiate(),
+		"Color": preload("res://inspector/traits/color_inspector_trait.tscn").instantiate(),
 		"Stock": preload("res://inspector/traits/stock_inspector_trait.tscn").instantiate(),
 		"Delay": preload("res://inspector/traits/delay_inspector_trait.tscn").instantiate(),
 		# "Errors": preload("res://inspector/traits/errors_inspector_trait.tscn").instantiate(),

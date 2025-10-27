@@ -64,8 +64,7 @@ func _ready():
 
 	canvas_ctrl = CanvasController.new()
 	canvas_ctrl.initialize(application.design_controller, canvas)
-	var style = DiagramStyle.new()
-	style.adaptable_colors = Global.get_adaptable_clor_map()
+	var style = self.initialize_diagram_style()
 	canvas_ctrl.style = style
 	var picto_path = PICTOGRAM_PATHS[DIAGRAM_STYLE]
 	canvas_ctrl.load_pictograms(picto_path)
@@ -128,6 +127,14 @@ func initialize_menu_bar():
 	print("Using Godot's built-in main menu")
 	%MenuBar.prefer_global_menu = false
 
+func initialize_diagram_style():
+	# TODO: Find a better place for this method
+	var style = DiagramStyle.new()
+	style.adaptable_colors = Global.get_adaptable_clor_map()
+	style.line_widths = {
+		"Stock": 4.0,
+	}
+	return style
 
 func _initialize_main_menu():
 	# Add working shortcuts here

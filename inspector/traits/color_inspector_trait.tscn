@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://d4imgutbmnjw5"]
+
+[ext_resource type="Script" uid="uid://40ij0dge183" path="res://inspector/traits/color_inspector_trait.gd" id="1_ahld7"]
+[ext_resource type="PackedScene" uid="uid://ck6ed1o35il5n" path="res://gui/design_object_color_picker.tscn" id="3_rjckk"]
+
+[node name="ColorInspectorTrait" type="PanelContainer"]
+offset_right = 148.0
+offset_bottom = 87.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_ahld7")
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer2"]
+layout_mode = 2
+text = "Color"
+
+[node name="ColorPicker" parent="VBoxContainer2" instance=ExtResource("3_rjckk")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[connection signal="color_selected" from="VBoxContainer2/ColorPicker" to="." method="_on_color_picker_color_selected"]
