@@ -37,6 +37,7 @@ const default_window_size = Vector2(1280, 720)
 @onready var control_bar: PanelContainer = %PlayerControlBar
 @onready var tool_bar: ToolBar = %Gui/ToolBar
 @onready var tool_object_palette = %Gui/ToolObjectPalette
+@onready var error_dialog = $ErrorDialog
 
 func _init():
 	InspectorPanel.instantiate_default_panels()
@@ -56,6 +57,8 @@ func _ready():
 	get_viewport().connect("size_changed", _on_window_resized)
 	
 	_initialize_main_menu()
+
+	application.command_failed.connect(self._on_command_failed)
 
 	canvas_ctrl = CanvasController.new()
 	canvas_ctrl.initialize(application.design_controller, canvas)
@@ -126,6 +129,29 @@ func _initialize_main_menu():
 	# Add working shortcuts here
 	# $MenuBar/FileMenu.set_item_accelerator(0, KEY_MASK_META + KEY_N)
 	pass
+
+func _on_command_failed(command: String, error: String, info: Dictionary):
+	match command:
+		"open": 
+			error_dialog.title = "Failed to Open Design"
+		"save": 
+			error_dialog.title = "Failed to Save Design"
+		"export-svg": 
+			error_dialog.title = "Failed to Export SVG Image"
+		"export-csv": 
+			error_dialog.title = "Failed to Export CSV"
+		"import": 
+			error_dialog.title = "Failed to Import Design"
+		"import-data": 
+			error_dialog.title = "Failed to Import Design from Data"
+		"paste": 
+			error_dialog.title = "Failed to Paste"
+		"simulation-init", "simulation", "internal-error:compiler":
+			error_dialog.title = "Internal error (" + command + ")"
+		_:
+			error_dialog.title = "Command " + command.to_upper() + " Failed"
+	error_dialog.dialog_text = error
+	error_dialog.popup_centered()
 
 func _on_tool_changed(tool: CanvasTool):
 	if tool is SelectionTool:

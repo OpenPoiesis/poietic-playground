@@ -239,6 +239,12 @@ unique_name_in_owner = true
 
 [node name="PoieticApplication" type="PoieticApplication" parent="."]
 
+[node name="ErrorDialog" type="AcceptDialog" parent="."]
+oversampling_override = 1.0
+title = "Error"
+initial_position = 4
+ok_button_text = "Dismiss"
+
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/EditMenu" to="." method="_on_edit_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/DiagramMenu" to="." method="_on_diagram_menu_id_pressed"]
