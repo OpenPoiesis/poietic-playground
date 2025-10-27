@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://fhtvpa30rrel"]
+[gd_scene load_steps=24 format=3 uid="uid://fhtvpa30rrel"]
 
 [ext_resource type="Script" uid="uid://dr8beg2t8bd1u" path="res://main.gd" id="1_2q6io"]
 [ext_resource type="PackedScene" uid="uid://tems4qsdoox" path="res://gui/main_bar.tscn" id="2_kek77"]
@@ -16,6 +16,7 @@
 [ext_resource type="LabelSettings" uid="uid://bj8hu8ys4ktpo" path="res://resources/canvas/primary_label_settings.tres" id="13_2cqfq"]
 [ext_resource type="LabelSettings" uid="uid://jdwy6s22uvti" path="res://resources/canvas/secondary_label_settings.tres" id="14_yaehf"]
 [ext_resource type="LabelSettings" uid="uid://dd2mdehmnioi5" path="res://resources/canvas/invalid_label_settings.tres" id="15_074og"]
+[ext_resource type="PackedScene" uid="uid://uxybhxts4bor" path="res://gui/debug/development_debugging_window.tscn" id="17_yaehf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2cqfq"]
 bg_color = Color(0.23921569, 0.23921569, 0.23921569, 1)
@@ -136,6 +137,13 @@ item_2/text = "Show value indicators"
 item_2/checkable = 1
 item_2/id = 2
 
+[node name="Debug" type="PopupMenu" parent="MenuBar"]
+auto_translate_mode = 1
+title = "Debug"
+item_count = 1
+item_0/text = "Object Debug Window"
+item_0/id = 0
+
 [node name="Gui" type="Node" parent="."]
 unique_name_in_owner = true
 
@@ -245,11 +253,15 @@ title = "Error"
 initial_position = 4
 ok_button_text = "Dismiss"
 
+[node name="ObjectDebugWindow" parent="." instance=ExtResource("17_yaehf")]
+visible = false
+
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/EditMenu" to="." method="_on_edit_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/DiagramMenu" to="." method="_on_diagram_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/SimulationMenu" to="." method="_on_simulation_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/ViewMenu" to="." method="_on_view_menu_id_pressed"]
+[connection signal="id_pressed" from="MenuBar/Debug" to="." method="_on_debug_menu_id_pressed"]
 [connection signal="dir_selected" from="FileDialog" to="." method="_on_file_dialog_dir_selected"]
 [connection signal="file_selected" from="FileDialog" to="." method="_on_file_dialog_file_selected"]
 [connection signal="files_selected" from="FileDialog" to="." method="_on_file_dialog_files_selected"]

@@ -39,6 +39,8 @@ const default_window_size = Vector2(1280, 720)
 @onready var tool_object_palette = %Gui/ToolObjectPalette
 @onready var error_dialog = $ErrorDialog
 
+@onready var object_debug_window: Window = $ObjectDebugWindow
+
 func _init():
 	InspectorPanel.instantiate_default_panels()
 
@@ -179,6 +181,10 @@ func _on_design_changed(has_issues: bool):
 	if has_issues:
 		clear_result()
 	canvas_ctrl.close_inline_popup()
+	if object_debug_window.visible:
+		object_debug_window.object_ids = application.design_controller.get_all_ids()
+		object_debug_window.refresh()
+
 
 func _on_design_reset():
 	canvas_ctrl.clear_canvas()
@@ -283,6 +289,9 @@ func _unhandled_input(event):
 
 	elif event.is_action_pressed("debug-dump"):
 		debug_dump()
+
+	elif event.is_action_pressed("open-debug-window"):
+		open_debug_window()
 
 	elif event.is_action_pressed("cancel"):
 		if canvas_ctrl.inline_popup != null:
@@ -558,26 +567,38 @@ func export_result_csv():
 	%CsvExportDialog.configure(Global.player.result, canvas.selection)
 	%CsvExportDialog.show()
 
+func open_debug_window():
+	if object_debug_window == null:
+		var scene = preload("res://gui/debug/development_debugging_window.tscn")
+		object_debug_window = scene.instantiate()
+		add_child(object_debug_window)
+	object_debug_window.initialize(application.design_controller)
+
+	object_debug_window.object_ids = application.design_controller.get_all_ids()
+	object_debug_window.refresh()
+	object_debug_window.show()
+
 func debug_dump():
 	prints("=== DEBUG DUMP BEGIN ===")
-	var ids: PackedInt64Array = []
-	if canvas.selection.is_empty():
-		ids = canvas.diagram_objects.keys()
-	else:
-		ids = canvas.selection.get_ids()
-	for key in ids:
-		var dia_object: DiagramCanvasObject = canvas.diagram_objects[key]
-		var object: PoieticObject = application.design_controller.get_object(dia_object.object_id)
+	var ids: PackedInt64Array = canvas_ctrl.design_controller.selection_manager.get_ids()
+	if ids.is_empty():
+		prints("Printing all objects (empty selection)")
+		ids = canvas.get_represented_object_ids()
+
+	for object_id in ids:
+		var object: PoieticObject = application.design_controller.get_object(object_id)
 		if not object:
-			printerr("Canvas object without design object: ", dia_object.object_id)
+			printerr("Canvas object without design object: ", object_id)
 			continue
-		prints("ID: ", object.object_id, " type: ", object.type_name, " dia: ", dia_object)
+		var traits = object.get_traits()
+		prints("[", object.object_id, "]: ", object.type_name, traits)
 		if object.origin != null:
 			print("    edge: ", object.origin, " -> ", object.target)
 		for attr in object.get_attribute_keys():
 			var value = object.get_attribute(attr)
 			if value != null:
 				print("    ", attr, " = ", value)
+		prints()
 	prints("=== DEBUG DUMP END ===")
 
 func _on_file_dialog_files_selected(paths):
@@ -676,6 +697,11 @@ func _on_simulation_menu_id_pressed(id):
 	match id:
 		6: export_result_csv()
 		_: printerr("Unknown Simulation menu id: ", id)
+
+func _on_debug_menu_id_pressed(id):
+	match id:
+		0: open_debug_window()
+		_: printerr("Unknown Debug menu id: ", id)
 
 func _on_csv_export_requested(file_path: String, option: CSVExportDialog.ExportOption, result: PoieticResult, objects: PackedInt64Array):
 	var export_objects: PackedInt64Array = []
