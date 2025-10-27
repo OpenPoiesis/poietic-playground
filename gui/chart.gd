@@ -125,9 +125,9 @@ func _draw_grid():
 	pass
 	
 func _draw_line_plot(info: SeriesInfo):
-	var plot_series: PoieticTimeSeries = series_data[info.object_id]
-	if plot_series == null:
+	if !series_data.has(info.object_id):
 		return
+	var plot_series: PoieticTimeSeries = series_data[info.object_id]
 		
 	var curve = screen_curve_for_series(plot_series, _plot_rect.size)
 	var points = curve.tessellate()
