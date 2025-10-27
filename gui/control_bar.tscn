@@ -62,7 +62,7 @@ expand_icon = true
 [node name="FirstStepButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-tooltip_text = "Reset"
+tooltip_text = "To Beginning"
 theme_type_variation = &"SelectableToolbarItem"
 icon = ExtResource("2_tgswo")
 expand_icon = true
@@ -70,7 +70,7 @@ expand_icon = true
 [node name="PreviousStepButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-tooltip_text = "Reset"
+tooltip_text = "Previous Step"
 theme_type_variation = &"SelectableToolbarItem"
 icon = ExtResource("3_4wq8j")
 expand_icon = true
@@ -79,7 +79,7 @@ expand_icon = true
 unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-tooltip_text = "Reset"
+tooltip_text = "Next Step"
 theme_type_variation = &"SelectableToolbarItem"
 icon = ExtResource("4_6btlt")
 expand_icon = true
@@ -87,7 +87,7 @@ expand_icon = true
 [node name="LastStepButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-tooltip_text = "Reset"
+tooltip_text = "Final Step"
 theme_type_variation = &"SelectableToolbarItem"
 icon = ExtResource("7_gjqlj")
 expand_icon = true
@@ -130,8 +130,8 @@ alignment = 2
 
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/RunButton" to="." method="_on_run_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/StopButton" to="." method="_on_stop_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_first_step_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_reset_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_first_step_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/PreviousStepButton" to="." method="_on_previous_step_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/NextStepButton" to="." method="_on_next_step_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/LastStepButton" to="." method="_on_last_step_button_pressed"]

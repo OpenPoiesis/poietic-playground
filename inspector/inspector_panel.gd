@@ -9,7 +9,7 @@ static var settings_panels: Dictionary[String,InspectorTraitPanel] = {}
 
 @onready var title_label = %InspectorTitle
 @onready var subtitle_label = %InspectorSubtitle
-@onready var secondary_attribute_label = %SecondaryAttributeLabel
+# @onready var secondary_attribute_label = %SecondaryAttributeLabel
 # @onready var primary_attribute_icon = %PrimaryAttributeIcon
 
 var selection: PackedInt64Array

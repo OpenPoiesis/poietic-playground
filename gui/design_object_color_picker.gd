@@ -53,11 +53,11 @@ func _ready():
 	%DefaultColorButton.button_group = button_group
 	%DefaultColorButton.focus_mode = Control.FOCUS_NONE
 	%DefaultColorButton.pressed.connect(_on_color_button_pressed.bind("", %DefaultColorButton))
-	var selected_style = StyleBoxFlat.new()
-	selected_style.bg_color = Color.BLACK
-	selected_style.border_color = Color.WHITE
-	selected_style.set_border_width_all(3)		
-	%DefaultColorButton.add_theme_stylebox_override("pressed", selected_style)
+	var def_selected_style = StyleBoxFlat.new()
+	def_selected_style.bg_color = Color.BLACK
+	def_selected_style.border_color = Color.WHITE
+	def_selected_style.set_border_width_all(3)		
+	%DefaultColorButton.add_theme_stylebox_override("pressed", def_selected_style)
 
 func set_selected_color(color_name: String) -> void:
 	# If empty or invalid color name, deselect all

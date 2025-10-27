@@ -1,6 +1,6 @@
 class_name ControlBar extends PanelContainer
 
-@onready var reset_button: Button = %ControlButtons/ResetButton
+# @onready var reset_button: Button = %ControlButtons/ResetButton
 @onready var stop_button: Button = %ControlButtons/StopButton
 @onready var run_button: Button = %ControlButtons/RunButton
 @onready var loop_button: Button = %ControlButtons/LoopButton

@@ -8,8 +8,6 @@ class_name ResultPanel extends Node
 
 @onready var chart_container: Container = %ChartContainer
 
-@export var result_panel: Node
-
 func initialize(design_ctrl: DesignController, player: ResultPlayer, canvas_ctrl: CanvasController):
 	self.design_ctrl = design_ctrl
 	self.canvas_ctrl = canvas_ctrl
