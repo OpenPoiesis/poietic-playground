@@ -1,0 +1,68 @@
+[gd_scene load_steps=6 format=3 uid="uid://bf1mb8h0ltm8y"]
+
+[ext_resource type="Theme" uid="uid://dws6dqiic6wt" path="res://resources/default.tres" id="1_raet2"]
+[ext_resource type="Script" uid="uid://chysn48fbqt86" path="res://gui/inline_editors/graph_curves_inline_editor.gd" id="2_raet2"]
+[ext_resource type="Script" uid="uid://bivdj54mlknwe" path="res://gui/windowed_editors/function_curve_editor.gd" id="3_raet2"]
+[ext_resource type="Texture2D" uid="uid://2sk33kpt62hb" path="res://resources/icons/white/cancel.png" id="4_hkd6j"]
+[ext_resource type="Texture2D" uid="uid://ijgs3brho08s" path="res://resources/icons/white/ok.png" id="5_nkdia"]
+
+[node name="GraphCurvesInlineEditor" type="Panel"]
+offset_right = 255.0
+offset_bottom = 215.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource("1_raet2")
+theme_type_variation = &"CanvasPrompt"
+script = ExtResource("2_raet2")
+metadata/_custom_type_script = "uid://chysn48fbqt86"
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 258.0
+offset_bottom = 54.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="CurveEditor" type="Control" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+script = ExtResource("3_raet2")
+metadata/_custom_type_script = "uid://bivdj54mlknwe"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="OpenEditorWindowButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Open"
+
+[node name="VSeparator" type="VSeparator" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RejectCurvesButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+icon = ExtResource("4_hkd6j")
+icon_alignment = 1
+expand_icon = true
+
+[node name="AcceptCurvesButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+icon = ExtResource("5_nkdia")
+icon_alignment = 1
+expand_icon = true
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/OpenEditorWindowButton" to="." method="_on_open_editor_window_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/RejectCurvesButton" to="." method="_on_reject_curves_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/AcceptCurvesButton" to="." method="_on_accept_curves_button_pressed"]

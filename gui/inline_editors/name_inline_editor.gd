@@ -1,5 +1,4 @@
 class_name NameInlineEditor extends CanvasInlineEditor
-# FIXME: [REFACTORING] Convert this to CanvasPrompt type
 
 @onready var edit_field: LineEdit = $LabelEditField
 
@@ -9,12 +8,12 @@ var _original_center: Vector2
 var _target_width: float = 0.0
 var _is_active: bool = false
 
-func open(object_id: int, attribute: String, value: Variant):
+func open(object: PoieticObject, attribute: String, value: Variant):
 	if attribute != "name":
 		push_warning("Name editor called for attribute '" + attribute +"'")
 		return
 
-	self.object_id = object_id
+	self.object_id = object.object_id
 	if value == null:
 		edit_field.text = ""
 	else:

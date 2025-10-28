@@ -22,8 +22,8 @@ func set_label(text: String):
 	else:
 		%Label.hide()
 	
-func open(object_id: int, attribute: String, value: Variant):
-	self.object_id = object_id
+func open(object: PoieticObject, attribute: String, value: Variant):
+	self.object_id = object.object_id
 	self.attribute_name = attribute
 	
 	%ValueField.text = String(value)

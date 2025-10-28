@@ -1,4 +1,4 @@
-class_name CanvasInlineEditor extends Control
+class_name CanvasInlineEditor extends Panel
 
 # TODO: Use this
 #class Context:
@@ -21,7 +21,7 @@ class_name CanvasInlineEditor extends Control
 func initialize(canvas_ctrl: CanvasController):
 	self.canvas_ctrl = canvas_ctrl
 
-func open(object_id: int, attribute: String, value: Variant):
+func open(object: PoieticObject, attribute: String, value: Variant):
 	push_error("Editor must override 'begin_editing(...)'")
 
 func close():

@@ -115,6 +115,11 @@ func initialize_inline_editors(canvas_ctrl: CanvasController):
 	numeric_attr_editor.initialize(canvas_ctrl)
 	canvas_ctrl.register_inline_editor("numeric_attribute", numeric_attr_editor)
 
+	var graphical_curves_editor = $Gui/InlineEditors/GraphCurvesInlineEditor
+	graphical_curves_editor.initialize(canvas_ctrl)
+	graphical_curves_editor.editor_window = $FunctionEditorWindow
+	canvas_ctrl.register_inline_editor("graphical_curves", graphical_curves_editor)
+
 	var issues_popup = $Gui/InlineEditors/IssuesPopup
 	issues_popup.initialize(canvas_ctrl)
 
@@ -527,6 +532,8 @@ func edit_primary_attribute():
 		canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "delay_duration")
 	elif object.has_trait("Smooth"):
 		canvas_ctrl.open_inline_editor("numeric_attribute", object.object_id, "window_time")
+	elif object.has_trait("GraphicalFunction"):
+		canvas_ctrl.open_inline_editor("graphical_curves", object.object_id, "graphical_function_points")
 
 func edit_name():
 	# TODO: Beep

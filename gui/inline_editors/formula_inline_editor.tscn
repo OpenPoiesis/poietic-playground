@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://2sk33kpt62hb" path="res://resources/icons/white/cancel.png" id="3_xuxp2"]
 [ext_resource type="Texture2D" uid="uid://ijgs3brho08s" path="res://resources/icons/white/ok.png" id="4_fl0tg"]
 
-[node name="FormulaInlineEditor" type="PanelContainer"]
+[node name="FormulaInlineEditor" type="Panel"]
 offset_right = 262.0
 offset_bottom = 58.0
 theme = ExtResource("1_xuxp2")
@@ -15,7 +15,11 @@ script = ExtResource("1_dqs07")
 metadata/_custom_type_script = "uid://ck4fq6cbpmv40"
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
-layout_mode = 2
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 258.0
+offset_bottom = 54.0
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10

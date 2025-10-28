@@ -1,19 +1,23 @@
 [gd_scene load_steps=4 format=3 uid="uid://1vmwbqdssvhd"]
 
 [ext_resource type="Theme" uid="uid://dws6dqiic6wt" path="res://resources/default.tres" id="1_tt0ao"]
-[ext_resource type="Script" uid="uid://cgyrqueibhcxy" path="res://tool/attribute_prompt.gd" id="2_tt0ao"]
+[ext_resource type="Script" uid="uid://cgyrqueibhcxy" path="res://gui/inline_editors/numeric_attribute_inline_editor.gd" id="2_tt0ao"]
 [ext_resource type="Texture2D" uid="uid://clvwdolwxpfkg" path="res://resources/icons/white/time-window.png" id="3_f2eeg"]
 
-[node name="AttributePrompt" type="PanelContainer"]
+[node name="AttributePrompt" type="Panel"]
 offset_right = 217.0
 offset_bottom = 58.0
 theme = ExtResource("1_tt0ao")
 theme_type_variation = &"CanvasPrompt"
 script = ExtResource("2_tt0ao")
-metadata/_custom_type_script = "uid://ck4fq6cbpmv40"
+metadata/_custom_type_script = "uid://cgyrqueibhcxy"
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
-layout_mode = 2
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 213.0
+offset_bottom = 54.0
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10

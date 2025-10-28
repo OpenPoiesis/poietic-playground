@@ -5,8 +5,8 @@ class_name FormulaInlineEditor extends CanvasInlineEditor
 
 var _is_active: bool = false
 
-func open(object_id: int, attribute: String, value: Variant):
-	self.object_id = object_id
+func open(object: PoieticObject, attribute: String, value: Variant):
+	self.object_id = object.object_id
 	self.original_value = String(value)
 	%FormulaField.text = self.original_value
 	

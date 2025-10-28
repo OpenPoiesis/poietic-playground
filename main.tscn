@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://fhtvpa30rrel"]
+[gd_scene load_steps=26 format=3 uid="uid://fhtvpa30rrel"]
 
 [ext_resource type="Script" uid="uid://dr8beg2t8bd1u" path="res://main.gd" id="1_2q6io"]
 [ext_resource type="PackedScene" uid="uid://tems4qsdoox" path="res://gui/main_bar.tscn" id="2_kek77"]
@@ -14,9 +14,11 @@
 [ext_resource type="PackedScene" uid="uid://1vmwbqdssvhd" path="res://gui/inline_editors/numeric_attribute_inline_editor.tscn" id="11_w48qg"]
 [ext_resource type="PackedScene" uid="uid://vqxepyllje5n" path="res://gui/inline_editors/issues_popup.tscn" id="12_ycdy4"]
 [ext_resource type="LabelSettings" uid="uid://bj8hu8ys4ktpo" path="res://resources/canvas/primary_label_settings.tres" id="13_2cqfq"]
+[ext_resource type="PackedScene" uid="uid://bf1mb8h0ltm8y" path="res://gui/inline_editors/graph_curves_inline_editor.tscn" id="13_cegan"]
 [ext_resource type="LabelSettings" uid="uid://jdwy6s22uvti" path="res://resources/canvas/secondary_label_settings.tres" id="14_yaehf"]
 [ext_resource type="LabelSettings" uid="uid://dd2mdehmnioi5" path="res://resources/canvas/invalid_label_settings.tres" id="15_074og"]
 [ext_resource type="PackedScene" uid="uid://uxybhxts4bor" path="res://gui/debug/development_debugging_window.tscn" id="17_yaehf"]
+[ext_resource type="PackedScene" uid="uid://c4xgj2n8yqm5b" path="res://gui/windowed_editors/function_editor_window.tscn" id="18_074og"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2cqfq"]
 bg_color = Color(0.23921569, 0.23921569, 0.23921569, 1)
@@ -220,6 +222,9 @@ visible = false
 [node name="IssuesPopup" parent="Gui/InlineEditors" instance=ExtResource("12_ycdy4")]
 visible = false
 
+[node name="GraphCurvesInlineEditor" parent="Gui/InlineEditors" instance=ExtResource("13_cegan")]
+visible = false
+
 [node name="Canvas" type="DiagramCanvas" parent="." node_paths=PackedStringArray("value_indicator_prototype")]
 value_indicator_prototype = NodePath("ValueIndicator")
 primary_label_settings = ExtResource("13_2cqfq")
@@ -255,6 +260,11 @@ ok_button_text = "Dismiss"
 
 [node name="ObjectDebugWindow" parent="." instance=ExtResource("17_yaehf")]
 visible = false
+
+[node name="FunctionEditorWindow" parent="." instance=ExtResource("18_074og")]
+visible = false
+column_x_label = "X"
+column_y_label = "Y"
 
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/EditMenu" to="." method="_on_edit_menu_id_pressed"]

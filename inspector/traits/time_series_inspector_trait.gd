@@ -45,8 +45,9 @@ func update_stats(result: PoieticResult, id: int):
 		stats_container.hide()
 		return
 	stats_container.show()
-	%MinValue.text = str(series.data_min)
-	%MaxValue.text = str(series.data_max)
+	# TODO: Use some localized/scientific formatting
+	%MinValue.text = "%.2f" % series.data_min 
+	%MaxValue.text = "%.2f" % series.data_max
 
 func _on_result_removed():
 	chart.hide()

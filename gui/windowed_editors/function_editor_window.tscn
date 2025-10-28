@@ -1,0 +1,210 @@
+[gd_scene load_steps=3 format=3 uid="uid://c4xgj2n8yqm5b"]
+
+[ext_resource type="Script" uid="uid://ds2hd01f30avf" path="res://gui/windowed_editors/function_editor_window.gd" id="1_function_editor"]
+[ext_resource type="Script" uid="uid://bivdj54mlknwe" path="res://gui/windowed_editors/function_curve_editor.gd" id="2_curve_editor"]
+
+[node name="FunctionEditorWindow" type="Window"]
+oversampling_override = 1.0
+title = "Graphical Function Editor"
+initial_position = 1
+size = Vector2i(750, 590)
+min_size = Vector2i(600, 450)
+script = ExtResource("1_function_editor")
+column_x_label = null
+column_y_label = null
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="GraphPanel" type="PanelContainer" parent="VBoxContainer/MarginContainer/HSplitContainer"]
+custom_minimum_size = Vector2(400, 400)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/HSplitContainer/GraphPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="GraphControl" type="Control" parent="VBoxContainer/MarginContainer/HSplitContainer/GraphPanel/MarginContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(350, 350)
+layout_mode = 2
+script = ExtResource("2_curve_editor")
+
+[node name="TablePanel" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HSplitContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+
+[node name="TableHeader" type="Label" parent="VBoxContainer/MarginContainer/HSplitContainer/TablePanel"]
+layout_mode = 2
+text = "Points"
+horizontal_alignment = 1
+
+[node name="PointsTable" type="Tree" parent="VBoxContainer/MarginContainer/HSplitContainer/TablePanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+hide_root = true
+
+[node name="TableButtons" type="HBoxContainer" parent="VBoxContainer/MarginContainer/HSplitContainer/TablePanel"]
+layout_mode = 2
+
+[node name="AddButton" type="Button" parent="VBoxContainer/MarginContainer/HSplitContainer/TablePanel/TableButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add Point"
+
+[node name="RemoveButton" type="Button" parent="VBoxContainer/MarginContainer/HSplitContainer/TablePanel/TableButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remove"
+
+[node name="ControlsContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="RangePanel" type="PanelContainer" parent="VBoxContainer/ControlsContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/ControlsContainer/RangePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer"]
+layout_mode = 2
+columns = 4
+
+[node name="MinXLabel" type="Label" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer"]
+layout_mode = 2
+text = "Min X:"
+
+[node name="MinXEdit" type="LineEdit" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "0.0"
+
+[node name="MaxXLabel" type="Label" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer"]
+layout_mode = 2
+text = "Max X:"
+
+[node name="MaxXEdit" type="LineEdit" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "100.0"
+
+[node name="MinYLabel" type="Label" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer"]
+layout_mode = 2
+text = "Min Y:"
+
+[node name="MinYEdit" type="LineEdit" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "0.0"
+
+[node name="MaxYLabel" type="Label" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer"]
+layout_mode = 2
+text = "Max Y:"
+
+[node name="MaxYEdit" type="LineEdit" parent="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "100.0"
+
+[node name="InterpolationPanel" type="PanelContainer" parent="VBoxContainer/ControlsContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/ControlsContainer/InterpolationPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ControlsContainer/InterpolationPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/ControlsContainer/InterpolationPanel/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "Interpolation:"
+
+[node name="LinearButton" type="Button" parent="VBoxContainer/ControlsContainer/InterpolationPanel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+text = "Linear"
+
+[node name="StepButton" type="Button" parent="VBoxContainer/ControlsContainer/InterpolationPanel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "Step"
+
+[node name="CubicButton" type="Button" parent="VBoxContainer/ControlsContainer/InterpolationPanel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "Cubic"
+
+[node name="ActionButtons" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Spacer" type="Control" parent="VBoxContainer/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CancelButton" type="Button" parent="VBoxContainer/ActionButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Cancel"
+
+[node name="SetButton" type="Button" parent="VBoxContainer/ActionButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Set"
+
+[node name="BottomMargin" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[connection signal="pressed" from="VBoxContainer/MarginContainer/HSplitContainer/TablePanel/TableButtons/AddButton" to="." method="_on_add_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/MarginContainer/HSplitContainer/TablePanel/TableButtons/RemoveButton" to="." method="_on_remove_button_pressed"]
+[connection signal="text_changed" from="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer/MinXEdit" to="." method="_on_range_changed"]
+[connection signal="text_changed" from="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer/MaxXEdit" to="." method="_on_range_changed"]
+[connection signal="text_changed" from="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer/MinYEdit" to="." method="_on_range_changed"]
+[connection signal="text_changed" from="VBoxContainer/ControlsContainer/RangePanel/MarginContainer/GridContainer/MaxYEdit" to="." method="_on_range_changed"]
+[connection signal="pressed" from="VBoxContainer/ControlsContainer/InterpolationPanel/MarginContainer/HBoxContainer/LinearButton" to="." method="_on_interpolation_button_pressed" binds= ["linear"]]
+[connection signal="pressed" from="VBoxContainer/ControlsContainer/InterpolationPanel/MarginContainer/HBoxContainer/StepButton" to="." method="_on_interpolation_button_pressed" binds= ["step"]]
+[connection signal="pressed" from="VBoxContainer/ControlsContainer/InterpolationPanel/MarginContainer/HBoxContainer/CubicButton" to="." method="_on_interpolation_button_pressed" binds= ["cubic"]]
+[connection signal="pressed" from="VBoxContainer/ActionButtons/CancelButton" to="." method="_on_cancel_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/ActionButtons/SetButton" to="." method="_on_set_button_pressed"]

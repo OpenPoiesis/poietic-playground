@@ -48,7 +48,6 @@ func _ready():
 	_setup_grid()
 
 func _setup_grid():
-	# Create grid container if not exists
 	if not item_grid:
 		item_grid = GridContainer.new()
 		item_grid.columns = columns
@@ -85,16 +84,15 @@ func add_node2d_item(label: String, icon_node: Node2D, data: Variant = null):
 ##   data: Metadata to store with this item (typically type name)
 ##
 func add_texture_item(label: String, texture: Texture, data: Variant = null):
-	# Wrap texture in a Sprite2D
 	var sprite = Sprite2D.new()
 	sprite.texture = texture
 	sprite.centered = true
-	# Scale to fit icon area (48px)
+
+	# TODO: Make icon area constant/configurable
 	var texture_size = texture.get_size()
 	var scale_factor = min(48.0 / texture_size.x, 48.0 / texture_size.y) * 0.8
 	sprite.scale = Vector2(scale_factor, scale_factor)
 
-	# Delegate to node2d version
 	add_node2d_item(label, sprite, data)
 
 ## Remove all items from the palette
@@ -128,13 +126,10 @@ func _on_item_pressed(item: PaletteItem):
 	_select_item(item)
 
 func _select_item(item: PaletteItem):
-	# Deselect all others
 	for i in items:
 		i.is_selected = false
 
-	# Select this one
 	item.is_selected = true
 	selected_item = item
 
-	# Emit signal
 	item_selected.emit(item.item_data)

@@ -3,8 +3,7 @@
 [ext_resource type="Script" uid="uid://doi8fk3cpuhrs" path="res://gui/inline_editors/issues_popup.gd" id="1_c8hci"]
 [ext_resource type="Texture2D" uid="uid://ddew5c87g824t" path="res://resources/icons/error.png" id="1_gghgm"]
 
-[node name="IssuesPrompt" type="Control"]
-layout_mode = 3
+[node name="IssuesPrompt" type="Panel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
