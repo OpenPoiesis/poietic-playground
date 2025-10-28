@@ -128,6 +128,18 @@ layout_mode = 2
 text = "10"
 alignment = 2
 
+[node name="DeltaLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Step Size"
+
+[node name="TimeDeltaField" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+tooltip_text = "Time delta – size of a time step (arbitrary untis)"
+text = "10"
+alignment = 2
+
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/RunButton" to="." method="_on_run_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/StopButton" to="." method="_on_stop_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_reset_button_pressed"]
@@ -138,3 +150,4 @@ alignment = 2
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/LoopButton" to="." method="_on_loop_button_pressed"]
 [connection signal="text_submitted" from="MarginContainer/VBoxContainer/HBoxContainer2/TimeField" to="." method="_on_time_field_text_submitted"]
 [connection signal="text_submitted" from="MarginContainer/VBoxContainer/HBoxContainer2/EndTimeField" to="." method="_on_end_time_field_text_submitted"]
+[connection signal="text_submitted" from="MarginContainer/VBoxContainer/HBoxContainer2/TimeDeltaField" to="." method="_on_time_delta_field_text_submitted"]

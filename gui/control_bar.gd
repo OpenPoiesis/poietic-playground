@@ -11,6 +11,7 @@ class_name ControlBar extends PanelContainer
 
 @onready var time_field: LineEdit = %TimeField
 @onready var end_time_field: LineEdit = %EndTimeField
+@onready var time_delta_field: LineEdit = %TimeDeltaField
 
 @export var design_ctrl: DesignController
 @export var player: ResultPlayer
@@ -94,13 +95,16 @@ func _on_design_changed(has_issues: bool):
 	
 func update_simulation_times():
 	var params: PoieticObject = design_ctrl.get_simulation_parameters_object()
-	if params:
-		# TODO Set initial time
-		var initial_time = params.get_attribute("initial_time")
-		var time_delta = params.get_attribute("time_delta")
-		var end_time = params.get_attribute("end_time")
-		if end_time is float or end_time is int:
-			%EndTimeField.text = str(end_time)
+	if params == null:
+		return
+	
+	# var initial_time = params.get_attribute("initial_time")
+	var time_delta = params.get_attribute("time_delta")
+	var end_time = params.get_attribute("end_time")
+	if end_time is float or end_time is int:
+		end_time_field.text = str(end_time)
+	if time_delta is float or time_delta is int:
+		time_delta_field.text = str(time_delta)
 
 func _on_end_time_field_text_submitted(new_text):
 	# FIXME: Move this to controller or send an app action
@@ -131,3 +135,26 @@ func _on_time_field_text_submitted(new_text: String):
 		return
 	var current_time = float(new_text)
 	player.to_time(current_time)
+
+
+func _on_time_delta_field_text_submitted(new_text):
+	# FIXME: Move this to controller or send an app action
+	time_delta_field.release_focus()
+	if not new_text.is_valid_float():
+		update_simulation_times()
+		return
+		
+	var time_delta = float(new_text)
+	var params: PoieticObject = design_ctrl.get_simulation_parameters_object()
+
+	if params and params.get_attribute("time_delta") == time_delta:
+		return
+
+	var trans: PoieticTransaction = Global.app.design_controller.new_transaction()
+
+	if params:
+		trans.set_attribute(params.object_id, "time_delta", time_delta)
+	else:
+		trans.create_object("Simulation", {"time_delta": time_delta})
+
+	Global.app.design_controller.accept(trans)
