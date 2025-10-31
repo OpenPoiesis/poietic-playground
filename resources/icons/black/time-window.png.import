@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cho77cgpxok72"
-path="res://.godot/imported/line-orthogonal.png-9f3eb1c03c98696d195edd02cf0332be.ctex"
+uid="uid://d2eq3s6tj3l4n"
+path="res://.godot/imported/time-window.png-2e518facbec42c36487198c28034b2d5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/icons/black/line-orthogonal.png"
-dest_files=["res://.godot/imported/line-orthogonal.png-9f3eb1c03c98696d195edd02cf0332be.ctex"]
+source_file="res://resources/icons/black/time-window.png"
+dest_files=["res://.godot/imported/time-window.png-2e518facbec42c36487198c28034b2d5.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cho77cgpxok72"
-path="res://.godot/imported/line-orthogonal.png-9f3eb1c03c98696d195edd02cf0332be.ctex"
+uid="uid://t11vbjw714ip"
+path="res://.godot/imported/zoom-out.png-5722a8df5f19d010fa622155c140a418.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/icons/black/line-orthogonal.png"
-dest_files=["res://.godot/imported/line-orthogonal.png-9f3eb1c03c98696d195edd02cf0332be.ctex"]
+source_file="res://resources/icons/black/zoom-out.png"
+dest_files=["res://.godot/imported/zoom-out.png-5722a8df5f19d010fa622155c140a418.ctex"]
 
 [params]
 
