@@ -49,7 +49,9 @@ func _ready():
 			"scale:",  DisplayServer.screen_get_scale(),
 			"max scale:", DisplayServer.screen_get_max_scale(),
 			"usable rect:", DisplayServer.screen_get_usable_rect().size)
-	
+	# TODO: Make this configurable
+	get_tree().root.set_content_scale_factor(DisplayServer.screen_get_scale())
+
 	$FileDialog.use_native_dialog = true
 	$FileDialog.access = FileDialog.Access.ACCESS_FILESYSTEM
 

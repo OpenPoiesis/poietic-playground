@@ -1,8 +1,41 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://dws6dqiic6wt"]
+[gd_resource type="Theme" load_steps=18 format=3 uid="uid://dws6dqiic6wt"]
 
 [ext_resource type="FontFile" uid="uid://6y6i5dhrvmps" path="res://resources/fonts/IBMPlexSansCondensed-Light.otf" id="1_vajuw"]
+[ext_resource type="Texture2D" uid="uid://bsyocoq63eb2x" path="res://resources/controls/button-disabled.tres" id="2_2sp6u"]
 [ext_resource type="FontFile" uid="uid://bf4sfp1whyleo" path="res://resources/fonts/IBMPlexSansCondensed-LightItalic.otf" id="2_7bl14"]
+[ext_resource type="Texture2D" uid="uid://by086edpwuddp" path="res://resources/controls/button-hover.tres" id="2_44yck"]
 [ext_resource type="FontFile" uid="uid://0tkw3rs84eeo" path="res://resources/fonts/IBMPlexSansCondensed-Bold.otf" id="3_7bl14"]
+[ext_resource type="Texture2D" uid="uid://d3y1l7lf3lt1l" path="res://resources/controls/button-normal.tres" id="3_300pt"]
+[ext_resource type="Texture2D" uid="uid://c1vaiu3o1tpgs" path="res://resources/controls/button-pressed.tres" id="4_2sp6u"]
+[ext_resource type="Texture2D" uid="uid://d1b27ouxf2o8f" path="res://resources/controls/panel-background.tres" id="7_300pt"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_v7jgt"]
+texture = ExtResource("2_2sp6u")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_uud7d"]
+texture = ExtResource("2_44yck")
+texture_margin_left = 10.0
+texture_margin_top = 10.0
+texture_margin_right = 10.0
+texture_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_xm3mf"]
+texture = ExtResource("3_300pt")
+texture_margin_left = 10.0
+texture_margin_top = 10.0
+texture_margin_right = 10.0
+texture_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wojnu"]
+texture = ExtResource("4_2sp6u")
+texture_margin_left = 10.0
+texture_margin_top = 10.0
+texture_margin_right = 10.0
+texture_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7bl14"]
 bg_color = Color(0.28485, 0.28485, 0.28485, 1)
@@ -25,6 +58,13 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.854495, 0.663432, 0.368812, 1)
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qq21b"]
+texture = ExtResource("7_300pt")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hrfyl"]
 bg_color = Color(0.18359, 0.18359, 0.18359, 1)
 border_width_left = 2
@@ -45,12 +85,13 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [resource]
+Button/colors/font_color = Color(0.29153943, 0.09829716, 0.02523346, 1)
 Button/fonts/font = ExtResource("1_vajuw")
-Button/styles/disabled = null
+Button/styles/disabled = SubResource("StyleBoxTexture_v7jgt")
 Button/styles/focus = null
-Button/styles/hover = null
-Button/styles/normal = null
-Button/styles/pressed = null
+Button/styles/hover = SubResource("StyleBoxTexture_uud7d")
+Button/styles/normal = SubResource("StyleBoxTexture_xm3mf")
+Button/styles/pressed = SubResource("StyleBoxTexture_wojnu")
 CanvasPrompt/base_type = &"PanelContainer"
 CanvasPrompt/styles/panel = SubResource("StyleBoxFlat_7bl14")
 DiagramCanvas/colors/midpoint_handle_fill = Color(0.5046, 0.71166, 0.87, 1)
@@ -64,10 +105,12 @@ InspectorSubtitle/fonts/font = ExtResource("2_7bl14")
 InspectorTitle/base_type = &"Label"
 InspectorTitle/font_sizes/font_size = 22
 InspectorTitle/fonts/font = ExtResource("3_7bl14")
+Label/colors/font_color = Color(1, 1, 1, 1)
 Label/constants/horizontal_padding = 20
 Palette/base_type = &"Button"
 Palette/font_sizes/font_size = 12
 Palette/styles/pressed = SubResource("StyleBoxFlat_eqc3b")
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_qq21b")
 ResultChartItem/base_type = &"PanelContainer"
 ResultChartItem/styles/panel = SubResource("StyleBoxFlat_hrfyl")
 ResultItemTitle/base_type = &"Label"
