@@ -240,6 +240,13 @@ underflow_style = SubResource("StyleBoxFlat_cegan")
 empty_style = SubResource("StyleBoxFlat_82xsv")
 visible = false
 
+[node name="CanvasStyle" type="CanvasStyle" parent="Canvas"]
+pictogram_color = Color(0.15127593, 0.15127611, 0.15127608, 1)
+primary_label_settings = ExtResource("13_2cqfq")
+secondary_label_settings = ExtResource("14_yaehf")
+invalid_label_settings = ExtResource("15_074og")
+default_connector_color = Color(0.48276442, 0.35990855, 0.1530441, 1)
+
 [node name="FileDialog" type="FileDialog" parent="."]
 access = 2
 use_native_dialog = true

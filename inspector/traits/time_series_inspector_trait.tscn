@@ -7,6 +7,7 @@
 offset_right = 148.0
 offset_bottom = 152.0
 size_flags_horizontal = 3
+theme_type_variation = &"InspectorTraitPanel"
 script = ExtResource("1_g58fa")
 metadata/_custom_type_script = "uid://botnbdshgt0d6"
 

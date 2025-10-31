@@ -135,12 +135,15 @@ func initialize_menu_bar():
 	%MenuBar.prefer_global_menu = false
 
 func initialize_diagram_style():
-	# TODO: Find a better place for this method
-	var style = DiagramStyle.new()
+	var style: CanvasStyle = $Canvas.find_child("CanvasStyle") as CanvasStyle
+	if style == null:
+		style = CanvasStyle.new()
 	style.adaptable_colors = Global.get_adaptable_clor_map()
-	style.line_widths = {
-		"Stock": 4.0,
-	}
+	
+	# TODO: Move this default somewhere else
+	if !style.line_widths.has("Stock"):
+		style.line_widths["Stock"] = 2.0
+
 	return style
 
 func _initialize_main_menu():
@@ -166,7 +169,7 @@ func _on_command_failed(command: String, error: String, info: Dictionary):
 			error_dialog.title = "Failed to Paste"
 		"simulation-init", "simulation", "internal-error:compiler":
 			error_dialog.title = "Internal error (" + command + ")"
-		_:
+		_: 
 			error_dialog.title = "Command " + command.to_upper() + " Failed"
 	error_dialog.dialog_text = error
 	error_dialog.popup_centered()

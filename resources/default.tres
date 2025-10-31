@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=20 format=3 uid="uid://dws6dqiic6wt"]
+[gd_resource type="Theme" load_steps=21 format=3 uid="uid://dws6dqiic6wt"]
 
 [ext_resource type="FontFile" uid="uid://6y6i5dhrvmps" path="res://resources/fonts/IBMPlexSansCondensed-Light.otf" id="1_vajuw"]
 [ext_resource type="Texture2D" uid="uid://bsyocoq63eb2x" path="res://resources/controls/button-disabled.tres" id="2_2sp6u"]
@@ -50,6 +50,13 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 20
 shadow_offset = Vector2(10, 10)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_stdq7"]
+texture = ExtResource("8_v7jgt")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wpld7"]
 texture = ExtResource("8_v7jgt")
@@ -113,8 +120,14 @@ InspectorSubtitle/fonts/font = ExtResource("2_7bl14")
 InspectorTitle/base_type = &"Label"
 InspectorTitle/font_sizes/font_size = 22
 InspectorTitle/fonts/font = ExtResource("3_7bl14")
-Label/colors/font_color = Color(1, 1, 1, 1)
+InspectorTraitPanel/base_type = &"PanelContainer"
+InspectorTraitPanel/styles/panel = SubResource("StyleBoxTexture_stdq7")
+Label/colors/font_color = Color(0, 0, 0, 1)
 Label/constants/horizontal_padding = 20
+LineEdit/colors/caret_color = Color(0.9, 0.7944, 0.612, 1)
+LineEdit/colors/font_color = Color(0.06, 0.06, 0.06, 1)
+LineEdit/colors/font_selected_color = Color(0.13, 0.13, 0.13, 1)
+LineEdit/colors/selection_color = Color(0.9, 0.6921, 0.333, 1)
 LineEdit/styles/normal = SubResource("StyleBoxTexture_wpld7")
 Palette/base_type = &"Button"
 Palette/font_sizes/font_size = 12
