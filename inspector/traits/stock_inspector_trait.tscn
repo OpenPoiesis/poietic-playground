@@ -38,6 +38,7 @@ text = "Allows negative"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 0
 theme_override_styles/normal = SubResource("StyleBoxEmpty_ntq82")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_pu7ig")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_meijf")
@@ -47,9 +48,6 @@ theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_yqmh6")
 icon_alignment = 1
 script = ExtResource("3_pu7ig")
 metadata/_custom_type_script = "uid://dq551sb5tha7p"
-
-[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer2"]
-layout_mode = 2
 
 [connection signal="pressed" from="VBoxContainer2/FormContainer/AllowsNegativeCheck" to="." method="_on_allows_negative_check_pressed"]
 [connection signal="toggled" from="VBoxContainer2/FormContainer/AllowsNegativeCheck" to="." method="_on_allows_negative_check_toggled"]

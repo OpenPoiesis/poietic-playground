@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=18 format=3 uid="uid://dws6dqiic6wt"]
+[gd_resource type="Theme" load_steps=20 format=3 uid="uid://dws6dqiic6wt"]
 
 [ext_resource type="FontFile" uid="uid://6y6i5dhrvmps" path="res://resources/fonts/IBMPlexSansCondensed-Light.otf" id="1_vajuw"]
 [ext_resource type="Texture2D" uid="uid://bsyocoq63eb2x" path="res://resources/controls/button-disabled.tres" id="2_2sp6u"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://d3y1l7lf3lt1l" path="res://resources/controls/button-normal.tres" id="3_300pt"]
 [ext_resource type="Texture2D" uid="uid://c1vaiu3o1tpgs" path="res://resources/controls/button-pressed.tres" id="4_2sp6u"]
 [ext_resource type="Texture2D" uid="uid://d1b27ouxf2o8f" path="res://resources/controls/panel-background.tres" id="7_300pt"]
+[ext_resource type="Texture2D" uid="uid://bldtdc3i2uubh" path="res://resources/controls/panel-background-secondary.tres" id="8_v7jgt"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_v7jgt"]
 texture = ExtResource("2_2sp6u")
@@ -50,6 +51,13 @@ corner_radius_bottom_left = 10
 shadow_size = 20
 shadow_offset = Vector2(10, 10)
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wpld7"]
+texture = ExtResource("8_v7jgt")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eqc3b"]
 bg_color = Color(0.270222, 0.270222, 0.270222, 1)
 border_width_left = 2
@@ -60,10 +68,10 @@ border_color = Color(0.854495, 0.663432, 0.368812, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qq21b"]
 texture = ExtResource("7_300pt")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hrfyl"]
 bg_color = Color(0.18359, 0.18359, 0.18359, 1)
@@ -107,6 +115,7 @@ InspectorTitle/font_sizes/font_size = 22
 InspectorTitle/fonts/font = ExtResource("3_7bl14")
 Label/colors/font_color = Color(1, 1, 1, 1)
 Label/constants/horizontal_padding = 20
+LineEdit/styles/normal = SubResource("StyleBoxTexture_wpld7")
 Palette/base_type = &"Button"
 Palette/font_sizes/font_size = 12
 Palette/styles/pressed = SubResource("StyleBoxFlat_eqc3b")
