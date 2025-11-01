@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=21 format=3 uid="uid://dws6dqiic6wt"]
+[gd_resource type="Theme" load_steps=18 format=3 uid="uid://dws6dqiic6wt"]
 
 [ext_resource type="FontFile" uid="uid://6y6i5dhrvmps" path="res://resources/fonts/IBMPlexSansCondensed-Light.otf" id="1_vajuw"]
 [ext_resource type="Texture2D" uid="uid://bsyocoq63eb2x" path="res://resources/controls/button-disabled.tres" id="2_2sp6u"]
@@ -7,8 +7,6 @@
 [ext_resource type="FontFile" uid="uid://0tkw3rs84eeo" path="res://resources/fonts/IBMPlexSansCondensed-Bold.otf" id="3_7bl14"]
 [ext_resource type="Texture2D" uid="uid://d3y1l7lf3lt1l" path="res://resources/controls/button-normal.tres" id="3_300pt"]
 [ext_resource type="Texture2D" uid="uid://c1vaiu3o1tpgs" path="res://resources/controls/button-pressed.tres" id="4_2sp6u"]
-[ext_resource type="Texture2D" uid="uid://d1b27ouxf2o8f" path="res://resources/controls/panel-background.tres" id="7_300pt"]
-[ext_resource type="Texture2D" uid="uid://bldtdc3i2uubh" path="res://resources/controls/panel-background-secondary.tres" id="8_v7jgt"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_v7jgt"]
 texture = ExtResource("2_2sp6u")
@@ -19,17 +17,17 @@ texture_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_uud7d"]
 texture = ExtResource("2_44yck")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 10.0
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_xm3mf"]
 texture = ExtResource("3_300pt")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 10.0
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wojnu"]
 texture = ExtResource("4_2sp6u")
@@ -51,41 +49,43 @@ corner_radius_bottom_left = 10
 shadow_size = 20
 shadow_offset = Vector2(10, 10)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_stdq7"]
-texture = ExtResource("8_v7jgt")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v7jgt"]
+bg_color = Color(0.8156863, 0.8, 0.7411765, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32156864, 0.3137255, 0.2901961, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0.38039216, 0.38039216, 0.38039216, 0.5647059)
+shadow_size = 4
+shadow_offset = Vector2(0, 4)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wpld7"]
-texture = ExtResource("8_v7jgt")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wpld7"]
+bg_color = Color(0.9411765, 0.92156863, 0.85490197, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5411765, 0.5411765, 0.5411765, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eqc3b"]
-bg_color = Color(0.270222, 0.270222, 0.270222, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.854495, 0.663432, 0.368812, 1)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qq21b"]
-texture = ExtResource("7_300pt")
-texture_margin_left = 4.0
-texture_margin_top = 4.0
-texture_margin_right = 4.0
-texture_margin_bottom = 4.0
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2sp6u"]
+bg_color = Color(0.8156863, 0.8, 0.7411765, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hrfyl"]
-bg_color = Color(0.18359, 0.18359, 0.18359, 1)
+bg_color = Color(0.92156863, 0.9019608, 0.8352941, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
+border_color = Color(0.6117647, 0.6, 0.5568628, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vajuw"]
 bg_color = Color(0.480989, 0.400399, 0.191445, 1)
@@ -114,6 +114,8 @@ DiagramCanvas/colors/midpoint_handle_outline = Color(0.2088, 0.58348, 0.87, 1)
 DiagramCanvas/colors/placement_shadow_color = Color(0.728667, 1, 0.63, 0.8)
 DiagramCanvas/colors/selection_fill = Color(0.93, 0.8463, 0.37199998, 0.5647059)
 DiagramCanvas/colors/selection_outline = Color(0.93, 0.82258505, 0.21390001, 0.79607844)
+FloatingPanel/base_type = &"PanelContainer"
+FloatingPanel/styles/panel = SubResource("StyleBoxFlat_v7jgt")
 InspectorSubtitle/base_type = &"Label"
 InspectorSubtitle/font_sizes/font_size = 16
 InspectorSubtitle/fonts/font = ExtResource("2_7bl14")
@@ -121,18 +123,16 @@ InspectorTitle/base_type = &"Label"
 InspectorTitle/font_sizes/font_size = 22
 InspectorTitle/fonts/font = ExtResource("3_7bl14")
 InspectorTraitPanel/base_type = &"PanelContainer"
-InspectorTraitPanel/styles/panel = SubResource("StyleBoxTexture_stdq7")
 Label/colors/font_color = Color(0, 0, 0, 1)
 Label/constants/horizontal_padding = 20
 LineEdit/colors/caret_color = Color(0.9, 0.7944, 0.612, 1)
 LineEdit/colors/font_color = Color(0.06, 0.06, 0.06, 1)
 LineEdit/colors/font_selected_color = Color(0.13, 0.13, 0.13, 1)
 LineEdit/colors/selection_color = Color(0.9, 0.6921, 0.333, 1)
-LineEdit/styles/normal = SubResource("StyleBoxTexture_wpld7")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_wpld7")
 Palette/base_type = &"Button"
 Palette/font_sizes/font_size = 12
-Palette/styles/pressed = SubResource("StyleBoxFlat_eqc3b")
-PanelContainer/styles/panel = SubResource("StyleBoxTexture_qq21b")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_2sp6u")
 ResultChartItem/base_type = &"PanelContainer"
 ResultChartItem/styles/panel = SubResource("StyleBoxFlat_hrfyl")
 ResultItemTitle/base_type = &"Label"

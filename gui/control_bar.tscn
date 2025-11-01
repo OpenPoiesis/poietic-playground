@@ -18,6 +18,7 @@ offset_left = -199.0
 offset_bottom = 78.0
 grow_horizontal = 0
 theme = ExtResource("1_6btlt")
+theme_type_variation = &"FloatingPanel"
 script = ExtResource("1_bjxsy")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
@@ -137,8 +138,8 @@ alignment = 2
 
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/RunButton" to="." method="_on_run_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/StopButton" to="." method="_on_stop_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_reset_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_first_step_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_reset_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/PreviousStepButton" to="." method="_on_previous_step_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/NextStepButton" to="." method="_on_next_step_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/LastStepButton" to="." method="_on_last_step_button_pressed"]

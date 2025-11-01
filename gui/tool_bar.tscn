@@ -16,6 +16,7 @@ offset_top = -54.0
 offset_right = 34.0
 offset_bottom = 54.0
 grow_vertical = 2
+theme_type_variation = &"FloatingPanel"
 script = ExtResource("1_kmcp4")
 
 [node name="Container" type="VBoxContainer" parent="."]

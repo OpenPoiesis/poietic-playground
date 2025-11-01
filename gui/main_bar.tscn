@@ -7,12 +7,14 @@
 
 [node name="MainBar" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 48)
-offset_right = 135.0
-offset_bottom = 48.0
+offset_right = 118.0
+offset_bottom = 70.0
+theme_type_variation = &"FloatingPanel"
 script = ExtResource("1_mm40e")
 
 [node name="Container" type="HBoxContainer" parent="."]
 layout_mode = 2
+theme_override_constants/separation = 0
 
 [node name="MainMenuButton" type="Button" parent="Container"]
 visible = false
