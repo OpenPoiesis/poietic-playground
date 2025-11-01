@@ -23,7 +23,7 @@ func load_node_pictograms():
 	clear()
 	var type_names = Global.app.design_controller.get_placeable_pictogram_names()
 	for type_name in type_names:
-		var pictogram_node = Global.app.canvas_controller.get_pictogram_node(type_name, 48, null)
+		var pictogram_node = Global.app.canvas_controller.get_pictogram_node(type_name, 36, null)
 		if pictogram_node == null:
 			continue
 		palette.add_node2d_item(type_name.capitalize(), pictogram_node, type_name)

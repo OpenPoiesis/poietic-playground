@@ -1,13 +1,26 @@
-[gd_scene load_steps=3 format=3 uid="uid://cg1515wjfp04s"]
+[gd_scene load_steps=9 format=3 uid="uid://cg1515wjfp04s"]
 
 [ext_resource type="Script" uid="uid://bjgio5fmql37x" path="res://inspector/traits/stock_inspector_trait.gd" id="1_sl5ee"]
 [ext_resource type="Script" uid="uid://dq551sb5tha7p" path="res://gui/tristate_check_button.gd" id="3_pu7ig"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ntq82"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pu7ig"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_meijf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_e6l83"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4ambu"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yqmh6"]
 
 [node name="StockInspectorTrait" type="PanelContainer"]
 offset_right = 148.0
 offset_bottom = 87.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_type_variation = &"InspectorTraitPanel"
 script = ExtResource("1_sl5ee")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
@@ -26,12 +39,16 @@ text = "Allows negative"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ntq82")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_pu7ig")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_meijf")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_e6l83")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_4ambu")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_yqmh6")
 icon_alignment = 1
 script = ExtResource("3_pu7ig")
 metadata/_custom_type_script = "uid://dq551sb5tha7p"
-
-[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer2"]
-layout_mode = 2
 
 [connection signal="pressed" from="VBoxContainer2/FormContainer/AllowsNegativeCheck" to="." method="_on_allows_negative_check_pressed"]
 [connection signal="toggled" from="VBoxContainer2/FormContainer/AllowsNegativeCheck" to="." method="_on_allows_negative_check_toggled"]

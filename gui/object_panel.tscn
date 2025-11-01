@@ -1,15 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://bbsf0e6jye3uf"]
+[gd_scene load_steps=3 format=3 uid="uid://bbsf0e6jye3uf"]
 
 [ext_resource type="Script" uid="uid://1ookh01l10y8" path="res://gui/object_panel.gd" id="1_owprn"]
 [ext_resource type="Script" uid="uid://klm25c7yb2fj" path="res://gui/palette.gd" id="2_2i7di"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kek77"]
-bg_color = Color(0.190762, 0.190762, 0.190762, 1)
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
 
 [node name="ObjectPanel" type="PanelContainer"]
 anchors_preset = 4
@@ -19,13 +11,12 @@ offset_top = -60.0
 offset_right = 60.0
 offset_bottom = 60.0
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_kek77")
+theme_type_variation = &"FloatingPanel"
 script = ExtResource("1_owprn")
 
 [node name="Palette" type="PanelContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_2i7di")
-columns = 1
 item_spacing = 1
 metadata/_custom_type_script = "uid://klm25c7yb2fj"

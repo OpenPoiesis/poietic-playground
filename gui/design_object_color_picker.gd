@@ -5,7 +5,7 @@ signal color_selected(color_name: String)
 @onready var colors: ColorPalette = preload("res://resources/adaptable_design_colors.tres")
 
 @export var selected_color_name: String = ""
-@export var cell_size: Vector2 = Vector2(20, 20):
+@export var cell_size: Vector2 = Vector2(16, 16):
 	set(value):
 		cell_size = value
 		for child in %ColorGrid.get_children():
@@ -48,7 +48,7 @@ func _ready():
 		button.pressed.connect(_on_color_button_pressed.bind(name, button))
 
 		%ColorGrid.add_child(button)
-	
+
 	%DefaultColorButton.toggle_mode = true
 	%DefaultColorButton.button_group = button_group
 	%DefaultColorButton.focus_mode = Control.FOCUS_NONE

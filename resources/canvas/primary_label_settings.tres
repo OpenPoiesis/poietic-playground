@@ -5,3 +5,4 @@
 [resource]
 font = ExtResource("1_lckox")
 font_size = 14
+font_color = Color(0.12156863, 0.12156863, 0.12156863, 1)

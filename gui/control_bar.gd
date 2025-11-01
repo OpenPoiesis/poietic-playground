@@ -32,13 +32,13 @@ func initialize(design_ctrl: DesignController, player: ResultPlayer):
 func update_player_state():
 	if player.is_running:
 		run_button.set_pressed_no_signal(true)
-		run_button.disabled = true
+		# run_button.disabled = true
 		stop_button.set_pressed_no_signal(false)
 		stop_button.disabled = false
 	else:
 		run_button.set_pressed_no_signal(false)
 		stop_button.set_pressed_no_signal(true)
-		run_button.disabled = false
+		# run_button.disabled = false
 		stop_button.disabled = true
 		
 	loop_button.set_pressed_no_signal(player.is_looping)

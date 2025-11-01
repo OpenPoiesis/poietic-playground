@@ -11,6 +11,8 @@
 ##
 
 class_name PaletteItem extends Control
+const default_size = Vector2(80, 60)
+const default_icon_size = Vector2(0, 40)
 
 signal item_pressed(item: PaletteItem)
 
@@ -68,7 +70,7 @@ var _icon_container: Control
 var _label: Label
 
 func _init():
-	custom_minimum_size = Vector2(100, 80)
+	custom_minimum_size = default_size
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 func _ready():
@@ -82,7 +84,7 @@ func _setup_layout():
 
 	# Icon area (plain Control for Node2D positioning)
 	_icon_container = Control.new()
-	_icon_container.custom_minimum_size = Vector2(0, 48)
+	_icon_container.custom_minimum_size = default_icon_size
 	_icon_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Let clicks pass through
 
 	# Label (centered below icon)
@@ -93,7 +95,6 @@ func _setup_layout():
 	_label.clip_text = true
 	_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
-	# Get font size from Palette theme if available
 	var font_size = get_theme_font_size("font_size", "Palette")
 	if font_size > 0:
 		_label.add_theme_font_size_override("font_size", font_size)
@@ -102,7 +103,6 @@ func _setup_layout():
 	vbox.add_child(_label)
 	add_child(vbox)
 
-	# Add existing icon if set before _ready
 	if icon_node:
 		_center_icon(icon_node)
 		_icon_container.add_child(icon_node)
@@ -110,13 +110,10 @@ func _setup_layout():
 func _center_icon(node: Node2D):
 	var center_point = Vector2(custom_minimum_size.x / 2, _icon_container.custom_minimum_size.y / 2)
 
-	# Check if this is a Pictogram2D with bounding_box property
 	if node.get("bounding_box") != null:
 		var bbox: Rect2 = node.get("bounding_box")
-		# Position so bounding box center aligns with center_point
 		node.position = center_point - bbox.position - bbox.size / 2
 	else:
-		# Fallback for other Node2D types (Sprite2D, etc.)
 		node.position = center_point
 
 func _draw():
@@ -127,18 +124,17 @@ func _draw():
 	# Visual style based on state
 	match current_state:
 		State.NORMAL:
-			bg_color = Color(0.15, 0.15, 0.2, 1.0)
+			bg_color = Color("D0CCBD")
 		State.HOVERED:
-			bg_color = Color(0.2, 0.2, 0.3, 1.0)
-			border_color = Color(0.4, 0.4, 0.5, 1.0)
+			bg_color = Color("ebe6d5ff")
+			border_color = Color("b8b4a7ff")
 			border_width = 1
 		State.SELECTED:
-			bg_color = Color(0.25, 0.3, 0.4, 1.0)
-			border_color = Color(0.5, 0.7, 1.0, 1.0)
+			bg_color = Color("b3a49bff")
+			border_color = Color("8c6e51ff")
 			border_width = 2
 		State.SELECTED_HOVERED:
-			bg_color = Color(0.3, 0.35, 0.45, 1.0)
-			border_color = Color(0.6, 0.8, 1.0, 1.0)
+			bg_color = Color("d6c5baff")
 			border_width = 2
 
 	# Draw background

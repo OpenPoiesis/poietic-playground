@@ -5,6 +5,7 @@
 [node name="DesignInspectorTrait" type="PanelContainer"]
 offset_right = 175.0
 offset_bottom = 189.0
+theme_type_variation = &"InspectorTraitPanel"
 script = ExtResource("1_qmjj8")
 metadata/_custom_type_script = "uid://c4fp11pa5vk7y"
 

@@ -8,4 +8,4 @@ class_name ChartAxis extends Node
 # reflines: avg, med, min, max, 
 @export var show_major: bool = true
 @export var show_minor: bool = false
-@export var line_color: Color = Color.WHITE
+@export var line_color: Color = Color.BLACK
