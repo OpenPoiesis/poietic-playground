@@ -1,21 +1,14 @@
-[gd_scene load_steps=11 format=3 uid="uid://c3kn0jiqoe5fm"]
+[gd_scene load_steps=10 format=3 uid="uid://c3kn0jiqoe5fm"]
 
+[ext_resource type="Theme" uid="uid://dws6dqiic6wt" path="res://resources/default.tres" id="1_6btlt"]
 [ext_resource type="Script" uid="uid://fn2607eaa17" path="res://gui/control_bar.gd" id="1_bjxsy"]
-[ext_resource type="Texture2D" uid="uid://cmcv8bhmmjv" path="res://resources/icons/white/restart.png" id="2_tgswo"]
-[ext_resource type="Texture2D" uid="uid://dxp82n46xm5uv" path="res://resources/icons/white/previous-step.png" id="3_4wq8j"]
-[ext_resource type="Texture2D" uid="uid://dnwgr23vnudax" path="res://resources/icons/white/next-step.png" id="4_6btlt"]
-[ext_resource type="Texture2D" uid="uid://blyuxdonhje62" path="res://resources/icons/white/stop.png" id="4_bs54y"]
-[ext_resource type="Texture2D" uid="uid://b50sv6fav5owi" path="res://resources/icons/white/run.png" id="5_4wq8j"]
-[ext_resource type="Texture2D" uid="uid://d2qqq8u8a1pho" path="res://resources/icons/white/loop.png" id="6_6btlt"]
-[ext_resource type="Texture2D" uid="uid://b0gcywu3nctmy" path="res://resources/icons/white/last-step.png" id="7_gjqlj"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2a3yf"]
-bg_color = Color(0.205117, 0.205118, 0.205117, 1)
-border_width_left = 4
-border_width_bottom = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q16gx"]
-bg_color = Color(0.171875, 0.171875, 0.171875, 1)
+[ext_resource type="Texture2D" uid="uid://276omglkreff" path="res://resources/icons/black/run.png" id="3_6btlt"]
+[ext_resource type="Texture2D" uid="uid://dmr3lv0nmr5v1" path="res://resources/icons/black/stop.png" id="4_gjqlj"]
+[ext_resource type="Texture2D" uid="uid://yaxjd8xn1da6" path="res://resources/icons/black/restart.png" id="5_csmxy"]
+[ext_resource type="Texture2D" uid="uid://iuworfq56mn8" path="res://resources/icons/black/previous-step.png" id="6_6btlt"]
+[ext_resource type="Texture2D" uid="uid://db6t1hjyayeho" path="res://resources/icons/black/next-step.png" id="7_gjqlj"]
+[ext_resource type="Texture2D" uid="uid://jakbp12pbcgm" path="res://resources/icons/black/last-step.png" id="8_csmxy"]
+[ext_resource type="Texture2D" uid="uid://cxiu5km1xu4db" path="res://resources/icons/black/loop.png" id="9_6u5d6"]
 
 [node name="ControlBar" type="PanelContainer"]
 anchors_preset = 1
@@ -24,7 +17,8 @@ anchor_right = 1.0
 offset_left = -199.0
 offset_bottom = 78.0
 grow_horizontal = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_2a3yf")
+theme = ExtResource("1_6btlt")
+theme_type_variation = &"FloatingPanel"
 script = ExtResource("1_bjxsy")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
@@ -41,65 +35,67 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_constants/separation = 0
 
 [node name="RunButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Run"
-theme_type_variation = &"SelectableToolbarItem"
 toggle_mode = true
-icon = ExtResource("5_4wq8j")
+icon = ExtResource("3_6btlt")
 expand_icon = true
 
 [node name="StopButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Stop"
-theme_type_variation = &"SelectableToolbarItem"
-icon = ExtResource("4_bs54y")
+icon = ExtResource("4_gjqlj")
 expand_icon = true
 
+[node name="VSeparator" type="VSeparator" parent="MarginContainer/VBoxContainer/ControlButtons"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
 [node name="FirstStepButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "To Beginning"
-theme_type_variation = &"SelectableToolbarItem"
-icon = ExtResource("2_tgswo")
+icon = ExtResource("5_csmxy")
 expand_icon = true
 
 [node name="PreviousStepButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Previous Step"
-theme_type_variation = &"SelectableToolbarItem"
-icon = ExtResource("3_4wq8j")
+icon = ExtResource("6_6btlt")
 expand_icon = true
 
 [node name="NextStepButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Next Step"
-theme_type_variation = &"SelectableToolbarItem"
-icon = ExtResource("4_6btlt")
-expand_icon = true
-
-[node name="LastStepButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
-custom_minimum_size = Vector2(32, 32)
-layout_mode = 2
-tooltip_text = "Final Step"
-theme_type_variation = &"SelectableToolbarItem"
 icon = ExtResource("7_gjqlj")
 expand_icon = true
 
+[node name="LastStepButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Final Step"
+icon = ExtResource("8_csmxy")
+expand_icon = true
+
+[node name="VSeparator2" type="VSeparator" parent="MarginContainer/VBoxContainer/ControlButtons"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
 [node name="LoopButton" type="Button" parent="MarginContainer/VBoxContainer/ControlButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Loop"
-theme_type_variation = &"SelectableToolbarItem"
 toggle_mode = true
-icon = ExtResource("6_6btlt")
+icon = ExtResource("9_6u5d6")
 expand_icon = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
@@ -114,8 +110,8 @@ horizontal_alignment = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_q16gx")
 text = "0"
+alignment = 2
 
 [node name="EndTimeLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
@@ -142,8 +138,8 @@ alignment = 2
 
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/RunButton" to="." method="_on_run_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/StopButton" to="." method="_on_stop_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_reset_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_first_step_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/FirstStepButton" to="." method="_on_reset_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/PreviousStepButton" to="." method="_on_previous_step_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/NextStepButton" to="." method="_on_next_step_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlButtons/LastStepButton" to="." method="_on_last_step_button_pressed"]

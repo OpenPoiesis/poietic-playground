@@ -1,25 +1,20 @@
-[gd_scene load_steps=6 format=3 uid="uid://tems4qsdoox"]
+[gd_scene load_steps=5 format=3 uid="uid://tems4qsdoox"]
 
 [ext_resource type="Script" uid="uid://badw0ghnk1d5g" path="res://gui/main_bar.gd" id="1_mm40e"]
 [ext_resource type="Texture2D" uid="uid://sk14tcht2lwm" path="res://resources/icons/white/menu.png" id="2_kk4l4"]
-[ext_resource type="Texture2D" uid="uid://tiwkeckjacwk" path="res://resources/icons/white/undo.png" id="3_1dnvn"]
-[ext_resource type="Texture2D" uid="uid://cjoesvfct835e" path="res://resources/icons/white/redo.png" id="4_a2wio"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kk4l4"]
-bg_color = Color(0.279967, 0.279967, 0.279967, 1)
-border_width_right = 2
-border_width_bottom = 2
-corner_radius_bottom_right = 8
+[ext_resource type="Texture2D" uid="uid://hm2xil6pqlhc" path="res://resources/icons/black/undo.png" id="3_kk4l4"]
+[ext_resource type="Texture2D" uid="uid://b44oi4avfch13" path="res://resources/icons/black/redo.png" id="4_1dnvn"]
 
 [node name="MainBar" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 48)
-offset_right = 135.0
-offset_bottom = 48.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_kk4l4")
+offset_right = 118.0
+offset_bottom = 70.0
+theme_type_variation = &"FloatingPanel"
 script = ExtResource("1_mm40e")
 
 [node name="Container" type="HBoxContainer" parent="."]
 layout_mode = 2
+theme_override_constants/separation = 0
 
 [node name="MainMenuButton" type="Button" parent="Container"]
 visible = false
@@ -38,9 +33,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 focus_mode = 0
-theme_type_variation = &"ToolbarButton"
 text = "Undo"
-icon = ExtResource("3_1dnvn")
+icon = ExtResource("3_kk4l4")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -50,9 +44,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 focus_mode = 0
-theme_type_variation = &"ToolbarButton"
 text = "Redo"
-icon = ExtResource("4_a2wio")
+icon = ExtResource("4_1dnvn")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true

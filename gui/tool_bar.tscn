@@ -1,18 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://l7uejktm712d"]
+[gd_scene load_steps=7 format=3 uid="uid://l7uejktm712d"]
 
 [ext_resource type="Script" uid="uid://b4ejxps4pdjfo" path="res://gui/tool_bar.gd" id="1_kmcp4"]
-[ext_resource type="Texture2D" uid="uid://dkstlplra76ek" path="res://resources/icons/white/select.png" id="4_sgvfb"]
-[ext_resource type="Texture2D" uid="uid://bjknep42b1b0p" path="res://resources/icons/white/hand.png" id="5_vabnl"]
-[ext_resource type="Texture2D" uid="uid://dyo6l5ny3ler4" path="res://resources/icons/white/place.png" id="6_ac1f5"]
-[ext_resource type="Texture2D" uid="uid://x0r31pdutv1s" path="res://resources/icons/white/connect.png" id="7_bicm0"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bicm0"]
-bg_color = Color(0.28485, 0.28485, 0.28485, 1)
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
+[ext_resource type="Texture2D" uid="uid://c8tusm1tn51li" path="res://resources/icons/black/select.png" id="2_vabnl"]
+[ext_resource type="Texture2D" uid="uid://cg7bxgcltyyc7" path="res://resources/icons/black/place.png" id="3_dfujv"]
+[ext_resource type="Texture2D" uid="uid://tc8un4uncuoy" path="res://resources/icons/black/connect.png" id="4_odjjt"]
+[ext_resource type="Texture2D" uid="uid://b6tv4qudjsavh" path="res://resources/icons/black/hand.png" id="5_ije40"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_0m4ov"]
 
@@ -24,7 +16,7 @@ offset_top = -54.0
 offset_right = 34.0
 offset_bottom = 54.0
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bicm0")
+theme_type_variation = &"FloatingPanel"
 script = ExtResource("1_kmcp4")
 
 [node name="Container" type="VBoxContainer" parent="."]
@@ -32,60 +24,58 @@ layout_mode = 2
 
 [node name="ToolContainer" type="VBoxContainer" parent="Container"]
 layout_mode = 2
+theme_override_constants/separation = 0
 
 [node name="SelectionToolButton" type="Button" parent="Container/ToolContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Select Objects (1): Select and move objects on canvas"
 focus_mode = 0
-theme_type_variation = &"SelectableToolbarItem"
 toggle_mode = true
 button_pressed = true
 button_group = SubResource("ButtonGroup_0m4ov")
-icon = ExtResource("4_sgvfb")
+icon = ExtResource("2_vabnl")
 icon_alignment = 1
 expand_icon = true
 
 [node name="PlaceToolButton" type="Button" parent="Container/ToolContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Place Objects (2): Place nodes on canvas"
 focus_mode = 0
-theme_type_variation = &"SelectableToolbarItem"
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0m4ov")
-icon = ExtResource("6_ac1f5")
+icon = ExtResource("3_dfujv")
 icon_alignment = 1
 expand_icon = true
 
 [node name="ConnectToolButton" type="Button" parent="Container/ToolContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Connect (3): Create connectors between nodes"
 focus_mode = 0
-theme_type_variation = &"SelectableToolbarItem"
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0m4ov")
-icon = ExtResource("7_bicm0")
+icon = ExtResource("4_odjjt")
 icon_alignment = 1
 expand_icon = true
 
 [node name="HSeparator" type="HSeparator" parent="Container/ToolContainer"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="PanToolButton" type="Button" parent="Container/ToolContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Pan (Space): Drag canvas around"
 focus_mode = 0
-theme_type_variation = &"SelectableToolbarItem"
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0m4ov")
-icon = ExtResource("5_vabnl")
+icon = ExtResource("5_ije40")
 icon_alignment = 1
 expand_icon = true
 

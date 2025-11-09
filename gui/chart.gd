@@ -1,5 +1,8 @@
 class_name Chart extends Control
 
+# TODO: Make themable
+const default_plot_color = Color.BLACK
+
 var plot_offset: Vector2 = Vector2()
 var _plot_rect: Rect2 = Rect2()
 
@@ -133,7 +136,7 @@ func _draw_line_plot(info: SeriesInfo):
 	var points = curve.tessellate()
 	for index in range(0, len(points)):
 		points[index] = points[index]
-	var color = Global.get_adaptable_color(info.color_name, Color.WHITE)
+	var color = Global.get_adaptable_color(info.color_name, default_plot_color)
 	if len(points) > 1:
 		draw_polyline(points, color, 4.0)
 	
