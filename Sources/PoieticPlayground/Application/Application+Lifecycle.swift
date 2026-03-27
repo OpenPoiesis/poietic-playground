@@ -8,6 +8,9 @@
 import CIimgui
 
 extension Application {
+    static let DefaultEventPollTimeout: Int32 = 16
+    static let InteractivePreviewEventPollTimeout: Int32 = 4
+
     func run() {
         loadResources()
         
@@ -33,9 +36,17 @@ extension Application {
     func mainLoop() {
         let backend = GraphicsBackend.shared
         var lastTime = ImGui.GetTime()
-        
+
         loop: while !quitRequested {
-            switch backend.pollEvent() {
+            let timeout: Int32
+            if let document {
+                timeout = document.requiresInteractivePreviewUpdate ? Self.InteractivePreviewEventPollTimeout : Self.DefaultEventPollTimeout
+            }
+            else {
+                timeout = Self.DefaultEventPollTimeout
+            }
+
+            switch backend.pollEvent(timeout: timeout) {
             case .quit: break loop
             case .skip: continue
             case .none: break
@@ -71,9 +82,24 @@ extension Application {
     }
     
     func update(_ timeDelta: Double) {
-        guard let document else {
-            logError("No document!")
-            return
+        if let document {
+            // Run the Command Queue
+            while !document.commandQueue.isEmpty {
+                let command = document.commandQueue.removeFirst()
+                self.runCommand(command, document: document)
+            }
+            
+            do {
+                try document.consumeAndAcceptTransaction()
+            }
+            catch {
+                // This is not user's fault and never should be.
+                // The application failed to make sure structural integrity is assured
+                Application.shared.alert(title: "Frame validation error (report to developers)",
+                                         message: String(describing: error))
+                return
+            }
+            document.update(timeDelta)
         }
         
         // Update UI components
@@ -86,25 +112,6 @@ extension Application {
         if player.isRunning {
             player.update(timeDelta)
         }
-        
-        // Run the Command Queue
-        while !document.commandQueue.isEmpty {
-            let command = document.commandQueue.removeFirst()
-            self.runCommand(command, document: document)
-        }
-        
-        do {
-            try document.consumeAndAcceptTransaction()
-        }
-        catch {
-            // This is not user's fault and never should be.
-            // The application failed to make sure structural integrity is assured
-            Application.shared.alert(title: "Frame validation error (report to developers)",
-                                     message: String(describing: error))
-            return
-        }
-        
-        document.update(timeDelta)
     }
     
     func draw() {

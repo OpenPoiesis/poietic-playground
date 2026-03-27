@@ -28,7 +28,7 @@ protocol GraphicsBackendProtocol: AnyObject {
     func initializeImGuiBackend() throws (GraphicsBackendError)
     func shutdownImGuiBackend()
     
-    func pollEvent() -> BackendEvent
+    func pollEvent(timeout: Int32) -> BackendEvent
     func waitIdle()
     func shutdown()
     
