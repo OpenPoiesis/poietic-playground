@@ -14,6 +14,18 @@ enum OverlayError: Error {
     case uploadFailed(any Error)
 }
 
+/// Overlay content type
+enum OverlayType {
+    /// Main content
+    case main
+    /// Value indicators
+    case indicator
+    /// Selection and other highlights
+    case highlight
+    /// Interactive preview
+    case preview
+}
+
 /// Canvas visual overlay.
 ///
 /// Lifecycles:
@@ -37,6 +49,7 @@ class Overlay {
     
     /// Name of the overlay for debugging purposes.
     let name: String
+    let type: OverlayType
     
     /// Cairo surface pointer `cairo_surface_t *`.
     private var surface: OpaquePointer? // cairo_surface_t*
@@ -50,8 +63,9 @@ class Overlay {
     
     private(set) var state: State = .needsRender
     
-    init(name: String) {
+    init(name: String, type: OverlayType) {
         self.name = name
+        self.type = type
     }
 
     var needsRender: Bool {
@@ -114,7 +128,7 @@ class Overlay {
         self.state = .uninitialized
     }
 
-    func render(_ draw: (DrawingContext) -> Void) throws (OverlayError) {
+    func render(_ draw: (CairoDrawingContext) -> Void) throws (OverlayError) {
         guard let context else {
             throw .noContext
         }
@@ -126,7 +140,7 @@ class Overlay {
 
         cairo_save(context)
         cairo_set_operator(context, CAIRO_OPERATOR_OVER)
-        draw(DrawingContext(context))
+        draw(CairoDrawingContext(context, overlay: type))
         cairo_restore(context)
 
         self.state = .needsUpload

@@ -34,8 +34,8 @@ extension Document {
                     NewChartResolutionSystem.self,
                     // From Diagramming
                     ErrorIndicatorSystem.self,
-                    BlockCreationSystem.self,
-                    TraitConnectorCreationSystem.self,
+                    DiagramBlockFromTraitSystem.self,
+                    DiagramConnectorFromTraitSystem.self,
                     ConnectorGeometrySystem.self,
                 ]
         ))

@@ -38,7 +38,7 @@ struct ErrorIndicatorSystem: System {
     nonisolated(unsafe) public static let dependencies: [SystemDependency] = [
         .after(SimulationPlanningSystem.self),
         // TODO: Remove this system once we have relative visual objects
-        .after(BlockCreationSystem.self),
+        .after(DiagramBlockFromTraitSystem.self),
     ]
 
     init(_ world: PoieticCore.World) {    }

@@ -24,11 +24,12 @@ extension DiagramCanvas {
     }
     
     func onPreviewEnded(_ document: Document) {
+        self.overlays.setAllNeedsRender()
         self.mainOverlay.setNeedsRender()
         self.previewOverlay.setNeedsRender()
     }
 
-    func drawPreviewOverlay(_ context: DrawingContext) {
+    func drawPreviewOverlay(_ context: CairoDrawingContext) {
         drawBlockIntents(context)
         drawConnectorIntents(context)
 
@@ -36,13 +37,13 @@ extension DiagramCanvas {
         drawPreviewConnectors(context)
     }
     
-    func drawBlockIntents(_ context: DrawingContext) {
+    func drawBlockIntents(_ context: CairoDrawingContext) {
         for component: BlockIntent in world.query(BlockIntent.self) {
             drawBlockIntent(context, block: component)
         }
     }
     
-    func drawBlockIntent(_ context: DrawingContext, block: BlockIntent) {
+    func drawBlockIntent(_ context: CairoDrawingContext, block: BlockIntent) {
         let transform = AffineTransform(translation: toOverlayTransform.apply(to: block.position))
         context.save()
         context.setColor(style.intentShadowColor)
@@ -51,7 +52,7 @@ extension DiagramCanvas {
         context.restore()
     }
 
-    func drawConnectorIntents(_ context: DrawingContext) {
+    func drawConnectorIntents(_ context: CairoDrawingContext) {
         context.save()
         for (entity, _) in world.query(ConnectorIntent.self) {
             guard let geometry: DiagramConnectorGeometry = entity.component() else { continue }
@@ -60,7 +61,7 @@ extension DiagramCanvas {
         context.restore()
     }
     
-    func drawPreviewBlocks(_ context: DrawingContext) {
+    func drawPreviewBlocks(_ context: CairoDrawingContext) {
         context.save()
         let selection: Selection? = world.singleton()
         
@@ -73,7 +74,7 @@ extension DiagramCanvas {
         context.restore()
     }
     
-    func drawPreviewConnectors(_ context: DrawingContext) {
+    func drawPreviewConnectors(_ context: CairoDrawingContext) {
         context.save()
         let selection: Selection? = world.singleton()
         for (entity, component, _) in world.query(DiagramConnectorGeometry.self, InteractivePreview.self) {

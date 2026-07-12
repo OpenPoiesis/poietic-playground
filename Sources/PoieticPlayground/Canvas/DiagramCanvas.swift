@@ -40,9 +40,12 @@ class DiagramCanvas: View {
     
     // TODO: Not fully implemented, only one overlay at the moment
     var overlays: OverlayStack
+    /// Overlay for the main content – diagram blocks, connectors, labels.
     var mainOverlay: Overlay
+    /// Interactive preview of connection, placement or other operations.
     var previewOverlay: Overlay
     var indicatorOverlay: Overlay
+    var highlightOverlay: Overlay
 
     weak var document: Document?
     internal var world: World {
@@ -55,6 +58,10 @@ class DiagramCanvas: View {
     
     var isMouseInViewport: Bool = false
     var inputState: InputState = InputState()
+   
+    /// Root entity for diagram canvas scene hierarchy presented in this canvas.
+    /// 
+    var root: RuntimeEntity?
     
     var canvasPos = ImVec2(0.0, 0.0)          // Screen position of canvas
     var canvasSize = ImVec2(0.0, 0.0)         // Screen size of canvas
@@ -83,17 +90,19 @@ class DiagramCanvas: View {
 
     init(document: Document? = nil) {
         self.document = document
-        self.style = CanvasStyle()
+        self.style = CanvasStyle.Default
 
         self.overlays = OverlayStack()
         
-        self.mainOverlay = Overlay(name: "main")
+        self.mainOverlay = Overlay(name: "main", type: .main)
         self.overlays.add(self.mainOverlay)
-        self.previewOverlay = Overlay(name: "preview")
+        self.previewOverlay = Overlay(name: "preview", type: .preview)
         self.overlays.add(self.previewOverlay)
-        self.indicatorOverlay = Overlay(name: "indicator")
+        self.indicatorOverlay = Overlay(name: "indicator", type: .indicator)
         self.overlays.add(self.indicatorOverlay)
-        
+        self.highlightOverlay = Overlay(name: "highlight", type: .highlight)
+        self.overlays.add(self.highlightOverlay)
+
         self.editorManager = InlineEditorManager()
         
         self.editorManager.register(name: "name", editor: NameInlineEditor())
@@ -110,6 +119,7 @@ class DiagramCanvas: View {
     }
 
     func onDesignFrameChanged(_ document: Document) {
+        self.root = document.diagramSceneRoot
         overlays.setAllNeedsRender()
     }
 
@@ -170,9 +180,18 @@ class DiagramCanvas: View {
             ImGuiWindowFlags_NoBringToFrontOnFocus |
             ImGuiWindowFlags_NoNavFocus)
         
+        // Canvas color
+        let color: Color
+        if let canvasStyle = style.style(class: .canvas) {
+            color = canvasStyle.fill ?? CanvasStyle.DefaultCanvasColor
+        }
+        else {
+            color = CanvasStyle.DefaultCanvasColor
+        }
+        
         // Disable padding
         ImGui.PushStyleVar(ImGuiStyleVar(ImGuiStyleVar_WindowPadding.rawValue), ImVec2(0, 0))
-        ImGui.PushStyleColor(ImGuiCol(ImGuiCol_ChildBg.rawValue), style.background.imIntValue)
+        ImGui.PushStyleColor(ImGuiCol(ImGuiCol_ChildBg.rawValue), color.imIntValue)
         ImGui.BeginChild("canvas",
                          ImVec2(0.0, 0.0),
                          ImGuiChildFlags_None | ImGuiChildFlags_Borders,
@@ -205,20 +224,31 @@ class DiagramCanvas: View {
     }
     
     func drawOverlays() {
+        guard let root else { return }
+
+        let renderer = CairoDiagramSceneRenderer(style: style)
+        
         // TODO: Handle exceptions
         if mainOverlay.needsRender {
             try! mainOverlay.render { context in
-                drawMainOverlay(context)
+//                drawGrid(context)
+                renderer.render(root, context: context)
+//                drawHandles(context)
             }
         }
         if previewOverlay.needsRender {
             try! previewOverlay.render { context in
-                drawPreviewOverlay(context)
+                renderer.render(root, context: context)
+            }
+        }
+        if highlightOverlay.needsRender {
+            try! highlightOverlay.render { context in
+                renderer.render(root, context: context)
             }
         }
         if indicatorOverlay.needsRender {
             try! indicatorOverlay.render { context in
-                drawIndicatorOverlay(context)
+                renderer.render(root, context: context)
             }
         }
     }
@@ -324,7 +354,7 @@ class DiagramCanvas: View {
             guard let owner: OwnedBy = entity.component() else { continue }
             let shape = indicator.collisionShape
             if shape.collide(with: touchShape) {
-                let target: CanvasHitTarget = .object(owner.target, .issueIndicator)
+                let target: CanvasHitTarget = .object(owner.other, .issueIndicator)
                 targets.append(target)
             }
         }
