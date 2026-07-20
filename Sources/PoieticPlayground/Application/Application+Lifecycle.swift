@@ -103,6 +103,7 @@ extension Application {
         }
         
         // Update UI components
+        canvas.update(timeDelta)
         inspector.update(timeDelta)
         toolBar.update(timeDelta)
         alertPanel.update(timeDelta)

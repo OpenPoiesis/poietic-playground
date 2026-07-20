@@ -8,14 +8,9 @@
 import PoieticCore
 import Diagramming
 
-// FIXME: REFACTORING NOTES (Following comments)
-// FIXME: [REFACTORING] How to handle overlays? in DiagramCanvas.drawOverlays
-// FIXME: [REFACTORING] How to handle style modifiers?
-
 class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     typealias Context = CairoDrawingContext
 
-    // TODO: [REFACTORING] Use style in a similar way as SVGDiagramStyle, we are reusing old style class for now
     let style: CanvasStyle
     
     init(style: CanvasStyle) {
@@ -23,94 +18,107 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     }
     
     func renderBlock(_ entity: RuntimeEntity, context: Context) {
-        // TODO: [REFACTORING] Split into overlays
-        guard context.overlay == .main else { return }
-
         // TODO: [REFACTORING] Separate pictogram rendering into renderPictogram(...)
-        guard let pictogramNode: RuntimeEntity = entity.target(CanvasNode.Pictogram.self),
+        guard let pictogramNode: RuntimeEntity = entity.target(DiagramSceneNode.Pictogram.self),
               let pictComp: PictogramCanvasNode = pictogramNode.component()
         else { return }
+        let nodeStyle: CanvasNodeStyle? = entity.component()
 
         let pictogram = pictComp.pictogram
 
-//            context.setColor(style.pictogramMaskColor)
-//            context.fillPath(pictogram.mask, transform: blockTrans)
-        
-        let shapeStyle = style.style(class: .pictogram)
+        switch context.overlay {
+        case .main:
+            let shapeStyle = style.shapeStyle(class: nodeStyle?.class ?? .pictogram)
+            context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
+            context.strokePath(pictogram.path)
+        case .highlight:
+            // If we do not have node style set we do not know whether we need a highlight
+            guard let nodeStyle else { break }
 
-        context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
-        context.strokePath(pictogram.path)
-
-        // Highlights
-        if let nodeStyle: CanvasNodeStyle = entity.component() {
-            // Assumption: Style colours are transparent, therefore we can draw them on top of each other
             if nodeStyle.modifiers.contains(.selected) {
-                let shapeStyle = style.style(class: .selection)
-                context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultFillColor)
+                let shapeStyle = style.shapeStyle(class: .highlight, modifiers: .selected)
+                context.setColor(shapeStyle?.fill ?? CanvasStyle.DefaultFillColor)
                 context.fillPath(pictogram.mask)
                 context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
                 context.strokePath(pictogram.mask)
             }
             if nodeStyle.modifiers.contains(.allowed) {
-                context.setColor(style.acceptingColor)
+                let shapeStyle = style.shapeStyle(class: .highlight, modifiers: .allowed)
+                context.setColor(shapeStyle?.fill ?? CanvasStyle.DefaultFillColor)
                 context.fillPath(pictogram.mask)
-                context.setColor(style.selectionOutlineColor)
+                context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
                 context.strokePath(pictogram.mask)
             }
             else if nodeStyle.modifiers.contains(.notAllowed) {
-                context.setColor(style.notAllowedColor)
+                let shapeStyle = style.shapeStyle(class: .highlight, modifiers: .notAllowed)
+                context.setColor(shapeStyle?.fill ?? CanvasStyle.DefaultFillColor)
                 context.fillPath(pictogram.mask)
-                context.setColor(style.selectionOutlineColor)
+                context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
                 context.strokePath(pictogram.mask)
             }
+        default: break
         }
+        
     }
 
     func renderConnector(_ entity: RuntimeEntity, context: Context) {
-        guard context.overlay == .main else { return }
-
         guard let stroke: ConnectorStroke = entity.component()
         else { return }
 
-        // Open curves
-        context.setLineWidth(style.defaultConnectorLineWidth)
-        context.setColor(style.defaultConnectorColor)
-        if let path = stroke.body {
-            context.addPath(path)
-        }
-        if let path = stroke.headArrowhead {
-            context.addPath(path)
-        }
-        if let path = stroke.tailArrowhead {
-            context.addPath(path)
-        }
-        context.stroke()
-        
-        // Filled curves
-        if stroke.isFilled, let path = stroke.body {
-            context.setColor(style.defaultConnectorFillColor)
-            context.addPath(path)
-            context.fill()
-        }
+        let nodeStyle: CanvasNodeStyle? = entity.component()
 
-        if let nodeStyle: CanvasNodeStyle = entity.component(),
-           let wire: ConnectorWire = entity.component()
-        {
+        switch context.overlay {
+        case .main:
+            let shapeStyle = style.shapeStyle(class: nodeStyle?.class ?? .normal)
+            context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
+            context.setLineWidth(shapeStyle?.lineWidth ?? 1.0)
+
+            // Open curves
+            if let path = stroke.body {
+                context.addPath(path)
+            }
+            if let path = stroke.headArrowhead {
+                context.addPath(path)
+            }
+            if let path = stroke.tailArrowhead {
+                context.addPath(path)
+            }
+            context.stroke()
+            
+            // Filled curves
+            if stroke.isFilled, let path = stroke.body {
+                context.setColor(shapeStyle?.fill ?? CanvasStyle.DefaultFillColor)
+                context.addPath(path)
+                context.fill()
+            }
+        case .highlight:
+            // No node style  - we do not know what highlight to draw
+            // No wire - we do not know how to draw the highlight
+            guard let nodeStyle: CanvasNodeStyle = entity.component(),
+                  let wire: ConnectorWire = entity.component()
+            else { break }
+
             // Assumption: Style colours are transparent, therefore we can draw them on top of each other
             if nodeStyle.modifiers.contains(.selected) {
+                let shapeStyle = style.shapeStyle(class: .highlight, modifiers: .selected)
+
+                // TODO: Remove this debug
                 let wirePath = BezierPath(polyline: wire.points)
                 context.save()
                 context.setColor(Color(red: 1.0, green: 0.8, blue: 0.0))
                 context.setLineWidth(4)
                 context.strokePath(wirePath)
 
-                context.setColor(style.selectionFillColor)
+                context.setColor(shapeStyle?.fill ?? CanvasStyle.DefaultFillColor)
                 // TODO: [REFACTORING] Precompute this on connector as ConnectorOutline
                 let outline = wirePath.inflated(by: 10.0)
                 context.fillPath(outline)
 
                 context.restore()
             }
+
+        default:
+            break
         }
 
     }
@@ -120,20 +128,16 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     }
     func renderLabel(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .main else { return }
-
         guard let label: LabelCanvasNode = entity.component()
         else { return }
-        let styleClass: StyleClass
-        if let nodeStyle: CanvasNodeStyle = entity.component() {
-            styleClass = nodeStyle.class
-        }
-        else {
-            styleClass = .label
-        }
+
+        let nodeStyle: CanvasNodeStyle? = entity.component()
+        let labelStyle = style.labelStyle(class: nodeStyle?.class ?? .label)
+
         // FIXME: [REFACTORING] Use styleclass
 
-        context.setFontSize(style.primaryLabelStyle.fontSize)
-        context.setColor(style.primaryLabelStyle.color)
+        context.setFontSize(labelStyle?.size ?? CanvasStyle.DefaultFontSize)
+        context.setColor(labelStyle?.color ?? CanvasStyle.DefaultLabelColor)
         context.showText(label.text, at: .zero)
     }
     func renderValueIndicator(_ entity: RuntimeEntity, context: Context) {

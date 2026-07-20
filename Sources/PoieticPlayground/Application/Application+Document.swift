@@ -17,12 +17,10 @@ extension Application {
         }
         
         let document = Document(design: design, url: designURL, notation: notation)
-        document.updateWorld(force: true)
+        document.needsWorldFrameUpdate = true
 
         self.document = document
         bindToDocument(document)
-        
-        document.trigger(.designFrameChanged)
     }
     
     func connectObservers(_ document: Document) {
@@ -34,9 +32,9 @@ extension Application {
         document.addObserver(canvas.onSelectionChanged, on: .selectionChanged)
         document.addObserver(canvas.onSimulationPlayerStep, on: .simulationPlayerStep)
         
-        document.addObserver(canvas.onInteractivePreviewChanged, on: .previewChanged)
-        document.addObserver(canvas.onPreviewStarted, on: .previewStarted)
-        document.addObserver(canvas.onPreviewEnded, on: .previewEnded)
+//        document.addObserver(canvas.onInteractivePreviewChanged, on: .previewChanged)
+//        document.addObserver(canvas.onPreviewStarted, on: .previewStarted)
+//        document.addObserver(canvas.onPreviewEnded, on: .previewEnded)
 
         document.addObserver(controlBar.onDesignFrameChanged, on: .designFrameChanged)
         document.addObserver(controlBar.onSimulationPlayerStep, on: .simulationPlayerStep)

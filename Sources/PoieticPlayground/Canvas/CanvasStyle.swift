@@ -55,6 +55,7 @@ let ErrorRedColor = Color(red: 0.85, green: 0.18, blue: 0.12)
 final class CanvasStyle: Sendable {
     public static let DefaultCanvasColor = Color(red: 0.97, green: 0.96, blue: 0.93)
     public static let DefaultStrokeColor: Color = .black
+    public static let DefaultLabelColor: Color = .black
     public static let DefaultFillColor: Color = .white
 
     struct Key: Hashable {
@@ -75,7 +76,9 @@ final class CanvasStyle: Sendable {
             // Canvas background
             Key(.canvas): ShapeStyle(fill: Color(red: 0.97, green: 0.96, blue: 0.93)),
             Key(.grid): ShapeStyle(stroke: Color(red: 0.3, green: 0.3, blue: 0.3, alpha: 0.2)),
-            Key(.selection): ShapeStyle(stroke: Color(red: 0.25, green: 0.50, blue: 0.85), fill: Color(red: 0.35, green: 0.60, blue: 0.90, alpha: 0.18)),
+            Key(.highlight, modifiers: .selected): ShapeStyle(stroke: Color(red: 0.25, green: 0.50, blue: 0.85), fill: Color(red: 0.35, green: 0.60, blue: 0.90, alpha: 0.18)),
+            Key(.highlight, modifiers: .allowed): ShapeStyle(stroke: Color(red: 0.18, green: 0.68, blue: 0.40)),
+            Key(.highlight, modifiers: .notAllowed): ShapeStyle(stroke: Color(red: 0.88, green: 0.28, blue: 0.15)),
             Key(.handle): ShapeStyle(stroke: Color(red: 0.90, green: 0.65, blue: 0.20)),
             Key(.issueIndicator): ShapeStyle(stroke: .white, fill: ErrorRedColor),
             Key(.valueIndicator): ShapeStyle(stroke: .black, fill: .white),
@@ -115,6 +118,7 @@ final class CanvasStyle: Sendable {
                 adaptableColors: [AdaptableColorKey:Color] = [:],
                 metrics: [DiagramLayoutMetric:Double] = [:]) {
         self.shapeStyles = shapeStyles
+        self.labelStyles = labelStyles
         self.adaptableColors = adaptableColors
         self.metrics = metrics
     }
@@ -156,13 +160,6 @@ final class CanvasStyle: Sendable {
 
 #if false
 class _OLDCanvasStyle {
-    var background: Color = Color(red: 0.97, green: 0.96, blue: 0.93)
-
-    /// Color or highlight tint for objects that are accepting a drag session.
-    var acceptingColor: Color = Color(red: 0.18, green: 0.68, blue: 0.40)
-    /// Color or highlight tint for objects that are not accepting a drag session.
-    var notAllowedColor: Color = Color(red: 0.88, green: 0.28, blue: 0.15)
-
 //    var errorIndicatorBackground: Color = Color.white.withTransparency(0.5)
 //    var errorIndicatorColor: Color = Color(red: 0.7, green: 0.2, blue: 0.2)
 

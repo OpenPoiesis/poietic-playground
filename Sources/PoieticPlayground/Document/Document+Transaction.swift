@@ -54,6 +54,6 @@ extension Document {
         try design.accept(transaction, appendHistory: true)
         self.log("Transaction accepted. Current frame: \(transaction.id), frame count: \(design.frames.count)")
 
-        self.updateWorld()
+        self.needsWorldFrameUpdate = true
     }
 }

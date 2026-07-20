@@ -125,7 +125,7 @@ struct CairoDrawingContext: RenderingContextProtocol {
             setColor(color)
             fillRect(origin: rect.origin, size: rect.size)
         }
-        if let color = style.outline {
+        if let color = style.stroke {
             setColor(color)
             strokeRect(origin: rect.origin, size: rect.size)
         }
@@ -176,50 +176,3 @@ struct CairoDrawingContext: RenderingContextProtocol {
         }
     }
 }
-
-struct CairoLayoutContext: LayoutContextProtocol {
-    private let context: OpaquePointer
-    let layoutStyle: DiagramLayoutStyle
-    
-    init(_ context: OpaquePointer, layoutStyle: DiagramLayoutStyle) {
-        self.context = context
-        self.layoutStyle = layoutStyle
-    }
-    
-    func setTransform(_ transform: AffineTransform) {
-        var matrix = cairo_matrix_t()
-        cairo_matrix_init(&matrix,
-                          transform.a, transform.b,
-                          transform.c, transform.d,
-                          transform.tx, transform.ty)
-        cairo_set_matrix(self.context, &matrix)
-    }
-    
-    func textExtents(text: String, font: DiagramLayoutStyle.FontKey) -> Rect2D {
-        // FIXME: Derive from diagram layout style font
-        cairo_select_font_face(context, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
-        cairo_set_font_size(context, 0.0)
-
-        return Rect2D()
-    }
-
-    internal func textExtents(_ text: String) -> cairo_text_extents_t {
-        var extents: cairo_text_extents_t = cairo_text_extents_t()
-        cairo_text_extents(context, text, &extents)
-        return extents
-    }
-    
-    func metric(_ key: DiagramLayoutStyle.MetricKey) -> Double {
-        return 0.0
-    }
-
-    
-    func saveState() {
-        cairo_save(context)
-    }
-    
-    func restoreState() {
-        cairo_restore(context)
-    }
-}
-

@@ -9,35 +9,41 @@ import CIimgui
 import Diagramming
 import PoieticCore
 
-/*
- Frame 1: Mouse button pressed at (100, 100)
-   → PointerDown event
-   → State machine: IDLE → PRESSED
-   
- Frame 2-5: Mouse still pressed, no movement (or < 3px)
-   → PointerMove events (minimal delta)
-   → State machine: stays in PRESSED
-   
- Frame 6: Mouse moved to (150, 100) - exceeds threshold!
-   → DragStart event (first time!)
-   → PointerMove event (still happens)
-   → State machine: PRESSED → DRAGGING
-   
- Frame 7-10: Mouse continues moving while pressed
-   → DragMove events
-   → PointerMove events
-   → State machine: stays in DRAGGING
-   
- Frame 11: Mouse button released
-   → DragEnd event
-   → PointerUp event
-   → State machine: DRAGGING → IDLE
- */
+/// View that draws a diagram and handles events to be dispatched to canvas tools.
+///
+/// Responsibilities:
+/// - Owns overlays and Cairo drawing contexts
+/// - Performs diagram scene rendering
+///
+/// The canvas draws a scene rooted in ``/Diagramming/DiagramCanvas``.
+///
 class DiagramCanvas: View {
     static let DefaultHitRadius: Double = 5.0
 
-    var editorManager: InlineEditorManager
-    
+    weak var document: Document?
+    internal var world: World {
+        guard let document else { fatalError("DiagramCanvas used before binding")}
+        return document.world
+    }
+    /// Diagram presented in this canvas view.
+    ///
+    /// Owned and managed by the ``Document``.
+    ///
+    /// - SeeAlso: ``scene`` – renderable representation of the diagram.
+    var diagram: RuntimeEntity?
+
+    /// Root entity for diagram canvas scene hierarchy presented in this canvas.
+    ///
+    /// Owned and managed by this diagram canvas view.
+    ///
+    /// When there is no canvas scene, it is created on the next ``update(_:)`` from
+    /// the ``diagram``.
+    ///
+    /// - SeeAlso: ``diagram`` – source for the scene.
+    var scene: RuntimeEntity?
+
+    var style: CanvasStyle
+
     // TODO: Not fully implemented, only one overlay at the moment
     var overlays: OverlayStack
     /// Overlay for the main content – diagram blocks, connectors, labels.
@@ -47,21 +53,8 @@ class DiagramCanvas: View {
     var indicatorOverlay: Overlay
     var highlightOverlay: Overlay
 
-    weak var document: Document?
-    internal var world: World {
-        guard let document else { fatalError("DiagramCanvas used before binding")}
-        return document.world
-    }
-    var style: CanvasStyle
-    
-    var debugMessage: String = ""
-    
     var isMouseInViewport: Bool = false
     var inputState: InputState = InputState()
-   
-    /// Root entity for diagram canvas scene hierarchy presented in this canvas.
-    /// 
-    var root: RuntimeEntity?
     
     var canvasPos = ImVec2(0.0, 0.0)          // Screen position of canvas
     var canvasSize = ImVec2(0.0, 0.0)         // Screen size of canvas
@@ -77,6 +70,9 @@ class DiagramCanvas: View {
     ///
     private(set) var zoomLevel: Double = 1.0
     
+    // TODO: Replace the viewOffset and zoomLevel variables with viewportState
+    var viewportState: ViewportState { ViewportState(offset: viewOffset, zoom: zoomLevel)}
+    
     /// Transformation from world coordinates to the drawing context/surface coordinates.
     ///
     /// The transform is derived from canvas view offset and zoom level.
@@ -87,6 +83,8 @@ class DiagramCanvas: View {
     /// Grid spacing in world coordinates.
     var gridSize: Double = 50.0
     var showGrid = true
+
+    var editorManager: InlineEditorManager
 
     init(document: Document? = nil) {
         self.document = document
@@ -118,9 +116,36 @@ class DiagramCanvas: View {
         overlays.setAllNeedsRender()
     }
 
+    /// Update renderable scene and mark the whole canvas as needing to be rendered.
+    ///
     func onDesignFrameChanged(_ document: Document) {
-        self.root = document.diagramSceneRoot
+        self.diagram = document.mainDiagram
+        
+        // TODO: Recycle scene
+        if let scene, world.contains(scene) {
+            scene.despawn()
+        }
+        createScene()
+        
         overlays.setAllNeedsRender()
+    }
+    
+    private func createScene() {
+        guard let diagram else {
+            self.scene = nil
+            return
+        }
+        let composer = DiagramSceneComposer(world: world)
+
+        let scene = composer.createScene(diagram: diagram, viewport: viewportState)
+
+        // TODO: in the future just mark dirty those nodes which were changed in the diagram
+        scene.setComponent(Diagram.DirtyContent.all)
+        // TODO: Make sure the style is consistent with current canvas style.
+        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
+        scene.setComponent(SceneLayoutProvider(provider: provider))
+        
+        self.scene = scene
     }
 
     func onSimulationPlayerStep(_ document: Document) {
@@ -182,7 +207,7 @@ class DiagramCanvas: View {
         
         // Canvas color
         let color: Color
-        if let canvasStyle = style.style(class: .canvas) {
+        if let canvasStyle = style.shapeStyle(class: .canvas) {
             color = canvasStyle.fill ?? CanvasStyle.DefaultCanvasColor
         }
         else {
@@ -224,7 +249,8 @@ class DiagramCanvas: View {
     }
     
     func drawOverlays() {
-        guard let root else { return }
+        guard let scene else { return }
+        assert(scene.contains(DiagramScene.self))
 
         let renderer = CairoDiagramSceneRenderer(style: style)
         
@@ -232,23 +258,23 @@ class DiagramCanvas: View {
         if mainOverlay.needsRender {
             try! mainOverlay.render { context in
 //                drawGrid(context)
-                renderer.render(root, context: context)
+                renderer.render(scene, context: context)
 //                drawHandles(context)
             }
         }
         if previewOverlay.needsRender {
             try! previewOverlay.render { context in
-                renderer.render(root, context: context)
+                renderer.render(scene, context: context)
             }
         }
         if highlightOverlay.needsRender {
             try! highlightOverlay.render { context in
-                renderer.render(root, context: context)
+                renderer.render(scene, context: context)
             }
         }
         if indicatorOverlay.needsRender {
             try! indicatorOverlay.render { context in
-                renderer.render(root, context: context)
+                renderer.render(scene, context: context)
             }
         }
     }
@@ -297,6 +323,12 @@ class DiagramCanvas: View {
         zoomLevel = max(0.01, min(100.0, zoom))
         toOverlayTransform = AffineTransform(translation: -viewOffset)
                                 .scaled(Vector2D(zoomLevel, zoomLevel))
+
+        // Viewport Changed
+        if let scene {
+            scene.setComponent(self.viewportState)
+            scene.setComponent(Diagram.DirtyContent.geometry)
+        }
         overlays.setAllNeedsRender()
     }
     
@@ -307,6 +339,10 @@ class DiagramCanvas: View {
         setView(offset: offset, zoom: useZoom)
     }
     func hitTarget(screenPosition: ImVec2) -> CanvasHitTarget? {
+        // FIXME: [REFACTORING] [IMPORTANT] Implement this using hit target component (absolute viewport coordinates)
+        print("ERROR: Hit target not implemented")
+        return nil
+#if false
         // TODO: Rework this as described below
         /*
          - Two kinds of hit targets: CollisionHitTarget, WireHitTarget
@@ -367,6 +403,7 @@ class DiagramCanvas: View {
         }
 
         return targets.last
+#endif
     }
     
     // MARK: - Inline Editors

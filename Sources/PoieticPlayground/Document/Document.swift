@@ -22,17 +22,36 @@ import Diagramming
 class Document {
     static let FileExtension = "poietic"
     
+    /// - SeeAlso: ``Application/connectObservers(_:)``.
     enum Event {
-        /// Triggered on each ``Document/changeSelection(_:)``.
-        case selectionChanged
-        /// Triggered when world frame has been changed.
+        /// Triggered when world frame has been changed, usually after a transaction or
+        /// on undo/redo action.
         ///
-        /// For example: on a transaction or undo/redo action.
-        ///
+        /// Handled by:
+        /// - inspector
+        /// - canvas
+        /// - control bar
+        /// - player
+        /// - dashboard
         case designFrameChanged
+        
+        /// Triggered:
+        /// - when selection is changed, through ``Document/changeSelection(_:)
+        /// - on frame change
+        /// Handled by:
+        /// - ``InspectorPanel``
+        case selectionChanged
 
+        /// Triggered:
+        /// - by selection tool on selection move or handle move
+        /// Handled by:
+        /// - Canvas
         case previewStarted
         case previewChanged
+        /// Triggered:
+        /// - when selection move is concluded or cancelled
+        /// Handled by:
+        /// - Canvas
         case previewEnded
 
         case simulationFinished
@@ -55,8 +74,17 @@ class Document {
     var commandQueue: [any Command]
 
     let world: World
+    
+    /// Flag whether we need to update the world frame on next call to update.
+    var needsWorldFrameUpdate: Bool = false
+    
     var selection: Selection
     var selectionOverview: SelectionOverview
+    
+    
+    // Known entities
+    var mainDiagram: RuntimeEntity? = nil
+    var mainDiagramScene: RuntimeEntity? = nil
     
     /// Flag whether ``InteractivePreviewSchedule`` is run at the end of the update.
     /// The flag is reset each application frame.
@@ -142,8 +170,8 @@ class Document {
     func endInteractivePreview() {
         self.isPreviewing = false
         
-        world.removeComponentForAll(BlockPreview.self)
-        world.removeComponentForAll(ConnectorPreview.self)
+        world.removeComponentForAll(PreviewPositionComponent.self)
+        world.removeComponentForAll(PreviewMidpoints.self)
         world.removeComponentForAll(InteractivePreview.self)
         for entity: RuntimeEntity in world.query(BlockIntent.self) {
             world.despawn(entity)

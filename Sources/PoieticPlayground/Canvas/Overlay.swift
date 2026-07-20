@@ -54,7 +54,7 @@ class Overlay {
     /// Cairo surface pointer `cairo_surface_t *`.
     private var surface: OpaquePointer? // cairo_surface_t*
     /// Cairo context pointer `cairo_t *`.
-    private var context: OpaquePointer?
+    private(set) var context: OpaquePointer?
     /// Texture handle, if successfully created by a graphic backend.
     private(set) var texture: TextureHandle?
 

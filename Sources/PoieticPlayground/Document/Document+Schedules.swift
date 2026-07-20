@@ -16,6 +16,11 @@ import Diagramming
 /// Result player step update.
 //enum ReplayStepSchedule: ScheduleLabel { }
 
+// TODO: Maybe a better, shorter name?
+/// Systems run on every document update
+///
+enum DocumentVisualsUpdateSchedule: ScheduleLabel { }
+
 /// Systems run during interactive editing such as selection movement or handle dragging.
 ///
 enum InteractivePreviewSchedule: ScheduleLabel { }
@@ -29,24 +34,28 @@ extension Document {
             label: FrameChangeSchedule.self,
             systems:
                 PoieticFlows.SimulationPlanningSystems
-                + PoieticFlows.SimulationPresentationSystems
                 + [
                     NewChartResolutionSystem.self,
                     // From Diagramming
                     ErrorIndicatorSystem.self,
-                    DiagramBlockFromTraitSystem.self,
-                    DiagramConnectorFromTraitSystem.self,
-                    ConnectorGeometrySystem.self,
+                    DiagramObjectsFromTraitsSystem.self,
+                    // FIXME: Add geometry system
                 ]
         ))
-        
+        world.addSchedule(Schedule(
+            label: DocumentVisualsUpdateSchedule.self,
+            systems: [
+                    SceneCompositionSystem.self,
+                ]
+        ))
+
         world.addSchedule(Schedule(
             label: InteractivePreviewSchedule.self,
             systems: [
                 // TODO: Remove error indicator system once we have relative placement
                 ErrorIndicatorSystem.self,
                 // From Diagramming
-                ConnectorGeometrySystem.self,
+//                ConnectorGeometrySystem.self,
             ]
         ))
 
@@ -58,16 +67,22 @@ extension Document {
             ]
         ))
 
-        world.addSchedule(Schedule(
-            label: ParameterResolutionSchedule.self,
-            systems: [
-                ComputationOrderSystem.self,
-                NameResolutionSystem.self,
-                ExpressionParserSystem.self,
-                ParameterResolutionSystem.self,
-                ParameterConnectionProposalSystem.self,
-            ]
-        ))
+        // TODO: Remove or reconsider (I think it was used for auto-connect)
+//        world.addSchedule(Schedule(
+//            label: ParameterResolutionSchedule.self,
+//            systems: [
+//                ComputationOrderSystem.self,
+//                NameResolutionSystem.self,
+//                ExpressionParserSystem.self,
+//                ParameterResolutionSystem.self,
+//                ParameterConnectionProposalSystem.self,
+//            ]
+//        ))
+    }
+    
+    func onSimulationPlayerStep(_ document: Document) {
+        // TODO: This is weird, as we should be receiving this event only triggered by us.
+        
     }
 
 }
