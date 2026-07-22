@@ -9,6 +9,8 @@ import CIimgui
 import PoieticCore
 import Diagramming
 
+/// Selection tool is ...
+///
 class SelectionTool: CanvasTool {
     // TODO: Implement the tool (empty stub for now)
 
@@ -224,9 +226,13 @@ class SelectionTool: CanvasTool {
             guard let entity = world.entity(objectID),
                   let block: DiagramBlock = entity.component()
             else { continue }
-            var preview: BlockPreview = entity.component() ?? BlockPreview(position: block.position)
+            var preview: PreviewPositionComponent
+            preview = entity.component() ?? PreviewPositionComponent(position: block.position)
             preview.position += worldDelta
             entity.setComponent(preview)
+            entity.mutateOrSet(default: Diagram.DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
             
             let deps = frame.dependentEdges(objectID)
             dependentEdges.formUnion(deps)
@@ -238,16 +244,22 @@ class SelectionTool: CanvasTool {
                   !connector.midpoints.isEmpty
             else { continue }
 
-            var preview: ConnectorPreview = entity.component()
-                        ??  ConnectorPreview(midpoints: connector.midpoints)
+            var preview: PreviewMidpoints = entity.component()
+                        ??  PreviewMidpoints(midpoints: connector.midpoints)
             
             preview.midpoints = preview.midpoints.map { $0 + worldDelta }
             entity.setComponent(preview)
+            entity.mutateOrSet(default: Diagram.DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
         }
         
         for objectID in dependentEdges {
             guard let entity = world.entity(objectID) else { continue }
             entity.setComponent(InteractivePreview())
+            entity.mutateOrSet(default: Diagram.DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
         }
 
         document.queueInteractivePreviewUpdate()
@@ -300,7 +312,7 @@ class SelectionTool: CanvasTool {
         
         entity.setComponent(InteractivePreview())
 
-        let preview: ConnectorPreview? = entity.component()
+        let preview: PreviewMidpoints? = entity.component()
         let midpoints = preview?.midpoints ?? connector.midpoints
         
         if midpoints.isEmpty {
@@ -313,18 +325,13 @@ class SelectionTool: CanvasTool {
             let segment = LineSegment(from: originBlock.position, to: targetBlock.position)
             let midpoint = segment.midpoint
             
-            let component = CanvasHandle(owner: entity.runtimeID,
-                                         position: midpoint,
-                                         kind: .midpoint(0))
-            
-            let _: RuntimeEntity = world.spawn(component, OwnedBy(entity.runtimeID))
+            let handle = world.spawn(CanvasHandle(position: midpoint, kind: .midpoint(0)))
+            handle.relate(Handles(), to: entity)
         }
         else {
             for (index, point) in midpoints.enumerated() {
-                let component = CanvasHandle(owner: entity.runtimeID,
-                                          position: point,
-                                          kind: .midpoint(index))
-                let _: RuntimeEntity = world.spawn(component, OwnedBy(entity.runtimeID))
+                let handle = world.spawn(CanvasHandle(position: point, kind: .midpoint(index)))
+                handle.relate(Handles(), to: entity)
             }
         }
     }
@@ -341,8 +348,8 @@ class SelectionTool: CanvasTool {
         
         switch component.kind {
         case .midpoint(let index):
-            guard let owner = document.world.entity(component.owner) else { break }
-            dragMidpointHandle(owner, index: index, currentPosition: component.position, currentDelta: worldDelta)
+            guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
+            dragMidpointHandle(target, index: index, currentPosition: component.position, currentDelta: worldDelta)
         }
         
         document.queueInteractivePreviewUpdate()
@@ -350,17 +357,17 @@ class SelectionTool: CanvasTool {
     
     /// Reflect handle position to connector preview.
     ///
-    func dragMidpointHandle(_ owner: RuntimeEntity, index: Int, currentPosition: Vector2D, currentDelta: Vector2D) {
+    func dragMidpointHandle(_ target: RuntimeEntity, index: Int, currentPosition: Vector2D, currentDelta: Vector2D) {
         var midpoints: [Vector2D]
         
-        if let preview: ConnectorPreview = owner.component() {
+        if let preview: PreviewMidpoints = target.component() {
             if preview.midpoints.isEmpty {
                 midpoints = [currentPosition]
             }
             else {
                 midpoints = preview.midpoints
 
-                if index < preview.midpoints.count {
+                if index >= 0 && index < preview.midpoints.count {
                     midpoints[index] = currentPosition
                 }
             }
@@ -369,8 +376,8 @@ class SelectionTool: CanvasTool {
             midpoints = [currentPosition]
         }
         
-        let newPreview = ConnectorPreview(midpoints: midpoints)
-        owner.setComponent(newPreview)
+        let newPreview = PreviewMidpoints(midpoints: midpoints)
+        target.setComponent(newPreview)
     }
 
     /// Parameters:
@@ -383,15 +390,15 @@ class SelectionTool: CanvasTool {
 
         switch component.kind {
         case .midpoint(let index):
-            guard let owner = document.world.entity(component.owner) else { break }
-            finalizeMidpointMove(owner: owner, index: index, finalPosition: finalPosition)
+            guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
+            finalizeMidpointMove(target: target, index: index, finalPosition: finalPosition)
         }
         document.queueInteractivePreviewUpdate()
     }
 
-    func finalizeMidpointMove(owner: RuntimeEntity, index: Int, finalPosition: Vector2D) {
+    func finalizeMidpointMove(target: RuntimeEntity, index: Int, finalPosition: Vector2D) {
         guard let document,
-              let objectID = owner.objectID
+              let objectID = target.objectID
         else { return }
         
         let trans = document.createOrReuseTransaction()
@@ -413,8 +420,8 @@ class SelectionTool: CanvasTool {
     // MARK: - Clean-up
     
     func cleanUp() {
-        world.removeComponentForAll(BlockPreview.self)
-        world.removeComponentForAll(ConnectorPreview.self)
+        world.removeComponentForAll(PreviewPositionComponent.self)
+        world.removeComponentForAll(PreviewMidpoints.self)
     }
     
     func removeHandles() {

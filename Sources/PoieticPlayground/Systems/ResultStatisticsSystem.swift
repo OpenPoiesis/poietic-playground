@@ -9,20 +9,6 @@
 import PoieticCore
 import PoieticFlows
 
-struct NumericValueStats: Component {
-    let min: Double
-    let max: Double
-    
-    var range: Double { max - min }
-    
-    init(min: Double, max: Double) {
-        precondition(min <= max)
-        self.min = min
-        self.max = max
-    }
-}
-
-
 /// System that computes statistics from the simulation result.
 ///
 /// Used to gather the following information:

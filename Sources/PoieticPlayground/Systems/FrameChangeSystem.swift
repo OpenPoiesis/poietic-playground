@@ -31,6 +31,7 @@ struct IssueIndicator: Component {
 /// - **Output:** Entities with ErrorIndicator component.
 /// - **Forgiveness:** If the world's design does not have a current frame the system does nothing.
 ///
+@available(*, deprecated, message: "Use DiagramSceneComposer and IssueIndicatorCanvasNode")
 struct ErrorIndicatorSystem: System {
     let ErrorPictogramName: String = "Error"
     let DefaultErrorIndicatorSize: Double = 10.0

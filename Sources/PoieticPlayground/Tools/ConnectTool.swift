@@ -33,6 +33,7 @@ class ConnectTool: CanvasTool {
               let notation: Notation = document.world.singleton()
         else { return }
 
+        document.changeSelection(.removeAll)
         self.checker = ConstraintChecker(document.design.metamodel)
         
         var items: [PaletteItem] = []

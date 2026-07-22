@@ -8,12 +8,20 @@
 import PoieticCore
 import Diagramming
 
+struct ScreenPosition: Component {
+    let position: Vector2D
+}
+struct ScreenSize: Component {
+    let size: Vector2D
+}
+
 struct BlockIntent: Component {
     let type: ObjectType
     var position: Vector2D
     let pictogram: Pictogram
 }
 
+// TODO: Relationship
 struct ConnectorIntent: Component {
     let type: ObjectType
     let originID: RuntimeID
@@ -28,21 +36,23 @@ enum TargetHighlight: Component {
     case notAllowed
 }
 
+/// Visual handle to interactively manipulate canvas objects.
+///
+/// Related components and relationships attached to the same entity:
+/// - ``Handles``: Object that the handle manipulates. When the target of the relationship is
+///   despawned, the handle is despawned as well.
+///
 struct CanvasHandle: Component {
     enum Kind {
-        /// Handle represents a connector mid-point.
-        ///
-        /// Moving the handle requires that the position is reflected in ``ConnectorPreview``.
+        /// Handle representing a connector mid-point.
         ///
         /// - SeeAlso: ``SelectionTool/dragMidpointHandle(_:index:currentPosition:currentDelta:)``,
         /// ``SelectionTool/finalizeHandleMove(_:finalPosition:totalDelta:)``
         /// 
         case midpoint(Int)
-        // TODO: case connect(ObjectType)
+        // TODO: Add the following types and functionality
+        // case connect(ObjectType) – handle from which a new connector can be dragged
     }
-    // TODO: Use OwnedBy
-    /// Runtime entity owning the handle, typically an entity corresponding to a design object.
-    let owner: RuntimeID
     let kind: Kind
     /// Current position of the handle in world coordinates.
     ///
@@ -50,8 +60,7 @@ struct CanvasHandle: Component {
     /// operation is concluded.
     var position: Vector2D
     
-    init(owner: RuntimeID, position: Vector2D, kind: Kind) {
-        self.owner = owner
+    init(position: Vector2D, kind: Kind) {
         self.position = position
         self.kind = kind
     }

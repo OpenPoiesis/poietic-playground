@@ -12,7 +12,6 @@ import Diagramming
 class PlacementTool: CanvasTool {
     static let IconSize: ImVec2 = ImVec2(60, 40)
     static let PaletteCellSize: ImVec2 = ImVec2(60, 60)
-    // TODO: Implement the tool (empty stub for now)
     override var name: String { "placement"}
     override var hasObjectPalette: Bool { true }
     override var iconKey: IconKey { .place }
@@ -26,6 +25,7 @@ class PlacementTool: CanvasTool {
               let notation: Notation = document.world.singleton()
         else { return }
         
+        document.changeSelection(.removeAll)
         var items: [PaletteItem] = []
         
         for type in placeableBlockTypes() {

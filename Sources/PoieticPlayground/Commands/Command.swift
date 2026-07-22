@@ -10,7 +10,8 @@ import PoieticCore
 struct CommandError: Error {
     enum Severity {
         case error
-        case fatal // User should contact developers
+        /// Users should contact application developers.
+        case fatal
     }
     let message: String
     let severity: Severity

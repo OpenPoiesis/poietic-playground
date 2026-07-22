@@ -45,8 +45,12 @@ extension Document {
         world.addSchedule(Schedule(
             label: DocumentVisualsUpdateSchedule.self,
             systems: [
+                    SimulationSamplingSystem.self,
                     SceneCompositionSystem.self,
-                ]
+                ],
+            order: [
+                (SimulationSamplingSystem.self, before: SceneCompositionSystem.self),
+            ]
         ))
 
         world.addSchedule(Schedule(
