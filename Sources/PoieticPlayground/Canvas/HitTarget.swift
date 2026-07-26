@@ -25,6 +25,7 @@ enum CanvasHitTarget {
         case issueIndicator
     }
 
+    // TODO: Change to RuntimeEntity
     /// Canvas object or its part was hit, typically a design object.
     case object(RuntimeID, ObjectPart)
     case handle(RuntimeID)

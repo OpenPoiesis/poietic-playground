@@ -22,18 +22,34 @@ struct BlockIntent: Component {
 }
 
 // TODO: Relationship
+/// Component for a connector that is intended to be created within an interactive operation.
+///
+/// Created by ``ConnectTool``.
+///
+/// Entity structure with connector intent:
+/// - ``DiagramSceneNode``: primary entity type tag
+/// - ``ConnectorCanvasNode``: tag, picked up by the renderer
+/// - ``ConnectorGlyph``
+/// - ``CanvasNodeStyle/preview``: denotes that this is an intent
+///
+/// Computed components:
+///
+/// - ``ConnectorGeometry``: computed by the composer, used by the renderer
+/// - ``ConnectorWire``: computed by composer
+/// - ``ConnectorStroke``: computed by composer
+///
+/// Relationships:
+/// - ``ChildOf``: scene
+/// - ``ConnectorCanvasNode/Origin``: origin block entity for computing geometry
+/// - ``ConnectorCanvasNode/Target``: target block entity, if connected
+///
+/// - Note: ``ConnectorIntent`` should not have ``RepresentationOf`` relationship, as it does not yet
+/// represent anything.
+///
 struct ConnectorIntent: Component {
+    /// Object type of the connector to be created.
     let type: ObjectType
-    let originID: RuntimeID
-    let glyph: ConnectorGlyph
-    let targetID: RuntimeID?
     let targetAllowed: Bool
-}
-
-enum TargetHighlight: Component {
-    case none
-    case accepting
-    case notAllowed
 }
 
 /// Visual handle to interactively manipulate canvas objects.
@@ -43,6 +59,8 @@ enum TargetHighlight: Component {
 ///   despawned, the handle is despawned as well.
 ///
 struct CanvasHandle: Component {
+    static let DefaultSize = 8.0
+    
     enum Kind {
         /// Handle representing a connector mid-point.
         ///

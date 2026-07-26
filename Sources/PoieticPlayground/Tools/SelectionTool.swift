@@ -230,7 +230,7 @@ class SelectionTool: CanvasTool {
             preview = entity.component() ?? PreviewPositionComponent(position: block.position)
             preview.position += worldDelta
             entity.setComponent(preview)
-            entity.mutateOrSet(default: Diagram.DirtyContent.geometry) {
+            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
                 $0.insert(.geometry)
             }
             
@@ -249,7 +249,7 @@ class SelectionTool: CanvasTool {
             
             preview.midpoints = preview.midpoints.map { $0 + worldDelta }
             entity.setComponent(preview)
-            entity.mutateOrSet(default: Diagram.DirtyContent.geometry) {
+            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
                 $0.insert(.geometry)
             }
         }
@@ -257,7 +257,7 @@ class SelectionTool: CanvasTool {
         for objectID in dependentEdges {
             guard let entity = world.entity(objectID) else { continue }
             entity.setComponent(InteractivePreview())
-            entity.mutateOrSet(default: Diagram.DirtyContent.geometry) {
+            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
                 $0.insert(.geometry)
             }
         }
@@ -307,8 +307,19 @@ class SelectionTool: CanvasTool {
     }
     
     func createMidpointHandles(_ entity: RuntimeEntity) {
-        guard let connector: DiagramConnector = entity.component()
+        guard let connector: DiagramConnector = entity.component(),
+              let canvas,
+              let scene = canvas.scene
         else { return }
+        
+        let handleSize: Double
+        
+        if let style = self.canvas?.style {
+            handleSize = style.metric(.handleSize, default: CanvasHandle.DefaultSize)
+        }
+        else {
+            handleSize = CanvasHandle.DefaultSize
+        }
         
         entity.setComponent(InteractivePreview())
 
@@ -324,16 +335,42 @@ class SelectionTool: CanvasTool {
 
             let segment = LineSegment(from: originBlock.position, to: targetBlock.position)
             let midpoint = segment.midpoint
-            
-            let handle = world.spawn(CanvasHandle(position: midpoint, kind: .midpoint(0)))
-            handle.relate(Handles(), to: entity)
+
+            createMidpointHandle(worldPosition: midpoint,
+                                 scenePosition: canvas.worldToScene(midpoint),
+                                 index: 0,
+                                 handles: entity,
+                                 parent: scene,
+                                 size: handleSize)
         }
         else {
             for (index, point) in midpoints.enumerated() {
-                let handle = world.spawn(CanvasHandle(position: point, kind: .midpoint(index)))
-                handle.relate(Handles(), to: entity)
+                createMidpointHandle(worldPosition: point,
+                                     scenePosition: canvas.worldToScene(point),
+                                     index: index,
+                                     handles: entity,
+                                     parent: scene,
+                                     size: handleSize)
             }
         }
+    }
+    
+    func createMidpointHandle(worldPosition: Vector2D,
+                              scenePosition: Vector2D,
+                              index: Int,
+                              handles handledEntity: RuntimeEntity,
+                              parent: RuntimeEntity,
+                              size: Double)
+    {
+        let handle = world.spawn(
+            DiagramSceneNode(),
+            CanvasHandle(position: worldPosition, kind: .midpoint(index)),
+            CollisionShape(position: .zero, shape: .circle(size / 2.0)),
+            PositionComponent(position: scenePosition),
+            Interactivity.interactive,
+        )
+        handle.relate(Handles(), to: handledEntity)
+        handle.relate(ChildOf(), to: parent)
     }
     
     func dragHandle(_ handleRuntimeID: RuntimeID, screenDelta: ImVec2) {

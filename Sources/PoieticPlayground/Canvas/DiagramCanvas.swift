@@ -176,12 +176,12 @@ class DiagramCanvas: View {
         return ImVec2(screenPos) + canvasPos
     }
    
-    /// Convert world coordinates to canvas overlay coordinates.
-    func worldToOverlay(_ worldPos: Vector2D) -> Vector2D {
+    /// Convert world coordinates to scene coordinates.
+    func worldToScene(_ worldPos: Vector2D) -> Vector2D {
         return toOverlayTransform.apply(to: worldPos)
     }
-    func overlayToWorld(_ overlayPos: Vector2D) -> Vector2D {
-        let worldPos = overlayPos / zoomLevel + viewOffset
+    func sceneToWorld(_ scenePos: Vector2D) -> Vector2D {
+        let worldPos = scenePos / zoomLevel + viewOffset
         return worldPos
     }
     
@@ -339,71 +339,41 @@ class DiagramCanvas: View {
         setView(offset: offset, zoom: useZoom)
     }
     func hitTarget(screenPosition: ImVec2) -> CanvasHitTarget? {
-        // FIXME: [REFACTORING] [IMPORTANT] Implement this using hit target component (absolute viewport coordinates)
-        print("ERROR: Hit target not implemented")
+        guard let scene
+        else { return nil }
+
+        let scenePosition = worldToScene(screenToWorld(screenPosition))
+        let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
+        guard let entity = hitTest(node: scene, scenePosition: scenePosition, radius: radius),
+              let parent: RuntimeEntity = entity.target(ChildOf.self)
+        else { return nil }
+
+        // Determine hit target type
+        //
+        if entity.contains(CanvasHandle.self) {
+            return CanvasHitTarget.handle(entity.runtimeID)
+        } else if parent.relates(DiagramSceneNode.PrimaryLabel.self, to: entity) {
+            return CanvasHitTarget.object(entity.runtimeID, .primaryLabel)
+        } else if parent.relates(DiagramSceneNode.SecondaryLabel.self, to: entity) {
+            return CanvasHitTarget.object(entity.runtimeID, .secondaryLabel)
+        } else if entity.contains(IssueIndicatorCanvasNode.self) {
+            return CanvasHitTarget.object(entity.runtimeID, .issueIndicator)
+        } else if entity.contains(BlockCanvasNode.self) || entity.contains(ConnectorCanvasNode.self) {
+            return CanvasHitTarget.object(entity.runtimeID, .body)
+        }
+        else {
+            return nil
+        }
+    }
+    func hitTest(node: RuntimeEntity, scenePosition: Vector2D, radius: Double) -> RuntimeEntity? {
+        for child in node.children {
+            guard let region: TouchRegion = child.component()
+            else { continue }
+            if region.isHit(at: scenePosition, radius: radius) {
+                return child
+            }
+        }
         return nil
-#if false
-        // TODO: Rework this as described below
-        /*
-         - Two kinds of hit targets: CollisionHitTarget, WireHitTarget
-         - Use CollisionCanvasHitTarget component for collision-shape based hit targets
-         - Use WireCanvasHitTarget component for connectors or potentially other wire-based targets
-         - either must implement containsTouch(worldPosition:Vector2D, radius:Double) -> Bool
-         - then content will be:
-            - for direct object hit: entity owning the component
-            - for object part (labels): OwnedBy target + part
-            - for indicator: same as for part
-            - for owned handle: (owner, handle)
-            - for free-standing handle: (handle ID, handle component)
-         */
-        var targets: [CanvasHitTarget] = []
-
-        // TODO: This is expensive
-        let worldTouchPosition: Vector2D = screenToWorld(screenPosition)
-        let touchShape = CollisionShape(position: worldTouchPosition, shape: .circle(Self.DefaultHitRadius))
-
-        // Blocks (collision shape) and Error indicators
-        for (entity, block) in world.query(DiagramBlock.self) {
-            let blockShape = block.collisionShape.translated(block.position)
-            if blockShape.collide(with: touchShape) {
-                let target: CanvasHitTarget = .object(entity.runtimeID, .body)
-                targets.append(target)
-            }
-        }
-        
-        // Connectors (distance to wire)
-        for (entity, connector) in world.query(DiagramConnectorGeometry.self) {
-            // TODO: Have the wire tessellated already
-            let wire = connector.wire.tessellate()
-
-            for i in 0..<(wire.count-1) {
-                let segment = LineSegment(from: wire[i], to: wire[i + 1])
-                if segment.distance(to: worldTouchPosition) < Self.DefaultHitRadius {
-                    let target: CanvasHitTarget = .object(entity.runtimeID, .body)
-                    targets.append(target)
-                }
-            }
-        }
-
-        // Issue indicators
-        for (entity, indicator) in world.query(IssueIndicator.self) {
-            guard let owner: OwnedBy = entity.component() else { continue }
-            let shape = indicator.collisionShape
-            if shape.collide(with: touchShape) {
-                let target: CanvasHitTarget = .object(owner.other, .issueIndicator)
-                targets.append(target)
-            }
-        }
-        // Handles
-        for (entity, handle) in world.query(CanvasHandle.self) {
-            let distance = worldTouchPosition.distance(to: handle.position)
-            guard distance <= Self.DefaultHitRadius else { continue }
-            let target: CanvasHitTarget = .handle(entity.runtimeID)
-            targets.append(target)
-        }
-
-        return targets.last
-#endif
     }
     
     // MARK: - Inline Editors
