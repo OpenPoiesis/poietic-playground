@@ -34,6 +34,7 @@ struct CairoLayoutProvider: LayoutProvider {
         cairo_text_extents(context, text, &ext)
         cairo_restore(context)
         
-        return Rect2D(origin: .zero, size: Vector2D(ext.width, ext.height))
+        return Rect2D(origin: Vector2D(ext.x_bearing, ext.y_bearing),
+                      size: Vector2D(ext.width, ext.height))
     }
 }

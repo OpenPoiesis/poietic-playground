@@ -151,7 +151,11 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     func renderColorSwatch(_ entity: RuntimeEntity, context: Context) {
         guard let swatch: ColorSwatchCanvasNode = entity.component()
         else { return }
-
-        debugPrint("WARNING: \(#function) not implemented")
+        
+        let color = style.adaptableColor(swatch.colorKey, default: Color.init(gray: 0.5))
+        let size = style.metric(.colorSwatchSize, default: ColorSwatchCanvasNode.DefaultSize)
+        context.setColor(color)
+        let rect = Rect2D(center: .zero, size: Vector2D(size, size))
+        context.fillRect(origin: rect.origin, size: rect.size)
     }
 }
