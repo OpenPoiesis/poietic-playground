@@ -22,7 +22,7 @@ struct CairoDrawingContext: RenderingContextProtocol {
     
     var transform: AffineTransform {
         var matrix = cairo_matrix_t()
-        cairo_set_matrix(self.context, &matrix)
+        cairo_get_matrix(self.context, &matrix)
         return AffineTransform(a: matrix.xx, b: matrix.yx, c: matrix.xy, d: matrix.yy, tx: matrix.x0, ty: matrix.y0)
     }
 
