@@ -9,8 +9,10 @@ import PoieticCore
 import Diagramming
 
 class CairoDiagramSceneRenderer: DiagramSceneRenderer {
-    typealias Context = CairoDrawingContext
+    static let DebugColor = Color.screenRed.withTransparency(0.5)
 
+    typealias Context = CairoDrawingContext
+    
     let style: CanvasStyle
     
     init(style: CanvasStyle) {
@@ -23,9 +25,9 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
               let pictComp: PictogramCanvasNode = pictogramNode.component()
         else { return }
         let nodeStyle: CanvasNodeStyle? = entity.component()
-
+        
         let pictogram = pictComp.pictogram
-
+        
         switch context.overlay {
         case .main:
             let shapeStyle = style.shapeStyle(class: nodeStyle?.class ?? .pictogram)
@@ -34,7 +36,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
         case .highlight:
             // If we do not have node style set we do not know whether we need a highlight
             guard let nodeStyle else { break }
-
+            
             if nodeStyle.modifiers.contains(.selected) {
                 let shapeStyle = style.shapeStyle(class: .highlight, modifiers: .selected)
                 context.setColor(shapeStyle?.fill ?? CanvasStyle.DefaultFillColor)
@@ -60,19 +62,19 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
         }
         
     }
-
+    
     func renderConnector(_ entity: RuntimeEntity, context: Context) {
         guard let stroke: ConnectorStroke = entity.component()
         else { return }
-
+        
         let nodeStyle: CanvasNodeStyle? = entity.component()
-
+        
         switch context.overlay {
         case .main:
             let shapeStyle = style.shapeStyle(class: nodeStyle?.class ?? .normal)
             context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
             context.setLineWidth(shapeStyle?.lineWidth ?? 1.0)
-
+            
             // Open curves
             if let path = stroke.body {
                 context.addPath(path)
@@ -97,30 +99,30 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
             guard let nodeStyle: CanvasNodeStyle = entity.component(),
                   let wire: ConnectorWire = entity.component()
             else { break }
-
+            
             // Assumption: Style colours are transparent, therefore we can draw them on top of each other
             if nodeStyle.modifiers.contains(.selected) {
                 let shapeStyle = style.shapeStyle(class: .highlight, modifiers: .selected)
-
+                
                 // TODO: Remove this debug
                 let wirePath = BezierPath(polyline: wire.points)
                 context.save()
                 context.setColor(Color(red: 1.0, green: 0.8, blue: 0.0))
                 context.setLineWidth(4)
                 context.strokePath(wirePath)
-
+                
                 context.setColor(shapeStyle?.fill ?? CanvasStyle.DefaultFillColor)
                 // TODO: [REFACTORING] Precompute this on connector as ConnectorOutline
                 let outline = wirePath.inflated(by: 10.0)
                 context.fillPath(outline)
-
+                
                 context.restore()
             }
-
+            
         default:
             break
         }
-
+        
     }
     func renderPictogram(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .main else { return }
@@ -130,12 +132,12 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
         guard context.overlay == .main else { return }
         guard let label: LabelCanvasNode = entity.component()
         else { return }
-
+        
         let nodeStyle: CanvasNodeStyle? = entity.component()
         let labelStyle = style.labelStyle(class: nodeStyle?.class ?? .label)
-
+        
         // FIXME: [REFACTORING] Use styleclass
-
+        
         context.setFontSize(labelStyle?.size ?? CanvasStyle.DefaultFontSize)
         context.setColor(labelStyle?.color ?? CanvasStyle.DefaultLabelColor)
         context.showText(label.text, at: .zero)
@@ -152,10 +154,27 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
         guard let swatch: ColorSwatchCanvasNode = entity.component()
         else { return }
         
-        let color = style.adaptableColor(swatch.colorKey, default: Color.init(gray: 0.5))
+        let color = style.adaptableColor(swatch.colorKey,
+                                         default: DefaultAdaptableColors[swatch.colorKey] ?? Color.init(gray: 0.5))
         let size = style.metric(.colorSwatchSize, default: ColorSwatchCanvasNode.DefaultSize)
         context.setColor(color)
         let rect = Rect2D(center: .zero, size: Vector2D(size, size))
         context.fillRect(origin: rect.origin, size: rect.size)
     }
+
+    func renderNodeExtras(_ entity: RuntimeEntity, context: Context) {
+        let visibility: Visibility? = entity.component()
+        guard visibility != .hidden else { return }
+
+        if let shape: CollisionShape = entity.component() {
+            context.setColor(Self.DebugColor)
+            context.setLineWidth(1.0)
+            let path = shape.toPath()
+            context.strokePath(path)
+        }
+        if let region: TouchRegion = entity.component() {
+            // draw touch region outline
+        }
+    }
+    
 }
