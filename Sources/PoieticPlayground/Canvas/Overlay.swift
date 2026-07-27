@@ -66,6 +66,7 @@ class Overlay {
     init(name: String, type: OverlayType) {
         self.name = name
         self.type = type
+        create(width: 1, height: 1)
     }
 
     var needsRender: Bool {
@@ -90,44 +91,36 @@ class Overlay {
         guard width > 0 && height > 0 else { return }
         
         if width != self.width || height != self.height {
-            destroy()
+            if let texture {
+                GraphicsBackend.shared.destroyTexture(texture)
+                self.texture = nil
+            }
             create(width: width, height: height)
-            self.width = width
-            self.height = height
             self.state = .needsRender
         }
     }
 
     private func create(width: Int32, height: Int32) {
-        precondition(surface == nil && context == nil)
+        self.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height)
 
-        surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height)
-        context = cairo_create(surface)
+        self.context = cairo_create(surface)
+        self.width = width
+        self.height = height
+        self.state = .needsRender
     }
     
-    /// - Important: Must be called manually when disposing of the surface
-    @MainActor
     func destroy() {
-        if let texture {
-            GraphicsBackend.shared.destroyTexture(texture)
-            self.texture = nil
-        }
-        
-        if let context {
-            cairo_destroy(context)
-            self.context = nil
-        }
-
         if let surface {
             cairo_surface_destroy(surface)
-            self.surface = nil
         }
-        
-        width = 0
-        height = 0
+        if let context {
+            cairo_destroy(context)
+        }
+        self.width = 0
+        self.height = 0
         self.state = .uninitialized
     }
-
+    
     func render(_ draw: (CairoDrawingContext) -> Void) throws (OverlayError) {
         guard let context else {
             throw .noContext

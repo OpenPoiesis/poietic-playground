@@ -111,47 +111,6 @@ class DiagramCanvas: View {
                                     editor: NumericValueInlineEditor(attribute: "window_time", iconKey: .timeWindow))
     }
     
-    func onSelectionChanged(_ document: Document) {
-        // TODO: Make only selection overlay dirty (once we have selection overlays)
-        overlays.setAllNeedsRender()
-    }
-
-    /// Update renderable scene and mark the whole canvas as needing to be rendered.
-    ///
-    func onDesignFrameChanged(_ document: Document) {
-        self.diagram = document.mainDiagram
-        
-        // TODO: Recycle scene
-        if let scene, world.contains(scene) {
-            scene.despawn()
-        }
-        createScene()
-        
-        overlays.setAllNeedsRender()
-    }
-    
-    private func createScene() {
-        guard let diagram else {
-            self.scene = nil
-            return
-        }
-        let composer = DiagramSceneComposer(world: world)
-
-        let scene = composer.createScene(diagram: diagram, viewport: viewportState)
-
-        // TODO: in the future just mark dirty those nodes which were changed in the diagram
-        scene.setComponent(Diagram.DirtyContent.all)
-        // TODO: Make sure the style is consistent with current canvas style.
-        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
-        scene.setComponent(SceneLayoutProvider(provider: provider))
-        
-        self.scene = scene
-    }
-
-    func onSimulationPlayerStep(_ document: Document) {
-        indicatorOverlay.setNeedsRender()
-    }
-
     func bind(_ document: Document) {
         self.document = document
         self.editorManager.bind(document: document, canvas: self)
@@ -189,10 +148,73 @@ class DiagramCanvas: View {
         Rect2D(origin: viewOffset, size: (Vector2D(canvasSize) / zoomLevel))
     }
     
-
+    // MARK: - Update and Events
+    
     func update(_ timeDelta: Double) {
-        // Nothing for now
+//        overlays.ensureSize(width: Int32(canvasSize.x),
+//                            height: Int32(canvasSize.y))
+
+        if scene == nil {
+            print("DEBUG: Recreating scene, diagram=\(diagram != nil ? "yes" : "nil")")
+            createScene()
+        }
+        
+        if let scene {
+            print("DEBUG: scene children count: \(scene.children.count)")
+            for child in scene.children {
+                let hasBlock = child.contains(BlockCanvasNode.self) ? "Block" : ""
+                let hasConn = child.contains(ConnectorCanvasNode.self) ? "Conn" : ""
+                let hasPict = child.target(DiagramSceneNode.Pictogram.self) != nil ? "+pictogram" : ""
+                let posComp: PositionComponent? = child.component()
+                let pos = posComp.map { String(describing: $0.position) } ?? "(no position)"
+                print("  child: \(hasBlock)\(hasConn) \(hasPict) pos: \(pos)")
+            }
+            print("DEBUG: -- END OF SCENE --")
+        }
     }
+
+    func onSelectionChanged(_ document: Document) {
+        // TODO: Make only selection overlay dirty (once we have selection overlays)
+        overlays.setAllNeedsRender()
+    }
+
+    /// Update renderable scene and mark the whole canvas as needing to be rendered.
+    ///
+    func onDesignFrameChanged(_ document: Document) {
+        self.diagram = document.mainDiagram
+        
+        // TODO: Recycle scene
+        if let scene, world.contains(scene) {
+            scene.despawn()
+        }
+        // Scene will be created in next update()
+        scene = nil
+    }
+    
+    private func createScene() {
+        guard let diagram else {
+            self.scene = nil
+            return
+        }
+        let composer = DiagramSceneComposer(world: world)
+
+        let scene = composer.createScene(diagram: diagram, viewport: viewportState)
+
+        scene.setComponent(Diagram.DirtyContent.all)
+
+        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
+        scene.setComponent(SceneLayoutProvider(provider: provider))
+        
+        self.scene = scene
+        overlays.setAllNeedsRender()
+    }
+
+    func onSimulationPlayerStep(_ document: Document) {
+        indicatorOverlay.setNeedsRender()
+    }
+
+
+    // MARK: - Drawing
     
     func draw() {
         let viewport = ImGui.GetMainViewport()
@@ -224,9 +246,6 @@ class DiagramCanvas: View {
         ImGui.PopStyleColor()
         ImGui.PopStyleVar()
 
-        canvasPos = ImGui.GetCursorScreenPos()
-        canvasSize = ImGui.GetContentRegionAvail()
-        
         // Note: We need to do it here for processUnhandledInput(...) to correctly capture
         // the mouse events for canvas. If there is a better solution, I am open.
         isMouseInViewport = ImGui.IsWindowHovered(
@@ -234,10 +253,10 @@ class DiagramCanvas: View {
             ImGuiHoveredFlags_AllowWhenBlockedByPopup
         )
 
-        // Ensure all layers match canvas size
-        overlays.ensureSize(width: Int32(canvasSize.x),
-                            height: Int32(canvasSize.y))
-        
+        canvasPos = ImGui.GetCursorScreenPos()
+        canvasSize = ImGui.GetContentRegionAvail()
+        overlays.ensureSize(width: Int32(canvasSize.x), height: Int32(canvasSize.y))
+
         drawOverlays()
         try! overlays.uploadIfNeeded()
         drawOverlayTextures()

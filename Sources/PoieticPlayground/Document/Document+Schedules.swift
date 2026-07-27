@@ -47,9 +47,11 @@ extension Document {
             systems: [
                     SimulationSamplingSystem.self,
                     SceneCompositionSystem.self,
+                    SceneInteractionSystem.self,
                 ],
             order: [
                 (SimulationSamplingSystem.self, before: SceneCompositionSystem.self),
+                (SceneCompositionSystem.self, before: SceneInteractionSystem.self),
             ]
         ))
 
