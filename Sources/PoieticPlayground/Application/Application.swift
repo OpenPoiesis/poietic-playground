@@ -40,6 +40,7 @@ class Application {
     static let PictogramAdjustmentScale = 0.5
     
     var showMetrics = false
+    var debugCanvasRendering = false
     var quitRequested: Bool = false
     
     // -- Document --

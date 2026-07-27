@@ -20,6 +20,8 @@ import PoieticCore
 class DiagramCanvas: View {
     static let DefaultHitRadius: Double = 5.0
 
+    var debugRendering: Bool = false
+    
     weak var document: Document?
     internal var world: World {
         guard let document else { fatalError("DiagramCanvas used before binding")}
@@ -271,7 +273,7 @@ class DiagramCanvas: View {
         guard let scene else { return }
         assert(scene.contains(DiagramScene.self))
 
-        let renderer = CairoDiagramSceneRenderer(style: style)
+        let renderer = CairoDiagramSceneRenderer(style: style, debug: debugRendering)
         
         // TODO: Handle exceptions
         if mainOverlay.needsRender {

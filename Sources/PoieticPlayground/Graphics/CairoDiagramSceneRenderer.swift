@@ -14,9 +14,11 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     typealias Context = CairoDrawingContext
     
     let style: CanvasStyle
+    let debug: Bool
     
-    init(style: CanvasStyle) {
+    init(style: CanvasStyle, debug: Bool = false) {
         self.style = style
+        self.debug = debug
     }
     
     func renderBlock(_ entity: RuntimeEntity, context: Context) {
@@ -163,6 +165,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     }
 
     func renderNodeExtras(_ entity: RuntimeEntity, context: Context) {
+        guard debug else { return }
         let visibility: Visibility? = entity.component()
         guard visibility != .hidden else { return }
 

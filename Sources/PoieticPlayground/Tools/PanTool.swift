@@ -51,7 +51,7 @@ class PanTool: CanvasTool {
         guard let canvas else { return .pass }
 
         let screenOffset = event.screenPos - self.previousScreenPos
-        let canvasOffset = Vector2D(screenOffset) * Double(canvas.zoomLevel)
+        let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
         canvas.setView(offset: canvas.viewOffset - canvasOffset,
                        zoom: canvas.zoomLevel)
         
@@ -66,7 +66,7 @@ class PanTool: CanvasTool {
         guard let canvas else { return .pass }
 
         let screenOffset = event.screenPos - self.previousScreenPos
-        let canvasOffset = Vector2D(screenOffset) * Double(canvas.zoomLevel)
+        let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
         canvas.setView(offset: canvas.viewOffset - canvasOffset,
                        zoom: canvas.zoomLevel)
 
