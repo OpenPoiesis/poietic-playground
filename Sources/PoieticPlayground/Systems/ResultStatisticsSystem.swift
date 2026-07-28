@@ -20,7 +20,7 @@ import PoieticFlows
 /// - **Forgiveness:** Does nothing if there is no simulation plan neither simulation result.
 /// - **Issues:** No issues created.
 ///
-public struct TimeSeriseProcessingSystem: System {
+public struct TimeSeriesProcessingSystem: System {
     nonisolated(unsafe) public static let dependencies: [SystemDependency] = [
         .after(StockFlowSimulationSystem.self),
     ]

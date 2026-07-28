@@ -59,6 +59,7 @@ class SelectionTool: CanvasTool {
         
         // TODO: Close inline popup
         let target = canvas.hitTarget(screenPosition: event.screenPos)
+        print("---     got target: \(target)")
         let selection = document.selection
 
         switch target {
@@ -130,7 +131,6 @@ class SelectionTool: CanvasTool {
     }
     func dragMove(_ event: ToolEvent) -> EngagementResult {
 //        TODO: popupManager?.closeInlinePopup()
-        
         switch state {
         case .idle: break
         case .objectSelect: break
@@ -201,8 +201,8 @@ class SelectionTool: CanvasTool {
 //            case .handle: break
 //            }
         }
-        return .consumed
         document.endInteractivePreview()
+        return .consumed
     }
     func dragCancel(_ event: ToolEvent) -> EngagementResult {
         cleanUp()
@@ -214,11 +214,14 @@ class SelectionTool: CanvasTool {
     
     func previewSelectionMove(screenDelta: ImVec2) {
         guard let canvas,
+              let scene = canvas.scene,
               let document,
               let frame = document.world.frame
         else { return }
         let selection = document.selection
 
+        print("--- dragging selection by screen delta: \(screenDelta)")
+        
         var dependentEdges: Set<PoieticCore.ObjectID> = Set()
         let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
 
@@ -261,12 +264,17 @@ class SelectionTool: CanvasTool {
                 $0.insert(.geometry)
             }
         }
-
+        
+        scene.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+            $0.insert(.geometry)
+        }
+        
         document.queueInteractivePreviewUpdate()
     }
     
     func finalizeSelectionMove(_ selection: Selection, by designDelta: Vector2D) {
-        guard let document
+        guard let document,
+              let scene = canvas?.scene
         else { return }
 
         let trans = document.createOrReuseTransaction()
@@ -276,6 +284,7 @@ class SelectionTool: CanvasTool {
             let object = trans.mutate(id)
             moveObject(object, by: designDelta)
         }
+
         cleanUp()
     }
 
@@ -376,18 +385,24 @@ class SelectionTool: CanvasTool {
     func dragHandle(_ handleRuntimeID: RuntimeID, screenDelta: ImVec2) {
         guard let document,
               let canvas,
+              let scene = canvas.scene,
               let handle = document.world.entity(handleRuntimeID),
               var component: CanvasHandle = handle.component()
         else { return }
         let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
-        component.position += worldDelta
+        component.worldPosition += worldDelta
         handle.setComponent(component)
+        handle.setComponent(PositionComponent(position: canvas.worldToScene(component.worldPosition)))
         
         switch component.kind {
         case .midpoint(let index):
             guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
-            dragMidpointHandle(target, index: index, currentPosition: component.position, currentDelta: worldDelta)
+            dragMidpointHandle(target, index: index, currentPosition: component.worldPosition, currentDelta: worldDelta)
+            scene.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
         }
+        
         
         document.queueInteractivePreviewUpdate()
     }

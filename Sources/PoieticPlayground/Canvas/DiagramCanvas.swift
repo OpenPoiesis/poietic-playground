@@ -160,19 +160,6 @@ class DiagramCanvas: View {
             print("DEBUG: Recreating scene, diagram=\(diagram != nil ? "yes" : "nil")")
             createScene()
         }
-        
-        if let scene {
-            print("DEBUG: scene children count: \(scene.children.count)")
-            for child in scene.children {
-                let hasBlock = child.contains(BlockCanvasNode.self) ? "Block" : ""
-                let hasConn = child.contains(ConnectorCanvasNode.self) ? "Conn" : ""
-                let hasPict = child.target(DiagramSceneNode.Pictogram.self) != nil ? "+pictogram" : ""
-                let posComp: PositionComponent? = child.component()
-                let pos = posComp.map { String(describing: $0.position) } ?? "(no position)"
-                print("  child: \(hasBlock)\(hasConn) \(hasPict) pos: \(pos)")
-            }
-            print("DEBUG: -- END OF SCENE --")
-        }
     }
 
     func onSelectionChanged(_ document: Document) {
@@ -206,6 +193,7 @@ class DiagramCanvas: View {
 
         let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
         scene.setComponent(SceneLayoutProvider(provider: provider))
+        composer.layout(scene: scene, layout: provider)
         
         self.scene = scene
         overlays.setAllNeedsRender()
@@ -277,6 +265,7 @@ class DiagramCanvas: View {
         
         // TODO: Handle exceptions
         if mainOverlay.needsRender {
+            print("--- Rendering main overlay")
             try! mainOverlay.render { context in
 //                drawGrid(context)
                 renderer.render(scene, context: context)
@@ -284,16 +273,19 @@ class DiagramCanvas: View {
             }
         }
         if previewOverlay.needsRender {
+            print("--- Rendering preview overlay")
             try! previewOverlay.render { context in
                 renderer.render(scene, context: context)
             }
         }
         if highlightOverlay.needsRender {
+            print("--- Rendering highlight overlay")
             try! highlightOverlay.render { context in
                 renderer.render(scene, context: context)
             }
         }
         if indicatorOverlay.needsRender {
+            print("--- Rendering indicator overlay")
             try! indicatorOverlay.render { context in
                 renderer.render(scene, context: context)
             }
@@ -362,25 +354,40 @@ class DiagramCanvas: View {
     func hitTarget(screenPosition: ImVec2) -> CanvasHitTarget? {
         guard let scene
         else { return nil }
-
+        
         let scenePosition = worldToScene(screenToWorld(screenPosition))
+        print("--- Hit target at: scene position \(scenePosition)")
+
         let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
-        guard let entity = hitTest(node: scene, scenePosition: scenePosition, radius: radius),
-              let parent: RuntimeEntity = entity.target(ChildOf.self)
+        guard let hitEntity = hitTest(node: scene, scenePosition: scenePosition, radius: radius),
+              let parent: RuntimeEntity = hitEntity.target(ChildOf.self)
         else { return nil }
 
         // Determine hit target type
         //
-        if entity.contains(CanvasHandle.self) {
-            return CanvasHitTarget.handle(entity.runtimeID)
-        } else if parent.relates(DiagramSceneNode.PrimaryLabel.self, to: entity) {
-            return CanvasHitTarget.object(entity.runtimeID, .primaryLabel)
-        } else if parent.relates(DiagramSceneNode.SecondaryLabel.self, to: entity) {
-            return CanvasHitTarget.object(entity.runtimeID, .secondaryLabel)
-        } else if entity.contains(IssueIndicatorCanvasNode.self) {
-            return CanvasHitTarget.object(entity.runtimeID, .issueIndicator)
-        } else if entity.contains(BlockCanvasNode.self) || entity.contains(ConnectorCanvasNode.self) {
-            return CanvasHitTarget.object(entity.runtimeID, .body)
+        if hitEntity.contains(CanvasHandle.self) {
+            return CanvasHitTarget.handle(hitEntity.runtimeID)
+        }
+        
+        // Resolve the design entity: for blocks/connectors it's the hit entity itself;
+        // for labels/indicators it is the parent block.
+        let designEntity: RuntimeEntity?
+        if hitEntity.contains(BlockCanvasNode.self) || hitEntity.contains(ConnectorCanvasNode.self) {
+            designEntity = hitEntity.target(RepresentationOf.self)
+        }
+        else {  // Label, indicator, etc. — parent is the block scene node
+            designEntity = parent.target(RepresentationOf.self)
+        }
+        let designRuntimeID = designEntity?.runtimeID ?? hitEntity.runtimeID
+        
+        if parent.relates(DiagramSceneNode.PrimaryLabel.self, to: hitEntity) {
+            return CanvasHitTarget.object(designRuntimeID, .primaryLabel)
+        } else if parent.relates(DiagramSceneNode.SecondaryLabel.self, to: hitEntity) {
+            return CanvasHitTarget.object(designRuntimeID, .secondaryLabel)
+        } else if hitEntity.contains(IssueIndicatorCanvasNode.self) {
+            return CanvasHitTarget.object(designRuntimeID, .issueIndicator)
+        } else if hitEntity.contains(BlockCanvasNode.self) || hitEntity.contains(ConnectorCanvasNode.self) {
+            return CanvasHitTarget.object(designRuntimeID, .body)
         }
         else {
             return nil
@@ -388,10 +395,13 @@ class DiagramCanvas: View {
     }
     func hitTest(node: RuntimeEntity, scenePosition: Vector2D, radius: Double) -> RuntimeEntity? {
         for child in node.children {
-            guard let region: TouchRegion = child.component()
-            else { continue }
-            if region.isHit(at: scenePosition, radius: radius) {
+            if let region: TouchRegion = child.component(),
+               region.isHit(at: scenePosition, radius: radius)
+            {
                 return child
+            }
+            if let found = hitTest(node: child, scenePosition: scenePosition, radius: radius) {
+                return found
             }
         }
         return nil

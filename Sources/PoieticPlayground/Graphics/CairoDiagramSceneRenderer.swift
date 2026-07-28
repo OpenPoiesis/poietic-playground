@@ -128,17 +128,15 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     }
     func renderPictogram(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .main else { return }
-        debugPrint("WARNING: \(#function) not implemented")
+//        debugPrint("WARNING: \(#function) not implemented")
     }
     func renderLabel(_ entity: RuntimeEntity, context: Context) {
-        guard context.overlay == .main else { return }
-        guard let label: LabelCanvasNode = entity.component()
+        guard context.overlay == .main,
+              let label: LabelCanvasNode = entity.component()
         else { return }
         
         let nodeStyle: CanvasNodeStyle? = entity.component()
         let labelStyle = style.labelStyle(class: nodeStyle?.class ?? .label)
-        
-        // FIXME: [REFACTORING] Use styleclass
         
         context.setFontSize(labelStyle?.size ?? CanvasStyle.DefaultFontSize)
         context.setColor(labelStyle?.color ?? CanvasStyle.DefaultLabelColor)
@@ -146,14 +144,15 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     }
     func renderValueIndicator(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .indicator else { return }
-        debugPrint("WARNING: \(#function) not implemented")
+//        debugPrint("WARNING: \(#function) not implemented")
     }
     func renderIssueIndicator(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .indicator else { return }
-        debugPrint("WARNING: \(#function) not implemented")
+//        debugPrint("WARNING: \(#function) not implemented")
     }
     func renderColorSwatch(_ entity: RuntimeEntity, context: Context) {
-        guard let swatch: ColorSwatchCanvasNode = entity.component()
+        guard context.overlay == .main,
+              let swatch: ColorSwatchCanvasNode = entity.component()
         else { return }
         
         let color = style.adaptableColor(swatch.colorKey,

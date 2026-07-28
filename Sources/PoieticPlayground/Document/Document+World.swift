@@ -95,6 +95,7 @@ extension Document {
         let label = String(describing: schedule)
 //        log("Running schedule: \(label)")
         do {
+            print("⚙️ Running schedule \(schedule)")
             try world.run(schedule: schedule)
         }
         catch {

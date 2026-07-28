@@ -8,6 +8,18 @@
 import PoieticCore
 import Foundation
 import Diagramming
+import PoieticFlows
+
+/// Systems run on every document update
+///
+enum DocumentVisualsUpdateSchedule: ScheduleLabel { }
+
+/// Systems run during interactive editing such as selection movement or handle dragging.
+///
+enum InteractivePreviewSchedule: ScheduleLabel { }
+
+// Action-specific schedules
+enum ParameterResolutionSchedule: ScheduleLabel { }
 
 /// Represents and controls the design document.
 ///
@@ -92,6 +104,61 @@ class Document {
     /// Interactive preview in progress.
     var isPreviewing: Bool
     
+    // MARK: - Schedules
+    
+    static func setupSchedules(_ world: World) {
+        world.addSchedule(Schedule(
+            label: FrameChangeSchedule.self,
+            systems:
+                PoieticFlows.SimulationPlanningSystems
+                + [
+                    NewChartResolutionSystem.self,
+                    DiagramObjectsFromTraitsSystem.self,
+                ]
+        ))
+        world.addSchedule(Schedule(
+            label: DocumentVisualsUpdateSchedule.self,
+            systems: [
+                    SimulationSamplingSystem.self,
+                    SceneCompositionSystem.self,
+                    SceneInteractionSystem.self,
+                ],
+            order: [
+                (SimulationSamplingSystem.self, before: SceneCompositionSystem.self),
+                (SceneCompositionSystem.self, before: SceneInteractionSystem.self),
+            ]
+        ))
+
+        world.addSchedule(Schedule(
+            label: InteractivePreviewSchedule.self,
+            systems: [
+                // FIXME: No longer needed?
+            ]
+        ))
+
+        world.addSchedule(Schedule(
+            label: SimulationSchedule.self,
+            systems: [
+                StockFlowSimulationSystem.self,
+                TimeSeriesProcessingSystem.self,
+            ]
+        ))
+
+        // TODO: Remove or reconsider (I think it was used for auto-connect)
+//        world.addSchedule(Schedule(
+//            label: ParameterResolutionSchedule.self,
+//            systems: [
+//                ComputationOrderSystem.self,
+//                NameResolutionSystem.self,
+//                ExpressionParserSystem.self,
+//                ParameterResolutionSystem.self,
+//                ParameterConnectionProposalSystem.self,
+//            ]
+//        ))
+    }
+    
+    // MARK: - Initialisation
+    
     init(design: Design, url: URL? = nil, notation: Notation? = nil) {
         self.observers = [:]
         
@@ -110,7 +177,9 @@ class Document {
         
         setupWorld(notation: notation)
     }
-   
+  
+    // MARK: - Observers
+
     func removeAllObservers() {
         observers.removeAll()
     }
@@ -125,10 +194,8 @@ class Document {
         }
     }
     
-    func queueCommand(_ command: any Command) {
-        self.commandQueue.append(command)
-    }
-    
+    // MARK: - Selection
+
     func changeSelection(_ change: SelectionChange) {
         self.selection.apply(change)
         updateSelectionOverview()
@@ -154,6 +221,8 @@ class Document {
         self.world.setSingleton(selection)
     }
     
+    // MARK: - Interactive Preview
+
     func beginInteractivePreview() {
         self.isPreviewing = true
         self.trigger(.previewStarted)
@@ -180,6 +249,10 @@ class Document {
             world.despawn(entity)
         }
         self.trigger(.previewEnded)
+    }
+
+    func onSimulationPlayerStep(_ document: Document) {
+        // TODO: This is weird, as we should be receiving this event only triggered by us.
     }
 }
 

@@ -58,6 +58,8 @@ struct ConnectorIntent: Component {
 /// - ``Handles``: Object that the handle manipulates. When the target of the relationship is
 ///   despawned, the handle is despawned as well.
 ///
+/// Handle is a diagram scene node with a position.
+///
 struct CanvasHandle: Component {
     static let DefaultSize = 8.0
     
@@ -72,14 +74,19 @@ struct CanvasHandle: Component {
         // case connect(ObjectType) – handle from which a new connector can be dragged
     }
     let kind: Kind
+    
     /// Current position of the handle in world coordinates.
     ///
     /// Use this position for drawing the handle and for creating a transaction when dragging
     /// operation is concluded.
-    var position: Vector2D
+    ///
+    /// - Note: Handle position in the scene is determined by the ``PositionComponent`` on the
+    /// handle entity.
+    ///
+    var worldPosition: Vector2D
     
     init(position: Vector2D, kind: Kind) {
-        self.position = position
+        self.worldPosition = position
         self.kind = kind
     }
 }

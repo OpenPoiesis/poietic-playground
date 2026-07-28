@@ -11,6 +11,10 @@ import PoieticCore
 public enum AutoCorrectParametersSchedule: ScheduleLabel {}
 
 extension Document {
+    func queueCommand(_ command: any Command) {
+        self.commandQueue.append(command)
+    }
+    
     func autoConnectParameters() {
         let system = ParameterConnectionProposalSystem(world)
         
