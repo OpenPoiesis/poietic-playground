@@ -241,7 +241,7 @@ class Document {
         
         world.removeComponentForAll(PreviewPositionComponent.self)
         world.removeComponentForAll(PreviewMidpoints.self)
-        world.removeComponentForAll(InteractivePreview.self)
+        
         for entity: RuntimeEntity in world.query(BlockIntent.self) {
             world.despawn(entity)
         }

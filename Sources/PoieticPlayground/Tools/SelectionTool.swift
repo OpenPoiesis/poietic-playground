@@ -121,11 +121,12 @@ class SelectionTool: CanvasTool {
             previewSelectionMove(screenDelta: event.delta)
             state = .objectMove
             
-        case .handleEngaged(let runtimeID), .handleMove(let runtimeID):
+        case .handleEngaged(let handleID), .handleMove(let handleID):
 //            Input.setDefaultCursorShape(.drag)
 //            dragHandle(byCanvasDelta: delta)
             document?.beginInteractivePreview()
-            state = .handleMove(runtimeID)
+            dragHandle(handleID, screenDelta: event.delta)
+            state = .handleMove(handleID)
         }
         return .engaged
     }
@@ -233,9 +234,9 @@ class SelectionTool: CanvasTool {
             preview = entity.component() ?? PreviewPositionComponent(position: block.position)
             preview.position += worldDelta
             entity.setComponent(preview)
-            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
-                $0.insert(.geometry)
-            }
+//            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+//                $0.insert(.geometry)
+//            }
             
             let deps = frame.dependentEdges(objectID)
             dependentEdges.formUnion(deps)
@@ -252,14 +253,13 @@ class SelectionTool: CanvasTool {
             
             preview.midpoints = preview.midpoints.map { $0 + worldDelta }
             entity.setComponent(preview)
-            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
-                $0.insert(.geometry)
-            }
+//            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+//                $0.insert(.geometry)
+//            }
         }
         
         for objectID in dependentEdges {
             guard let entity = world.entity(objectID) else { continue }
-            entity.setComponent(InteractivePreview())
             entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
                 $0.insert(.geometry)
             }
@@ -330,8 +330,6 @@ class SelectionTool: CanvasTool {
             handleSize = CanvasHandle.DefaultSize
         }
         
-        entity.setComponent(InteractivePreview())
-
         let preview: PreviewMidpoints? = entity.component()
         let midpoints = preview?.midpoints ?? connector.midpoints
         
@@ -481,8 +479,4 @@ class SelectionTool: CanvasTool {
             world.despawn(runtimeID)
         }
     }
-}
-
-struct InteractivePreview: Component {
-    
 }
