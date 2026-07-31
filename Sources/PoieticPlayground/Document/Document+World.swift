@@ -7,8 +7,81 @@
 
 import PoieticCore
 import Diagramming
+import PoieticFlows
+
+/// Systems run on every document update
+///
+enum DocumentUpdateSchedule: ScheduleLabel { }
+enum DocumentCleanupSchedule: ScheduleLabel { }
+
+/// Schedule run on simulation player set.
+///
+/// - SeeAlso: ``ResultPlayer``
+///
+enum PlayerStepSchedule: ScheduleLabel { }
+
+/// Systems run during interactive editing such as selection movement or handle dragging.
+///
+enum InteractivePreviewSchedule: ScheduleLabel { }
+
+// Action-specific schedules
+enum ParameterResolutionSchedule: ScheduleLabel { }
 
 extension Document {
+    static func setupSchedules(_ world: World) {
+        let schedules: [Schedule] = [
+            Schedule(
+                label: DocumentUpdateSchedule.self,
+                systems: [
+                        SceneCompositionSystem.self,
+                        SceneInteractionSystem.self,
+                    ],
+                order: [
+                    (SimulationSamplingSystem.self, before: SceneCompositionSystem.self),
+                    (SceneCompositionSystem.self, before: SceneInteractionSystem.self),
+                ]
+            ),
+            Schedule(
+                label: DocumentCleanupSchedule.self,
+                systems: [
+                        DocumentCleanupSystem.self,
+                ]
+            ),
+            Schedule(
+                label: FrameChangeSchedule.self,
+                systems:
+                    PoieticFlows.SimulationPlanningSystems
+                    + [
+                        NewChartResolutionSystem.self,
+                        TraitsToDiagramObjectsSystem.self,
+                    ]
+            ),
+            Schedule(
+                label: InteractivePreviewSchedule.self,
+                systems: [
+                    // FIXME: No longer needed?
+                ]
+            ),
+            Schedule(
+                label: SimulationSchedule.self,
+                systems: [
+                    StockFlowSimulationSystem.self,
+                    TimeSeriesProcessingSystem.self,
+                ]
+            ),
+            Schedule(
+                label: PlayerStepSchedule.self,
+                systems: [
+                    SimulationSamplingSystem.self,
+                ]
+            )
+        ]
+        for schedule in schedules {
+            world.addSchedule(schedule)
+        }
+
+    }
+
     /// Set world singletons when the world changes.
     func setupWorld(notation: Notation? = nil) {
         Self.setupSchedules(world)
@@ -35,7 +108,7 @@ extension Document {
             changeWorldFrame()
         }
         
-        self.run(schedule: DocumentVisualsUpdateSchedule.self)
+        self.run(schedule: DocumentUpdateSchedule.self)
         
         if requiresInteractivePreviewUpdate {
             self.run(schedule: InteractivePreviewSchedule.self)
@@ -72,14 +145,8 @@ extension Document {
             }
             self.mainDiagram = nil
         }
-        // TODO: Do not recreate the whole diagram, just update it (we need snapshot-entity persistence on frame change)
-        let composer = DiagramSceneComposer(world: world)
-
-        let diagram = composer.createDiagramFromAll()
+        let diagram = DiagramSceneComposer.createDiagramFromAll(world: world)
         self.mainDiagram = diagram
-
-        // Diagram is new, so we set it as dirty
-        diagram.setComponent(Diagram.DirtyContent.all)
     }
     
     /// Convenience runner of a schedule that handles errors and displays an error panel through
@@ -95,7 +162,7 @@ extension Document {
         let label = String(describing: schedule)
 //        log("Running schedule: \(label)")
         do {
-            print("⚙️ Running schedule \(schedule)")
+//            print("⚙️ Running schedule \(schedule)")
             try world.run(schedule: schedule)
         }
         catch {

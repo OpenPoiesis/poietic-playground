@@ -234,9 +234,9 @@ class SelectionTool: CanvasTool {
             preview = entity.component() ?? PreviewPositionComponent(position: block.position)
             preview.position += worldDelta
             entity.setComponent(preview)
-//            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
-//                $0.insert(.geometry)
-//            }
+            entity.modifyOrSet(default: DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
             
             let deps = frame.dependentEdges(objectID)
             dependentEdges.formUnion(deps)
@@ -253,19 +253,19 @@ class SelectionTool: CanvasTool {
             
             preview.midpoints = preview.midpoints.map { $0 + worldDelta }
             entity.setComponent(preview)
-//            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
-//                $0.insert(.geometry)
-//            }
-        }
-        
-        for objectID in dependentEdges {
-            guard let entity = world.entity(objectID) else { continue }
-            entity.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+            entity.modifyOrSet(default: DirtyContent.geometry) {
                 $0.insert(.geometry)
             }
         }
         
-        scene.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+        for objectID in dependentEdges {
+            guard let entity = world.entity(objectID) else { continue }
+            entity.modifyOrSet(default: DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
+        }
+        
+        scene.modifyOrSet(default: DirtyContent.geometry) {
             $0.insert(.geometry)
         }
         
@@ -396,7 +396,7 @@ class SelectionTool: CanvasTool {
         case .midpoint(let index):
             guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
             dragMidpointHandle(target, index: index, currentPosition: component.worldPosition, currentDelta: worldDelta)
-            scene.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+            scene.modifyOrSet(default: DirtyContent.geometry) {
                 $0.insert(.geometry)
             }
         }

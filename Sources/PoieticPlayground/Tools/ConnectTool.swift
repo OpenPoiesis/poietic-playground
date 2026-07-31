@@ -155,7 +155,7 @@ class ConnectTool: CanvasTool {
         let scenePosition: Vector2D = canvas.worldToScene(worldPosition)
 
         connectorHandle.setComponent(PositionComponent(position: scenePosition))
-        connectorHandle.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+        connectorHandle.modifyOrSet(default: DirtyContent.geometry) {
             $0.insert(.geometry)
         }
 
@@ -180,7 +180,7 @@ class ConnectTool: CanvasTool {
                                         targetAllowed: targetAllowed)
 
         intendedConnector.setComponent(newIntent)
-        intendedConnector.modifyOrSet(default: Diagram.DirtyContent.geometry) {
+        intendedConnector.modifyOrSet(default: DirtyContent.geometry) {
             $0.insert(.geometry)
         }
 

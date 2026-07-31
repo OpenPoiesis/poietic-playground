@@ -39,7 +39,7 @@ struct ErrorIndicatorSystem: System {
     nonisolated(unsafe) public static let dependencies: [SystemDependency] = [
         .after(SimulationPlanningSystem.self),
         // TODO: Remove this system once we have relative visual objects
-        .after(DiagramObjectsFromTraitsSystem.self),
+        .after(TraitsToDiagramObjectsSystem.self),
     ]
 
     init(_ world: PoieticCore.World) {    }

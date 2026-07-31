@@ -102,6 +102,10 @@ extension Application {
             document.update(timeDelta)
         }
         
+        if player.isRunning {
+            player.update(timeDelta)
+        }
+
         // Update UI components
         canvas.update(timeDelta)
         inspector.update(timeDelta)
@@ -109,10 +113,9 @@ extension Application {
         alertPanel.update(timeDelta)
         issuesPanel.update(timeDelta)
         controlBar.update(timeDelta)
-
-        if player.isRunning {
-            player.update(timeDelta)
-        }
+        
+        // TODO: Is this the right place to call this?
+        document?.run(schedule: DocumentCleanupSchedule.self)
     }
     
     func draw() {

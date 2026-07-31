@@ -8,18 +8,28 @@
 import PoieticCore
 import Foundation
 import Diagramming
-import PoieticFlows
 
-/// Systems run on every document update
-///
-enum DocumentVisualsUpdateSchedule: ScheduleLabel { }
+/*
+ 
+ New schedules
+ 
+ 
+ FrameChange
+    Simulation
 
-/// Systems run during interactive editing such as selection movement or handle dragging.
-///
-enum InteractivePreviewSchedule: ScheduleLabel { }
 
-// Action-specific schedules
-enum ParameterResolutionSchedule: ScheduleLabel { }
+ Document Update:
+    1. DocumentUpdate
+    2. PlayerStep
+        - SimulationSamplingSystem
+    3. VisualsUpdate
+        - SceneComposition
+        - SceneInteraction
+    4. CleanUp
+        - Remove dirty
+ 
+ 
+ */
 
 /// Represents and controls the design document.
 ///
@@ -106,56 +116,6 @@ class Document {
     
     // MARK: - Schedules
     
-    static func setupSchedules(_ world: World) {
-        world.addSchedule(Schedule(
-            label: FrameChangeSchedule.self,
-            systems:
-                PoieticFlows.SimulationPlanningSystems
-                + [
-                    NewChartResolutionSystem.self,
-                    DiagramObjectsFromTraitsSystem.self,
-                ]
-        ))
-        world.addSchedule(Schedule(
-            label: DocumentVisualsUpdateSchedule.self,
-            systems: [
-                    SimulationSamplingSystem.self,
-                    SceneCompositionSystem.self,
-                    SceneInteractionSystem.self,
-                ],
-            order: [
-                (SimulationSamplingSystem.self, before: SceneCompositionSystem.self),
-                (SceneCompositionSystem.self, before: SceneInteractionSystem.self),
-            ]
-        ))
-
-        world.addSchedule(Schedule(
-            label: InteractivePreviewSchedule.self,
-            systems: [
-                // FIXME: No longer needed?
-            ]
-        ))
-
-        world.addSchedule(Schedule(
-            label: SimulationSchedule.self,
-            systems: [
-                StockFlowSimulationSystem.self,
-                TimeSeriesProcessingSystem.self,
-            ]
-        ))
-
-        // TODO: Remove or reconsider (I think it was used for auto-connect)
-//        world.addSchedule(Schedule(
-//            label: ParameterResolutionSchedule.self,
-//            systems: [
-//                ComputationOrderSystem.self,
-//                NameResolutionSystem.self,
-//                ExpressionParserSystem.self,
-//                ParameterResolutionSystem.self,
-//                ParameterConnectionProposalSystem.self,
-//            ]
-//        ))
-    }
     
     // MARK: - Initialisation
     

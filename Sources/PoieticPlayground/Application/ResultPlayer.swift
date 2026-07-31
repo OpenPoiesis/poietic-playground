@@ -43,14 +43,13 @@ class ResultPlayer {
     }
     
     func update(_ delta: Double) {
-        if isRunning {
-            if timeToStep <= 0 {
-                nextStep()
-                timeToStep = stepDuration
-            }
-            else {
-                timeToStep -= delta
-            }
+        guard isRunning else { return }
+        if timeToStep <= 0 {
+            nextStep()
+            timeToStep = stepDuration
+        }
+        else {
+            timeToStep -= delta
         }
     }
    

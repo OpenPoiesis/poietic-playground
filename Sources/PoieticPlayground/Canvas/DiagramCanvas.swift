@@ -164,6 +164,7 @@ class DiagramCanvas: View {
 
     func onSelectionChanged(_ document: Document) {
         // TODO: Make only selection overlay dirty (once we have selection overlays)
+        
         overlays.setAllNeedsRender()
     }
 
@@ -188,8 +189,6 @@ class DiagramCanvas: View {
         let composer = DiagramSceneComposer(world: world)
 
         let scene = composer.createScene(diagram: diagram, viewport: viewportState)
-
-        scene.setComponent(Diagram.DirtyContent.all)
 
         let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
         scene.setComponent(SceneLayoutProvider(provider: provider))
@@ -340,7 +339,7 @@ class DiagramCanvas: View {
         // Viewport Changed
         if let scene {
             scene.setComponent(self.viewportState)
-            scene.setComponent(Diagram.DirtyContent.geometry)
+            scene.setComponent(ViewportDirty())
         }
         overlays.setAllNeedsRender()
     }
