@@ -163,9 +163,7 @@ class DiagramCanvas: View {
     }
 
     func onSelectionChanged(_ document: Document) {
-        // TODO: Make only selection overlay dirty (once we have selection overlays)
-        
-        overlays.setAllNeedsRender()
+        highlightOverlay.setNeedsRender()
     }
 
     /// Update renderable scene and mark the whole canvas as needing to be rendered.

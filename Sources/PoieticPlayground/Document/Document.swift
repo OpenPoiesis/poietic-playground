@@ -157,12 +157,7 @@ class Document {
     // MARK: - Selection
 
     func changeSelection(_ change: SelectionChange) {
-        let old = Set(selection.ids)
         selection.apply(change)
-        let new = Set(selection.ids)
-        
-        for id in old.subtracting(new) { world.entity(id)?.removeComponent(IsSelected.self) }
-        for id in new.subtracting(old) { world.entity(id)?.setComponent(IsSelected()) }
         
         updateSelectionOverview()
         trigger(.selectionChanged)
