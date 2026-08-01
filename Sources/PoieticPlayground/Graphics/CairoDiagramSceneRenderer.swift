@@ -23,7 +23,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     
     func renderBlock(_ entity: RuntimeEntity, context: Context) {
         // TODO: [REFACTORING] Separate pictogram rendering into renderPictogram(...)
-        guard let pictogramNode: RuntimeEntity = entity.target(DiagramSceneNode.Pictogram.self),
+        guard let pictogramNode: RuntimeEntity = entity.target(CanvasNode.Pictogram.self),
               let pictComp: PictogramCanvasNode = pictogramNode.component()
         else { return }
         let nodeStyle: CanvasNodeStyle? = entity.component()

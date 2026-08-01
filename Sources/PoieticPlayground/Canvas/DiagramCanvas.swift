@@ -379,9 +379,9 @@ class DiagramCanvas: View {
         }
         let designRuntimeID = designEntity?.runtimeID ?? hitEntity.runtimeID
         
-        if parent.relates(DiagramSceneNode.PrimaryLabel.self, to: hitEntity) {
+        if parent.relates(CanvasNode.PrimaryLabel.self, to: hitEntity) {
             return CanvasHitTarget.object(designRuntimeID, .primaryLabel)
-        } else if parent.relates(DiagramSceneNode.SecondaryLabel.self, to: hitEntity) {
+        } else if parent.relates(CanvasNode.SecondaryLabel.self, to: hitEntity) {
             return CanvasHitTarget.object(designRuntimeID, .secondaryLabel)
         } else if hitEntity.contains(IssueIndicatorCanvasNode.self) {
             return CanvasHitTarget.object(designRuntimeID, .issueIndicator)

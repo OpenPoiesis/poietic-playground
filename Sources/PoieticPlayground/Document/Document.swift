@@ -157,11 +157,16 @@ class Document {
     // MARK: - Selection
 
     func changeSelection(_ change: SelectionChange) {
-        self.selection.apply(change)
+        let old = Set(selection.ids)
+        selection.apply(change)
+        let new = Set(selection.ids)
+        
+        for id in old.subtracting(new) { world.entity(id)?.removeComponent(IsSelected.self) }
+        for id in new.subtracting(old) { world.entity(id)?.setComponent(IsSelected()) }
+        
         updateSelectionOverview()
-        self.trigger(.selectionChanged)
+        trigger(.selectionChanged)
     }
-
     /// Called on:
     /// - selection changed with ``changeSelection(_:)``
     /// - frame changed with ``Application/accept(_:)``
@@ -176,11 +181,21 @@ class Document {
             self.selectionOverview.clear()
         }
 
-        // Pass the selection through the world to the systems for rendering and other processing
-        // (see DiagramCanvas drawing methods, for example)
-        self.world.setSingleton(selection)
+        syncSelection()
     }
-    
+    func syncSelection() {
+        for entity: RuntimeEntity in world.query(IsSelected.self) {
+            guard let id = entity.objectID, !selection.contains(id) else { continue }
+            entity.removeComponent(IsSelected.self)
+        }
+        for id in selection {
+            guard let entity = world.entity(id), !entity.contains(IsSelected.self) else { continue }
+            entity.setComponent(IsSelected())
+        }
+        world.setSingleton(selection)
+    }
+
+
     // MARK: - Interactive Preview
 
     func beginInteractivePreview() {

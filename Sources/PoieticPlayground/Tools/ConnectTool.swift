@@ -113,7 +113,7 @@ class ConnectTool: CanvasTool {
 
         // -- Handle --
         let handle = world.spawn(
-            DiagramSceneNode(),
+            CanvasNode(),
             PositionComponent(position: scenePosition)
         )
         handle.relate(ChildOf(), to: scene)
@@ -121,7 +121,7 @@ class ConnectTool: CanvasTool {
         
         // -- Connector --
         let connector = world.spawn(
-            DiagramSceneNode(),
+            CanvasNode(),
             ConnectorCanvasNode(),
             glyph,
             ConnectorIntent(type:type, targetAllowed: false),
