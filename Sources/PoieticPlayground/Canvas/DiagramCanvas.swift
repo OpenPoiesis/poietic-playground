@@ -173,6 +173,29 @@ class DiagramCanvas: View {
         self.scene?.setComponent(LayoutDirty())
     }
     
+    func onSimulationPlayerStep(_ document: Document) {
+        indicatorOverlay.setNeedsRender()
+    }
+
+    func onPreviewStarted(_ document: Document) {
+        self.mainOverlay.setNeedsRender()
+        self.previewOverlay.setNeedsRender()
+    }
+
+    func onInteractivePreviewChanged(_ document: Document) {
+        mainOverlay.setNeedsRender()
+        highlightOverlay.setNeedsRender()
+        indicatorOverlay.setNeedsRender()
+    }
+    
+    func onPreviewEnded(_ document: Document) {
+//        self.overlays.setAllNeedsRender()
+        self.mainOverlay.setNeedsRender()
+        self.previewOverlay.setNeedsRender()
+    }
+
+    // MARK: - Scene
+    
     private func createScene() {
         guard let diagram else {
             self.scene = nil
@@ -201,10 +224,6 @@ class DiagramCanvas: View {
         
         self.scene = scene
         overlays.setAllNeedsRender()
-    }
-
-    func onSimulationPlayerStep(_ document: Document) {
-        indicatorOverlay.setNeedsRender()
     }
 
 
