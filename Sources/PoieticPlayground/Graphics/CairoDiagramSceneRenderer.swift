@@ -179,4 +179,31 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
         }
     }
     
+    // MARK: - Application Specific
+    func renderUnknown(_ entity: RuntimeEntity, context: Context) {
+        if entity.contains(CanvasHandle.self) {
+            renderHandle(entity, context: context)
+        }
+    }
+
+    func renderHandle(_ entity: RuntimeEntity, context: Context) {
+        guard context.overlay == .highlight,
+              let handle: CanvasHandle = entity.component()
+        else { return }
+        
+        let size = style.metric(.handleSize, default: CanvasHandle.DefaultSize)
+
+        if let style = style.shapeStyle(class: .handle) {
+            if let color = style.stroke {
+                context.setColor(color)
+            }
+            context.setLineWidth(style.lineWidth)
+        }
+        else {
+            context.setColor(Color(gray: 0.5))
+        }
+        let path = BezierPath(circle: .zero, radius: size / 2.0)
+        context.fillPath(path)
+    }
+
 }
