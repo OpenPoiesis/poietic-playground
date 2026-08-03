@@ -37,20 +37,6 @@ class SelectionTool: CanvasTool {
     var state: State = .idle
     var dragStartScreenPos: ImVec2 = ImVec2()
     
-    override func bind(canvas: DiagramCanvas, document: Document) {
-        print("DEBUG: Bind selection tool")
-        super.bind(canvas: canvas, document: document)
-        document.addObserver(onDesignFrameChanged, on: .designFrameChanged)
-    }
-    
-    func onDesignFrameChanged(document: Document) {
-        print("DEBUG: On frame change in Selection Tool")
-        // TODO: Remove this once we have application-persistent world (world that survives frame change)
-        // Re-create handles
-        
-        removeHandles()
-        createHandles()
-    }
     // MARK: - Events
 
     override func handleEvent(_ event: ToolEvent) -> EngagementResult {

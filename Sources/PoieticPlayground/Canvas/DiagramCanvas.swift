@@ -153,12 +153,12 @@ class DiagramCanvas: View {
     // MARK: - Update and Events
     
     func update(_ timeDelta: Double) {
-//        overlays.ensureSize(width: Int32(canvasSize.x),
-//                            height: Int32(canvasSize.y))
-
+        // TODO: Move to bind(), once we are sure we have diagram at that time.
         if scene == nil {
-            print("DEBUG: Recreating scene, diagram=\(diagram != nil ? "yes" : "nil")")
             createScene()
+        }
+        else {
+            updateScene()
         }
     }
 
@@ -170,13 +170,7 @@ class DiagramCanvas: View {
     ///
     func onDesignFrameChanged(_ document: Document) {
         self.diagram = document.mainDiagram
-        
-        // TODO: Recycle scene
-        if let scene, world.contains(scene) {
-            scene.despawn()
-        }
-        // Scene will be created in next update()
-        scene = nil
+        self.scene?.setComponent(LayoutDirty())
     }
     
     private func createScene() {
@@ -187,6 +181,19 @@ class DiagramCanvas: View {
         let composer = DiagramSceneComposer(world: world)
 
         let scene = composer.createScene(diagram: diagram, viewport: viewportState)
+
+        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
+        scene.setComponent(SceneLayoutProvider(provider: provider))
+        composer.layout(scene: scene, layout: provider)
+        
+        self.scene = scene
+        overlays.setAllNeedsRender()
+    }
+    private func updateScene() {
+        guard let scene else { return }
+        let composer = DiagramSceneComposer(world: world)
+
+        composer.syncScene(scene)
 
         let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
         scene.setComponent(SceneLayoutProvider(provider: provider))
