@@ -157,9 +157,6 @@ class DiagramCanvas: View {
         if scene == nil {
             createScene()
         }
-        else {
-            updateScene()
-        }
     }
 
     func onSelectionChanged(_ document: Document) {
@@ -170,6 +167,7 @@ class DiagramCanvas: View {
     ///
     func onDesignFrameChanged(_ document: Document) {
         self.diagram = document.mainDiagram
+        updateScene()
         self.scene?.setComponent(LayoutDirty())
     }
     
@@ -201,6 +199,7 @@ class DiagramCanvas: View {
             self.scene = nil
             return
         }
+
         let composer = DiagramSceneComposer(world: world)
 
         let scene = composer.createScene(diagram: diagram, viewport: viewportState)
@@ -288,28 +287,28 @@ class DiagramCanvas: View {
         
         // TODO: Handle exceptions
         if mainOverlay.needsRender {
-            print("--- Rendering main overlay")
             try! mainOverlay.render { context in
 //                drawGrid(context)
+                print("--- Rendering MAIN overlay")
                 renderer.render(scene, context: context)
 //                drawHandles(context)
             }
         }
         if previewOverlay.needsRender {
-            print("--- Rendering preview overlay")
             try! previewOverlay.render { context in
+                print("--- Rendering PREVIEW overlay")
                 renderer.render(scene, context: context)
             }
         }
         if highlightOverlay.needsRender {
-            print("--- Rendering highlight overlay")
             try! highlightOverlay.render { context in
+                print("--- Rendering HIGHLIGHT overlay")
                 renderer.render(scene, context: context)
             }
         }
         if indicatorOverlay.needsRender {
-            print("--- Rendering indicator overlay")
             try! indicatorOverlay.render { context in
+                print("--- Rendering INDICATOR overlay")
                 renderer.render(scene, context: context)
             }
         }
@@ -375,13 +374,11 @@ class DiagramCanvas: View {
         setView(offset: offset, zoom: useZoom)
     }
     func hitTarget(screenPosition: ImVec2) -> CanvasHitTarget? {
-        guard let scene
-        else { return nil }
+        guard let scene else { return nil }
         
         let scenePosition = worldToScene(screenToWorld(screenPosition))
-        print("--- Hit target at: scene position \(scenePosition)")
-
         let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
+        
         guard let hitEntity = hitTest(node: scene, scenePosition: scenePosition, radius: radius),
               let parent: RuntimeEntity = hitEntity.target(ChildOf.self)
         else { return nil }
@@ -417,6 +414,15 @@ class DiagramCanvas: View {
         }
     }
     func hitTest(node: RuntimeEntity, scenePosition: Vector2D, radius: Double) -> RuntimeEntity? {
+        // FIXME: This is temporary solution. We need z-index ordering
+        for handle in node.children where handle.contains(CanvasHandle.self) {
+            guard let region: TouchRegion = handle.component(),
+                  region.isHit(at: scenePosition, radius: radius)
+            else { continue }
+
+            return handle
+        }
+
         for child in node.children {
             if let region: TouchRegion = child.component(),
                region.isHit(at: scenePosition, radius: radius)

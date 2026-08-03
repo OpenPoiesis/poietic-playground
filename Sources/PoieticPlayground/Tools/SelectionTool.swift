@@ -37,6 +37,17 @@ class SelectionTool: CanvasTool {
     var state: State = .idle
     var dragStartScreenPos: ImVec2 = ImVec2()
     
+    override func bind(canvas: DiagramCanvas, document: Document) {
+        super.bind(canvas: canvas, document: document)
+        document.addObserver(onDesignFrameChanged, on: .designFrameChanged)
+    }
+
+    func onDesignFrameChanged(_ document: Document) {
+        // We need this especially for undo operations, to recreate handles for re-added objects.
+        removeHandles()
+        createHandles()
+    }
+
     // MARK: - Events
 
     override func handleEvent(_ event: ToolEvent) -> EngagementResult {
@@ -125,22 +136,23 @@ class SelectionTool: CanvasTool {
             dragHandle(handleID, screenDelta: event.delta)
             state = .handleMove(handleID)
         }
+//        print("▶️🖐️ Drag Start: \(state)")
         return .engaged
     }
     func dragMove(_ event: ToolEvent) -> EngagementResult {
+//        print("🖐️ Drag Move: \(state)")
+
 //        TODO: popupManager?.closeInlinePopup()
         switch state {
         case .idle: break
         case .objectSelect: break
-        case .objectHit,
-                .objectMove,
-                .objectPartHit:
+        case .objectHit, .objectMove, .objectPartHit:
 //            Input.setDefaultCursorShape(.drag)
             previewSelectionMove(screenDelta: event.delta)
+            syncHandlesToPreview()
             state = .objectMove
             
-        case .handleEngaged(let handleID),
-                .handleMove(let handleID):
+        case .handleEngaged(let handleID), .handleMove(let handleID):
 //            Input.setDefaultCursorShape(.drag)
             dragHandle(handleID, screenDelta: event.delta)
             state = .handleMove(handleID)
@@ -227,6 +239,9 @@ class SelectionTool: CanvasTool {
             guard let entity = world.entity(objectID),
                   let block: DiagramBlock = entity.component()
             else { continue }
+            
+            entity.setComponent(DirtyContent.geometry)
+            
             var preview: PreviewPositionComponent
             preview = entity.component() ?? PreviewPositionComponent(position: block.position)
             preview.position += worldDelta
@@ -384,10 +399,26 @@ class SelectionTool: CanvasTool {
         handle.relate(ChildOf(), to: parent)
     }
     
+    func syncHandlesToPreview() {
+        guard let canvas else { return }
+
+        for (entity, var handle) in world.query(CanvasHandle.self) {
+            guard let target = entity.target(Handles.self),
+                  let preview: PreviewMidpoints = target.component(),
+                  case .midpoint(let index) = handle.kind,
+                  index < preview.midpoints.count
+            else { continue }
+            
+            let pos = preview.midpoints[index]
+            handle.worldPosition = pos
+            entity.setComponent(handle)
+            entity.setComponent(PositionComponent(position: canvas.worldToScene(pos)))
+        }
+    }
+
     func dragHandle(_ handleRuntimeID: RuntimeID, screenDelta: ImVec2) {
         guard let document,
               let canvas,
-              let scene = canvas.scene,
               let handle = document.world.entity(handleRuntimeID),
               var component: CanvasHandle = handle.component()
         else { return }
@@ -395,7 +426,7 @@ class SelectionTool: CanvasTool {
         component.worldPosition += worldDelta
         handle.setComponent(component)
         handle.setComponent(PositionComponent(position: canvas.worldToScene(component.worldPosition)))
-        
+
         switch component.kind {
         case .midpoint(let index):
             guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
