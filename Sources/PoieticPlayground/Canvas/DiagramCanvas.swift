@@ -189,6 +189,7 @@ class DiagramCanvas: View {
     func onPreviewEnded(_ document: Document) {
 //        self.overlays.setAllNeedsRender()
         self.mainOverlay.setNeedsRender()
+        self.highlightOverlay   .setNeedsRender()
         self.previewOverlay.setNeedsRender()
     }
 
@@ -386,7 +387,8 @@ class DiagramCanvas: View {
         // Determine hit target type
         //
         if hitEntity.contains(CanvasHandle.self) {
-            return CanvasHitTarget.handle(hitEntity.runtimeID)
+            return CanvasHitTarget(sceneNode: hitEntity.runtimeID,
+                                   kind: .handle(hitEntity.runtimeID))
         }
         
         // Resolve the design entity: for blocks/connectors it's the hit entity itself;
@@ -400,18 +402,22 @@ class DiagramCanvas: View {
         }
         let designRuntimeID = designEntity?.runtimeID ?? hitEntity.runtimeID
         
+        let kind: CanvasHitTarget.Kind
+        
         if parent.relates(CanvasNode.PrimaryLabel.self, to: hitEntity) {
-            return CanvasHitTarget.object(designRuntimeID, .primaryLabel)
+            kind = .object(designRuntimeID, .primaryLabel)
         } else if parent.relates(CanvasNode.SecondaryLabel.self, to: hitEntity) {
-            return CanvasHitTarget.object(designRuntimeID, .secondaryLabel)
+            kind = .object(designRuntimeID, .secondaryLabel)
         } else if hitEntity.contains(IssueIndicatorCanvasNode.self) {
-            return CanvasHitTarget.object(designRuntimeID, .issueIndicator)
+            kind = .object(designRuntimeID, .issueIndicator)
         } else if hitEntity.contains(BlockCanvasNode.self) || hitEntity.contains(ConnectorCanvasNode.self) {
-            return CanvasHitTarget.object(designRuntimeID, .body)
+            kind = .object(designRuntimeID, .body)
         }
         else {
             return nil
         }
+        
+        return CanvasHitTarget(sceneNode: hitEntity.runtimeID, kind: kind)
     }
     func hitTest(node: RuntimeEntity, scenePosition: Vector2D, radius: Double) -> RuntimeEntity? {
         // FIXME: This is temporary solution. We need z-index ordering

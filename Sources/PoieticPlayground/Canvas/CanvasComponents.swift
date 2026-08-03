@@ -40,8 +40,8 @@ struct BlockIntent: Component {
 ///
 /// Relationships:
 /// - ``ChildOf``: scene
-/// - ``ConnectorCanvasNode/Origin``: origin block entity for computing geometry
-/// - ``ConnectorCanvasNode/Target``: target block entity, if connected
+/// - ``ConnectorCanvasNode/Origin``: origin canvas block entity for computing geometry
+/// - ``ConnectorCanvasNode/Target``: target canvas block entity or just an entity with position component
 ///
 /// - Note: ``ConnectorIntent`` should not have ``RepresentationOf`` relationship, as it does not yet
 /// represent anything.
@@ -49,7 +49,7 @@ struct BlockIntent: Component {
 struct ConnectorIntent: Component {
     /// Object type of the connector to be created.
     let type: ObjectType
-    let targetAllowed: Bool
+//    let targetAllowed: Bool
 }
 
 /// Visual handle to interactively manipulate canvas objects.

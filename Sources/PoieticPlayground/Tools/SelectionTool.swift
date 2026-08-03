@@ -31,7 +31,7 @@ class SelectionTool: CanvasTool {
         /// Dragging handle around.
         case handleMove(RuntimeID)
         /// Object part was hit, such as label or issue indicator.
-        case objectPartHit(RuntimeID, CanvasHitTarget.ObjectPart)
+        case objectPartHit(RuntimeID, CanvasHitTarget.Kind.ObjectPart)
     }
     
     var state: State = .idle
@@ -73,7 +73,7 @@ class SelectionTool: CanvasTool {
         print("---     got target: \(target)")
         let selection = document.selection
 
-        switch target {
+        switch target?.kind {
         case .none:
             document.changeSelection(.removeAll)
             state = .objectSelect
