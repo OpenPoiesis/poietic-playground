@@ -17,8 +17,6 @@ struct ScreenSize: Component {
 
 struct BlockIntent: Component {
     let type: ObjectType
-    var position: Vector2D
-    let pictogram: Pictogram
 }
 
 // TODO: Relationship

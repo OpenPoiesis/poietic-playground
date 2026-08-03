@@ -105,9 +105,6 @@ class ConnectTool: CanvasTool {
         // Clean-up, just to be safe
         self.removeDragConnector()
 
-        print("--> Creating drag connector of type \(type.name), origin: \(originID)")
-        print("---      Origin: \(world.entity(originID))")
-
         let notation: Notation = world.singleton() ?? Notation.DefaultNotation
         // TODO: Use notation rules
         // let rules: NotationRules = world.singleton() ?? NotationRules()
@@ -160,12 +157,8 @@ class ConnectTool: CanvasTool {
         let scenePosition: Vector2D = canvas.worldToScene(worldPosition)
 
         connectorHandle.setComponent(PositionComponent(position: scenePosition))
-        connectorHandle.modifyOrSet(default: DirtyContent.geometry) {
-            $0.insert(.geometry)
-        }
-        intendedConnector.modifyOrSet(default: DirtyContent.geometry) {
-            $0.insert(.geometry)
-        }
+        connectorHandle.setComponent(DirtyContent.geometry)
+        intendedConnector.setComponent(DirtyContent.geometry)
 
         // -- Connector Intent --
         let newTargetID: RuntimeID?

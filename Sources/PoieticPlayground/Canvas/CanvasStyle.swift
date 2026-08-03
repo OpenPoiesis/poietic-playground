@@ -90,9 +90,12 @@ final class CanvasStyle: Sendable {
             Key(.thinConnector):ShapeStyle(stroke: WarmSlateBlueColor),
             Key(.fatConnector):ShapeStyle(stroke: WarmSlateBlueColor, fill: WarmSlateBlueColor.withTransparency(0.5)),
 
-            Key(.intentShadow): ShapeStyle(stroke: Color(red: 0.25, green: 0.35, blue: 0.55, alpha: 0.3)),
             // Labels
-            Key(.primaryLabel): ShapeStyle(stroke: Color(red: 0.22, green: 0.20, blue: 0.18))
+            Key(.primaryLabel): ShapeStyle(stroke: Color(red: 0.22, green: 0.20, blue: 0.18)),
+
+            // Previews and intents
+//            Key(.block, modifiers: .preview): ShapeStyle(stroke: .screenBlue, fill: .screenYellow, lineWidth: 1.0),
+            Key(.block, modifiers: .preview): ShapeStyle(stroke: Color(red: 0.25, green: 0.35, blue: 0.55, alpha: 0.3)),
         ],
         labelStyles: [
             Key(.label):LabelStyle(family: "IBM Plex Sans", size: 11.0, color: .black),
