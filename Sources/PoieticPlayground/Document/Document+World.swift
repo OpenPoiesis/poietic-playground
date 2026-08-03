@@ -139,13 +139,7 @@ extension Document {
         needsWorldFrameUpdate = false
     }
     func createOrUpdateMainDiagram() {
-        if let mainDiagram {
-            if world.contains(mainDiagram) {
-                mainDiagram.despawn()
-            }
-            self.mainDiagram = nil
-        }
-        let diagram = DiagramSceneComposer.createDiagramFromAll(world: world)
+        let diagram = DiagramSceneComposer.createDiagramFromAll(world: world, diagram: mainDiagram)
         self.mainDiagram = diagram
     }
     

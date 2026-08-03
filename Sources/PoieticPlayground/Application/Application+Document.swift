@@ -24,7 +24,6 @@ extension Application {
     }
     
     func connectObservers(_ document: Document) {
-        document.removeAllObservers()
         document.addObserver(inspector.onSelectionChanged, on: .designFrameChanged)
         document.addObserver(inspector.onSelectionChanged, on: .selectionChanged)
         document.addObserver(inspector.onSimulationFinished, on: .simulationFinished)
@@ -44,6 +43,8 @@ extension Application {
     }
     
     func bindToDocument(_ document: Document) {
+        document.removeAllObservers()
+
         canvas.bind(document)
         inspector.bind(document)
         issuesPanel.bind(document)

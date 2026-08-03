@@ -73,7 +73,7 @@ class CanvasTool {
     var iconKey: IconKey { .empty }
     
     /// Called before tool activation.
-    final func bind(canvas: DiagramCanvas, document: Document) {
+    func bind(canvas: DiagramCanvas, document: Document) {
         self.document = document
         self.canvas = canvas
     }

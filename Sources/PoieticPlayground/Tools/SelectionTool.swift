@@ -37,6 +37,20 @@ class SelectionTool: CanvasTool {
     var state: State = .idle
     var dragStartScreenPos: ImVec2 = ImVec2()
     
+    override func bind(canvas: DiagramCanvas, document: Document) {
+        print("DEBUG: Bind selection tool")
+        super.bind(canvas: canvas, document: document)
+        document.addObserver(onDesignFrameChanged, on: .designFrameChanged)
+    }
+    
+    func onDesignFrameChanged(document: Document) {
+        print("DEBUG: On frame change in Selection Tool")
+        // TODO: Remove this once we have application-persistent world (world that survives frame change)
+        // Re-create handles
+        
+        removeHandles()
+        createHandles()
+    }
     // MARK: - Events
 
     override func handleEvent(_ event: ToolEvent) -> EngagementResult {
@@ -66,7 +80,7 @@ class SelectionTool: CanvasTool {
         case .none:
             document.changeSelection(.removeAll)
             state = .objectSelect
-            self.removeHandles()
+            removeHandles()
             return .consumed
         case .object(let runtimeID, .body):
             // TODO: Defer opening of context menu on inputEnded or move context menu out of the tool
@@ -86,11 +100,8 @@ class SelectionTool: CanvasTool {
                 }
             }
             self.removeHandles()
-            if let objectID = selection.selectionOfOne(),
-               let runtimeID = world.entity(objectID)?.runtimeID
-            {
-                createHandles(for: runtimeID)
-            }
+            self.createHandles()
+
             state = .objectHit
         case .object(let runtimeID, .issueIndicator):
             self.removeHandles()
@@ -304,11 +315,18 @@ class SelectionTool: CanvasTool {
     
 
     // MARK: - Handle Drag
-    func createHandles(for runtimeID: RuntimeID) {
-        guard let world = document?.world,
-              let entity = world.entity(runtimeID)
+    /// Create handles for selected object.
+    ///
+    /// - Note: Currently handles are supported only for selection of one object.
+    func createHandles() {
+        print("??? Create handles?")
+        guard let objectID = document?.selection.selectionOfOne(),
+              let world = document?.world,
+              let entity = world.entity(objectID)
         else { return }
-        
+        print("--- Yes, create handles")
+
+        // Dispatch by handle type
         if entity.contains(DiagramConnector.self) {
             createMidpointHandles(entity)
         }
@@ -396,9 +414,7 @@ class SelectionTool: CanvasTool {
         case .midpoint(let index):
             guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
             dragMidpointHandle(target, index: index, currentPosition: component.worldPosition, currentDelta: worldDelta)
-            scene.modifyOrSet(default: DirtyContent.geometry) {
-                $0.insert(.geometry)
-            }
+            target.setComponent(DirtyContent.geometry)
         }
         
         

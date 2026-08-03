@@ -105,6 +105,7 @@ final class CanvasStyle: Sendable {
             .colorSwatchSize: 10.0,
             .primaryLabelPadding: 10.0,
             .secondaryLabelPadding: 16.0,
+            .handleSize: 10.0,
         ]
     )
 
