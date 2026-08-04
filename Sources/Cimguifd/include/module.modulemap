@@ -1,0 +1,5 @@
+module Cimguifd {
+    header "ImGuiFD.h"
+    requires cplusplus
+    export *
+}
