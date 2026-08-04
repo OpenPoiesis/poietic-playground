@@ -57,6 +57,17 @@ final class CanvasStyle: Sendable {
     public static let DefaultStrokeColor: Color = .black
     public static let DefaultLabelColor: Color = .black
     public static let DefaultFillColor: Color = .white
+    
+    public static let DefaultValueIndicatorStyle = ShapeStyle(stroke: .black, fill: .white)
+    public static let DefaultIndicatorNormalStyle: ShapeStyle = ShapeStyle(stroke: nil, fill: Color(red:0.22, green:0.62, blue:0.48))
+    /// If set, then the style is used to draw the value when the value is less than origin.
+    public static let DefaultIndicatorNegativeStyle: ShapeStyle = ShapeStyle(stroke: nil, fill: Color(red: 0.85, green: 0.55, blue: 0.10))
+    /// Value used to draw the indicator when the value is greater than max value.
+    public static let DefaultIndicatorOverflowStyle: ShapeStyle = ShapeStyle(stroke: nil, fill: Color(red: 0.80, green: 0.22, blue: 0.10))
+    /// Value used to draw the indicator when the value is less than min value.
+    public static let DefaultIndicatorUnderflowStyle: ShapeStyle = ShapeStyle(stroke: nil, fill: Color(red:0.25, green:0.48, blue:0.72))
+    /// Style of the indicator when the value is not set.
+    public static let DefaultIndicatorEmptyStyle: ShapeStyle = ShapeStyle(stroke: nil, fill: Color(red: 0.72, green: 0.70, blue: 0.67))
 
     struct Key: Hashable {
         let `class`: StyleClass
@@ -81,9 +92,15 @@ final class CanvasStyle: Sendable {
             Key(.highlight, modifiers: .notAllowed): ShapeStyle(stroke: Color(red: 0.88, green: 0.28, blue: 0.15), fill: Color.screenRed.withTransparency(0.2)),
             Key(.handle): ShapeStyle(stroke: Color(red: 0.90, green: 0.65, blue: 0.20)),
             Key(.issueIndicator): ShapeStyle(stroke: .white, fill: ErrorRedColor),
+
             Key(.valueIndicator): ShapeStyle(stroke: .black, fill: .white),
+            Key(.valueIndicator, modifiers: .positive): ShapeStyle(stroke: nil, fill: Color(red:0.22, green:0.62, blue:0.48)),
+            Key(.valueIndicator, modifiers: .negative): ShapeStyle(stroke: nil, fill: Color(red: 0.85, green: 0.55, blue: 0.10)),
+            Key(.valueIndicator, modifiers: .overflow): ShapeStyle(stroke: nil, fill: Color(red: 0.80, green: 0.22, blue: 0.10)),
+            Key(.valueIndicator, modifiers: .underflow): ShapeStyle(stroke: nil, fill: Color(red:0.25, green:0.48, blue:0.72)),
+            Key(.valueIndicator, modifiers: .empty): ShapeStyle(stroke: nil, fill: Color(red: 0.72, green: 0.70, blue: 0.67)),
             Key(.valueIndicatorLine): ShapeStyle(stroke: .black),
-            
+
             // Content
             Key(.pictogram):ShapeStyle(stroke: WarmSlateBlueColor),
             
@@ -109,6 +126,7 @@ final class CanvasStyle: Sendable {
             .primaryLabelPadding: 10.0,
             .secondaryLabelPadding: 16.0,
             .handleSize: 10.0,
+            .valueIndicatorPadding: 10.0,
         ]
     )
 
