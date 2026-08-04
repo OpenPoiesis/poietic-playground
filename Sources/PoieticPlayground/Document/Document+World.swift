@@ -37,7 +37,6 @@ extension Document {
                         SceneInteractionSystem.self,
                     ],
                 order: [
-//                    (SimulationSamplingSystem.self, before: SceneCompositionSystem.self),
                     (SceneCompositionSystem.self, before: SceneInteractionSystem.self),
                 ]
             ),
@@ -59,9 +58,7 @@ extension Document {
             ),
             Schedule(
                 label: InteractivePreviewSchedule.self,
-                systems: [
-                    // FIXME: No longer needed?
-                ]
+                systems: [ ]
             ),
             Schedule(
                 label: SimulationSchedule.self,
@@ -159,9 +156,7 @@ extension Document {
     @discardableResult
     func run(schedule: ScheduleLabel.Type) -> Bool {
         let label = String(describing: schedule)
-//        log("Running schedule: \(label)")
         do {
-//            print("⚙️ Running schedule \(schedule)")
             try world.run(schedule: schedule)
         }
         catch {

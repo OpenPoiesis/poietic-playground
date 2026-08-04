@@ -280,9 +280,33 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     }
 
     func renderIssueIndicator(_ entity: RuntimeEntity, context: Context) {
-        guard context.overlay == .indicator else { return }
-//        debugPrint("WARNING: \(#function) not implemented")
+        guard context.overlay == .indicator,
+              let visibility: Visibility = entity.component(),
+              visibility == .visible
+        else { return }
+        
+        
+        let pictogram: Pictogram
+        if let notation: Notation = entity.world.singleton() {
+            pictogram = notation.pictogram("Error")
+        }
+        else {
+            pictogram = Notation.ReplacementPictogram
+        }
+
+        let style = style.shapeStyle(class: .issueIndicator) ?? CanvasStyle.DefaultIssueIndicatorStyle
+
+        context.setLineWidth(2.0)
+        context.setColor(style.fill ?? ErrorRedColor)
+        context.addPath(pictogram.mask)
+        context.fill()
+
+        context.setColor(style.stroke ?? CanvasStyle.DefaultStrokeColor)
+        context.addPath(pictogram.path)
+        context.stroke()
+
     }
+    
     func renderColorSwatch(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .main,
               let swatch: ColorSwatchCanvasNode = entity.component()
