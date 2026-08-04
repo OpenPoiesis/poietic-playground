@@ -211,13 +211,6 @@ class Document {
         
         world.removeComponentForAll(PreviewPositionComponent.self)
         world.removeComponentForAll(PreviewMidpoints.self)
-        
-        for entity: RuntimeEntity in world.query(BlockIntent.self) {
-            world.despawn(entity)
-        }
-        for entity: RuntimeEntity in world.query(ConnectorIntent.self) {
-            world.despawn(entity)
-        }
         self.trigger(.previewEnded)
     }
 

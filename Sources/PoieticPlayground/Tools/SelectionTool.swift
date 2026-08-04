@@ -230,8 +230,6 @@ class SelectionTool: CanvasTool {
         else { return }
         let selection = document.selection
 
-        print("--- dragging selection by screen delta: \(screenDelta)")
-        
         var dependentEdges: Set<PoieticCore.ObjectID> = Set()
         let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
 
@@ -320,12 +318,10 @@ class SelectionTool: CanvasTool {
     ///
     /// - Note: Currently handles are supported only for selection of one object.
     func createHandles() {
-        print("??? Create handles?")
         guard let objectID = document?.selection.selectionOfOne(),
               let world = document?.world,
               let entity = world.entity(objectID)
         else { return }
-        print("--- Yes, create handles")
 
         // Dispatch by handle type
         if entity.contains(DiagramConnector.self) {

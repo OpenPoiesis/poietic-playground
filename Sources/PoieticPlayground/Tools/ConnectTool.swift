@@ -63,7 +63,12 @@ class ConnectTool: CanvasTool {
         self.palette = ObjectPalette(columns: 2, items: items)
 
     }
-    
+
+    override func deactivate() {
+        removeDragConnector()
+        document?.endInteractivePreview()
+    }
+
     override func drawPalette() {
         guard let palette else { return }
         palette.draw()
