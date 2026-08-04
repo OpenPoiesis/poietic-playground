@@ -58,6 +58,7 @@ final class CanvasStyle: Sendable {
     public static let DefaultLabelColor: Color = .black
     public static let DefaultFillColor: Color = .white
     
+    public static let DefaultIssueIndicatorStyle = ShapeStyle(stroke: .white, fill: ErrorRedColor)
     public static let DefaultValueIndicatorStyle = ShapeStyle(stroke: .black, fill: .white)
     public static let DefaultIndicatorNormalStyle: ShapeStyle = ShapeStyle(stroke: nil, fill: Color(red:0.22, green:0.62, blue:0.48))
     /// If set, then the style is used to draw the value when the value is less than origin.
