@@ -291,7 +291,7 @@ class DiagramCanvas: View {
         // TODO: Handle exceptions
         if mainOverlay.needsRender {
             try! mainOverlay.render { context in
-//                drawGrid(context)
+                drawGrid(context)
                 renderer.render(scene, context: context)
             }
         }
