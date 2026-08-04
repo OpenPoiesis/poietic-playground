@@ -29,10 +29,17 @@ struct SimulationSamplingSystem: System {
     
     func update(_ world: World) throws(InternalSystemError) {
         guard let result: SimulationResult = world.singleton(),
-              let time: SimulationReplayTime = world.singleton(),
-              let plan: SimulationPlan = world.singleton(),
-              let state = result[time.step]
+              let plan: SimulationPlan = world.singleton()
         else { return }
+        
+        let step: Int
+        if let time: SimulationReplayTime = world.singleton() {
+            step = time.step
+        }
+        else {
+            step = 0
+        }
+        guard let state = result[step] else { return }
         
         for simObject in plan.simulationObjects {
             guard let entity = world.entity(simObject.objectID) else { continue }
