@@ -29,7 +29,6 @@ struct DocumentCleanupSystem: System {
     
     func update(_ world: PoieticCore.World) throws(PoieticCore.InternalSystemError) {
         world.removeComponentForAll(DirtyContent.self)
-        world.removeComponentForAll(LayoutDirty.self)
         world.removeComponentForAll(ViewportDirty.self)
         world.removeComponentForAll(InteractionDirty.self)
         world.removeComponentForAll(ObjectTouched.self)

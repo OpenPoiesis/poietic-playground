@@ -361,6 +361,9 @@ class DiagramCanvas: View {
         if let scene {
             scene.setComponent(self.viewportState)
             scene.setComponent(ViewportDirty())
+            
+            let composer = DiagramSceneComposer(world: self.world)
+            composer.updateGeometry(scene: scene)
         }
         overlays.setAllNeedsRender()
     }
