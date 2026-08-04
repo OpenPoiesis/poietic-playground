@@ -37,7 +37,7 @@ extension Document {
                         SceneInteractionSystem.self,
                     ],
                 order: [
-                    (SimulationSamplingSystem.self, before: SceneCompositionSystem.self),
+//                    (SimulationSamplingSystem.self, before: SceneCompositionSystem.self),
                     (SceneCompositionSystem.self, before: SceneInteractionSystem.self),
                 ]
             ),
@@ -54,6 +54,7 @@ extension Document {
                     + [
                         NewChartResolutionSystem.self,
                         TraitsToDiagramObjectsSystem.self,
+                        VisualMetadataSystem.self,
                     ]
             ),
             Schedule(
@@ -67,6 +68,10 @@ extension Document {
                 systems: [
                     StockFlowSimulationSystem.self,
                     TimeSeriesProcessingSystem.self,
+                    SimulationSamplingSystem.self,
+                ],
+                order: [
+                    (TimeSeriesProcessingSystem.self, before: SimulationSamplingSystem.self),
                 ]
             ),
             Schedule(

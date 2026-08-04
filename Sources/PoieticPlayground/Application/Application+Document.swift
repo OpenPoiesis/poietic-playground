@@ -30,7 +30,8 @@ extension Application {
         document.addObserver(canvas.onDesignFrameChanged, on: .designFrameChanged)
         document.addObserver(canvas.onSelectionChanged, on: .selectionChanged)
         document.addObserver(canvas.onSimulationPlayerStep, on: .simulationPlayerStep)
-        
+        document.addObserver(canvas.onSimulationPlayerStep, on: .simulationFinished)
+
         document.addObserver(canvas.onInteractivePreviewChanged, on: .previewChanged)
         document.addObserver(canvas.onPreviewStarted, on: .previewStarted)
         document.addObserver(canvas.onPreviewEnded, on: .previewEnded)
