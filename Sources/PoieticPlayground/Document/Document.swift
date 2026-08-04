@@ -9,6 +9,28 @@ import PoieticCore
 import Foundation
 import Diagramming
 
+/*
+ 
+ New schedules
+ 
+ 
+ FrameChange
+    Simulation
+
+
+ Document Update:
+    1. DocumentUpdate
+    2. PlayerStep
+        - SimulationSamplingSystem
+    3. VisualsUpdate
+        - SceneComposition
+        - SceneInteraction
+    4. CleanUp
+        - Remove dirty
+ 
+ 
+ */
+
 /// Represents and controls the design document.
 ///
 /// Responsibilities:
@@ -22,16 +44,38 @@ import Diagramming
 class Document {
     static let FileExtension = "poietic"
     
+    /// - SeeAlso: ``Application/connectObservers(_:)``.
     enum Event {
-        /// Triggered on each ``Document/changeSelection(_:)``.
-        case selectionChanged
-        /// Triggered when world frame has been changed.
+        /// Triggered when world frame has been changed, usually after a transaction or
+        /// on undo/redo action.
         ///
-        /// For example: on a transaction or undo/redo action.
-        ///
+        /// Handled by:
+        /// - inspector
+        /// - canvas
+        /// - control bar
+        /// - player
+        /// - dashboard
         case designFrameChanged
-        case previewChanged
         
+        /// Triggered:
+        /// - when selection is changed, through ``Document/changeSelection(_:)
+        /// - on frame change
+        /// Handled by:
+        /// - ``InspectorPanel``
+        case selectionChanged
+
+        /// Triggered:
+        /// - by selection tool on selection move or handle move
+        /// Handled by:
+        /// - Canvas
+        case previewStarted
+        case previewChanged
+        /// Triggered:
+        /// - when selection move is concluded or cancelled
+        /// Handled by:
+        /// - Canvas
+        case previewEnded
+
         case simulationFinished
         case simulationFailed
 
@@ -52,13 +96,29 @@ class Document {
     var commandQueue: [any Command]
 
     let world: World
+    
+    /// Flag whether we need to update the world frame on next call to update.
+    var needsWorldFrameUpdate: Bool = false
+    
     var selection: Selection
     var selectionOverview: SelectionOverview
     
+    
+    // Known entities
+    var mainDiagram: RuntimeEntity? = nil
+    var mainDiagramScene: RuntimeEntity? = nil
+    
     /// Flag whether ``InteractivePreviewSchedule`` is run at the end of the update.
     /// The flag is reset each application frame.
-    var requiresInteractivePreviewUpdate: Bool
-
+    internal private(set) var requiresInteractivePreviewUpdate: Bool
+    /// Interactive preview in progress.
+    var isPreviewing: Bool
+    
+    // MARK: - Schedules
+    
+    
+    // MARK: - Initialisation
+    
     init(design: Design, url: URL? = nil, notation: Notation? = nil) {
         self.observers = [:]
         
@@ -73,10 +133,13 @@ class Document {
 
         // Flags
         self.requiresInteractivePreviewUpdate = false
+        self.isPreviewing = false
         
         setupWorld(notation: notation)
     }
-   
+  
+    // MARK: - Observers
+
     func removeAllObservers() {
         observers.removeAll()
     }
@@ -90,17 +153,15 @@ class Document {
             receiver(self)
         }
     }
-    func queueCommand(_ command: any Command) {
-        self.commandQueue.append(command)
-    }
     
-    
-    func changeSelection(_ change: SelectionChange) {
-        self.selection.apply(change)
-        updateSelectionOverview()
-        self.trigger(.selectionChanged)
-    }
+    // MARK: - Selection
 
+    func changeSelection(_ change: SelectionChange) {
+        selection.apply(change)
+        
+        updateSelectionOverview()
+        trigger(.selectionChanged)
+    }
     /// Called on:
     /// - selection changed with ``changeSelection(_:)``
     /// - frame changed with ``Application/accept(_:)``
@@ -115,9 +176,46 @@ class Document {
             self.selectionOverview.clear()
         }
 
-        // Pass the selection through the world to the systems for rendering and other processing
-        // (see DiagramCanvas drawing methods, for example)
-        self.world.setSingleton(selection)
+        syncSelection()
+    }
+    func syncSelection() {
+        for entity: RuntimeEntity in world.query(IsSelected.self) {
+            guard let id = entity.objectID, !selection.contains(id) else { continue }
+            entity.removeComponent(IsSelected.self)
+        }
+        for id in selection {
+            guard let entity = world.entity(id), !entity.contains(IsSelected.self) else { continue }
+            entity.setComponent(IsSelected())
+        }
+        world.setSingleton(selection)
+    }
+
+
+    // MARK: - Interactive Preview
+
+    func beginInteractivePreview() {
+        self.isPreviewing = true
+        self.trigger(.previewStarted)
+        self.requiresInteractivePreviewUpdate = true
+    }
+    
+    func queueInteractivePreviewUpdate() {
+        self.requiresInteractivePreviewUpdate = true
+    }
+    func resetInteractivePreviewUpdate() {
+        self.requiresInteractivePreviewUpdate = false
+    }
+    
+    func endInteractivePreview() {
+        self.isPreviewing = false
+        
+        world.removeComponentForAll(PreviewPositionComponent.self)
+        world.removeComponentForAll(PreviewMidpoints.self)
+        self.trigger(.previewEnded)
+    }
+
+    func onSimulationPlayerStep(_ document: Document) {
+        // TODO: This is weird, as we should be receiving this event only triggered by us.
     }
 }
 

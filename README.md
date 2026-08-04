@@ -47,5 +47,6 @@ To build and run the application: `swift run`.
 This package includes code from the following libraries:
 
 - [ImGui](https://github.com/ocornut/imgui)
+- [ImGuiFD](https://github.com/Julianiolo/ImGuiFD)
 - [stb](https://github.com/nothings/stb)
 - [SDL3](https://libsdl.org)

@@ -8,11 +8,31 @@
 import Ccairo
 import Diagramming
 
-struct DrawingContext {
-    private let context: OpaquePointer
+
+// TODO: [REFACTORING] Rename to CairoRenderingContext
+// TODO: [REFACTORING] Add LayoutProvider conformance (requires style)
+struct CairoDrawingContext: RenderingContextProtocol {
+    fileprivate let context: OpaquePointer
+    let overlay: OverlayType
     
-    init(_ context: OpaquePointer) {
+    init(_ context: OpaquePointer, overlay: OverlayType = .main) {
         self.context = context
+        self.overlay = overlay
+    }
+    
+    var transform: AffineTransform {
+        var matrix = cairo_matrix_t()
+        cairo_get_matrix(self.context, &matrix)
+        return AffineTransform(a: matrix.xx, b: matrix.yx, c: matrix.xy, d: matrix.yy, tx: matrix.x0, ty: matrix.y0)
+    }
+
+    func setTransform(_ transform: AffineTransform) {
+        var matrix = cairo_matrix_t()
+        cairo_matrix_init(&matrix,
+                          transform.a, transform.b,
+                          transform.c, transform.d,
+                          transform.tx, transform.ty)
+        cairo_set_matrix(self.context, &matrix)
     }
     
     func setColor(_ color: Color) {
@@ -105,7 +125,7 @@ struct DrawingContext {
             setColor(color)
             fillRect(origin: rect.origin, size: rect.size)
         }
-        if let color = style.outline {
+        if let color = style.stroke {
             setColor(color)
             strokeRect(origin: rect.origin, size: rect.size)
         }

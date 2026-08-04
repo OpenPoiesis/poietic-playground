@@ -8,6 +8,9 @@
 import CIimgui
 
 extension Application {
+    static let DefaultEventPollTimeout: Int32 = 16
+    static let InteractivePreviewEventPollTimeout: Int32 = 4
+
     func run() {
         loadResources()
         
@@ -22,7 +25,8 @@ extension Application {
             try self.openDesign(url: templateURL)
         }
         catch {
-            self.alert(title: "Error", message: "Unable to open template design '\(templateURL)'. Reason: \(error)")
+            self.alert(title: "Error",
+                       message: "Unable to open template design '\(templateURL)'. Reason: \(error)")
             self.newDesign()
         }
         
@@ -32,16 +36,23 @@ extension Application {
     func mainLoop() {
         let backend = GraphicsBackend.shared
         var lastTime = ImGui.GetTime()
-        
+
         loop: while !quitRequested {
-            switch backend.pollEvent() {
+            let timeout: Int32
+            if let document {
+                timeout = document.requiresInteractivePreviewUpdate ? Self.InteractivePreviewEventPollTimeout : Self.DefaultEventPollTimeout
+            }
+            else {
+                timeout = Self.DefaultEventPollTimeout
+            }
+
+            switch backend.pollEvent(timeout: timeout) {
             case .quit: break loop
             case .skip: continue
             case .none: break
             }
             
-            ImGui_ImplSDLGPU3_NewFrame()
-            ImGui_ImplSDL3_NewFrame()
+            backend.newFrame()
             ImGui.NewFrame()
             
             let newTime = ImGui.GetTime()
@@ -55,8 +66,8 @@ extension Application {
             
             // BEGIN Debug
             applicationSessionDebugWindow()
-            ImGui.ShowDebugLogWindow()
-            ImGui.ShowIDStackToolWindow()
+//            ImGui.ShowDebugLogWindow()
+//            ImGui.ShowIDStackToolWindow()
             ImGui.ShowDemoWindow()
             // END Debug
             
@@ -71,39 +82,40 @@ extension Application {
     }
     
     func update(_ timeDelta: Double) {
-        guard let document else {
-            logError("No document!")
-            return
+        if let document {
+            // Run the Command Queue
+            while !document.commandQueue.isEmpty {
+                let command = document.commandQueue.removeFirst()
+                self.runCommand(command, document: document)
+            }
+            
+            do {
+                try document.consumeAndAcceptTransaction()
+            }
+            catch {
+                // This is not user's fault and never should be.
+                // The application failed to make sure structural integrity is assured
+                Application.shared.alert(title: "Frame validation error (report to developers)",
+                                         message: String(describing: error))
+                return
+            }
+            document.update(timeDelta)
         }
         
+        if player.isRunning {
+            player.update(timeDelta)
+        }
+
         // Update UI components
+        canvas.update(timeDelta)
         inspector.update(timeDelta)
         toolBar.update(timeDelta)
         alertPanel.update(timeDelta)
         issuesPanel.update(timeDelta)
         controlBar.update(timeDelta)
-
-        if player.isRunning {
-            player.update(timeDelta)
-        }
         
-        // Run the Command Queue
-        while !document.commandQueue.isEmpty {
-            let command = document.commandQueue.removeFirst()
-            self.runCommand(command, document: document)
-        }
-        
-        do {
-            try document.consumeAndAcceptTransaction()
-        }
-        catch {
-            // This is not user's fault and never should be.
-            // The application failed to make sure structural integrity is assured
-            Application.shared.alert(title: "Frame validation error (report to developers)", message: String(describing: error))
-            return
-        }
-        
-        document.update(timeDelta)
+        // TODO: Is this the right place to call this?
+        document?.run(schedule: DocumentCleanupSchedule.self)
     }
     
     func draw() {

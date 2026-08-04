@@ -76,11 +76,11 @@ final class SDL3GPUBackend: GraphicsBackendProtocol {
     
     // MARK: - Main Loop
     
-    func pollEvent() -> BackendEvent {
+    func pollEvent(timeout: Int32) -> BackendEvent {
         var event = SDL_Event()
 
 //        while SDL_PollEvent(&event) {
-        while SDL_WaitEventTimeout(&event, 16) {
+        while SDL_WaitEventTimeout(&event, timeout) {
             switch event.type {
             case SDL_EVENT_QUIT.rawValue:
                 return .quit
@@ -98,6 +98,10 @@ final class SDL3GPUBackend: GraphicsBackendProtocol {
             return .skip
         }
         return .none
+    }
+    func newFrame() {
+        ImGui_ImplSDLGPU3_NewFrame()
+        ImGui_ImplSDL3_NewFrame()
     }
 
     func render() {

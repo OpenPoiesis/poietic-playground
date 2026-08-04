@@ -81,10 +81,22 @@ class ExportSVGCommand: Command {
         }
     }
     func run(_ context: CommandContext) throws (CommandError) {
-        let exporter = SVGDiagramExporter()
+        guard let diagram = context.document.mainDiagram else {
+            throw CommandError("No main diagram found", severity: .fatal)
+        }
+        
+        let composer = DiagramSceneComposer(world: context.world)
+        let scene = composer.createScene(diagram: diagram)
+        // TODO: Make user pick a SVG style
+        let style = SVGDiagramStyle.Default
+
+        composer.updateData(scene: scene)
+        composer.layout(scene: scene, layout: style)
+        composer.updateGeometry(scene: scene)
+        let renderer = SVGDiagramSceneRenderer(world: context.world)
 
         do {
-            try exporter.export(world: context.world, to: url.path())
+            try renderer.render(scene, style: style, to: url.path())
         }
         catch {
             throw CommandError(String(describing: error), underlyingError: error)

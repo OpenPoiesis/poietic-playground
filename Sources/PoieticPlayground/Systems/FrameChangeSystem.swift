@@ -31,6 +31,7 @@ struct IssueIndicator: Component {
 /// - **Output:** Entities with ErrorIndicator component.
 /// - **Forgiveness:** If the world's design does not have a current frame the system does nothing.
 ///
+@available(*, deprecated, message: "Use DiagramSceneComposer and IssueIndicatorCanvasNode")
 struct ErrorIndicatorSystem: System {
     let ErrorPictogramName: String = "Error"
     let DefaultErrorIndicatorSize: Double = 10.0
@@ -38,12 +39,14 @@ struct ErrorIndicatorSystem: System {
     nonisolated(unsafe) public static let dependencies: [SystemDependency] = [
         .after(SimulationPlanningSystem.self),
         // TODO: Remove this system once we have relative visual objects
-        .after(BlockCreationSystem.self),
+        .after(TraitsToDiagramObjectsSystem.self),
     ]
 
     init(_ world: PoieticCore.World) {    }
 
     func update(_ world: PoieticCore.World) throws(PoieticCore.InternalSystemError) {
+        // FIXME: [REFACTORING] Reimplement as: set error style (from StyleModifierSet) and show/hide error indicator scene node on that block accordingly.
+#if false
         let pictogram: Pictogram
         if let notation: Notation = world.singleton() {
             pictogram = notation.pictogram("Error")
@@ -82,5 +85,6 @@ struct ErrorIndicatorSystem: System {
             let owner = OwnedBy(objectEntity.runtimeID)
             let _: RuntimeEntity = world.spawn(indicator, owner)
         }
+#endif
     }
 }

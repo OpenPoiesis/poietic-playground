@@ -79,7 +79,7 @@ class ChartView {
     func drawSeries(chart: RuntimeEntity, seriesEntity: RuntimeEntity) {
         guard let world else { return }
         guard let chartSeries: ChartSeries = seriesEntity.component(),
-              let target = world.entity(chartSeries.target),
+              let target = world.entity(chartSeries.other),
               let timeSeries: RegularTimeSeries = target.component(),
               let stats: NumericValueStats = target.component()
         else { return }
@@ -124,7 +124,7 @@ class FixedChartView {
 
     func drawSeries(_ chartSeries: ChartSeries, id: String) {
         guard let world else { return }
-        guard let target = world.entity(chartSeries.target),
+        guard let target = world.entity(chartSeries.other),
               let timeSeries: RegularTimeSeries = target.component(),
               let stats: NumericValueStats = target.component()
         else { return }

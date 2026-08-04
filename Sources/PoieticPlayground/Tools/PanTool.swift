@@ -18,10 +18,7 @@ class PanTool: CanvasTool {
     override var iconKey: IconKey { .hand }
     
     var cursor: ImGuiMouseCursor_ = ImGuiMouseCursor_Arrow
-
-    var startViewOffset: Vector2D = .zero
     var previousScreenPos: ImVec2 = ImVec2()
-    
     var state: State = .idle
     
     override func handleEvent(_ event: ToolEvent) -> EngagementResult {
@@ -37,9 +34,7 @@ class PanTool: CanvasTool {
     
     func dragStart(_ event: ToolEvent) -> EngagementResult {
         guard event.triggerButton == .left else { return .pass }
-        guard let canvas else { return .pass }
 
-        self.startViewOffset = canvas.viewOffset
         self.previousScreenPos = event.screenPos
         self.state = .panning
         self.cursor = ImGuiMouseCursor_Hand
@@ -51,7 +46,7 @@ class PanTool: CanvasTool {
         guard let canvas else { return .pass }
 
         let screenOffset = event.screenPos - self.previousScreenPos
-        let canvasOffset = Vector2D(screenOffset) * Double(canvas.zoomLevel)
+        let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
         canvas.setView(offset: canvas.viewOffset - canvasOffset,
                        zoom: canvas.zoomLevel)
         
@@ -66,7 +61,7 @@ class PanTool: CanvasTool {
         guard let canvas else { return .pass }
 
         let screenOffset = event.screenPos - self.previousScreenPos
-        let canvasOffset = Vector2D(screenOffset) * Double(canvas.zoomLevel)
+        let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
         canvas.setView(offset: canvas.viewOffset - canvasOffset,
                        zoom: canvas.zoomLevel)
 

@@ -9,20 +9,6 @@
 import PoieticCore
 import PoieticFlows
 
-struct NumericValueStats: Component {
-    let min: Double
-    let max: Double
-    
-    var range: Double { max - min }
-    
-    init(min: Double, max: Double) {
-        precondition(min <= max)
-        self.min = min
-        self.max = max
-    }
-}
-
-
 /// System that computes statistics from the simulation result.
 ///
 /// Used to gather the following information:
@@ -34,7 +20,7 @@ struct NumericValueStats: Component {
 /// - **Forgiveness:** Does nothing if there is no simulation plan neither simulation result.
 /// - **Issues:** No issues created.
 ///
-public struct TimeSeriseProcessingSystem: System {
+public struct TimeSeriesProcessingSystem: System {
     nonisolated(unsafe) public static let dependencies: [SystemDependency] = [
         .after(StockFlowSimulationSystem.self),
     ]

@@ -150,7 +150,12 @@ extension Application {
                 if ImGui.MenuItem("Show Metrics", nil, &showMetrics) {
                     ImGui.ShowMetricsWindow()
                 }
-                
+                ImGui.Separator()
+                if ImGui.MenuItem("Debug Diagram Canvas Rendering", nil, &debugCanvasRendering) {
+                    self.canvas.debugRendering = self.debugCanvasRendering
+                    self.canvas.overlays.setAllNeedsRender()
+                }
+
                 ImGui.EndMenu()
             }
             // Model menu

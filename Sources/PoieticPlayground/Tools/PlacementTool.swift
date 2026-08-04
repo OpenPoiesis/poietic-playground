@@ -12,20 +12,20 @@ import Diagramming
 class PlacementTool: CanvasTool {
     static let IconSize: ImVec2 = ImVec2(60, 40)
     static let PaletteCellSize: ImVec2 = ImVec2(60, 60)
-    // TODO: Implement the tool (empty stub for now)
     override var name: String { "placement"}
     override var hasObjectPalette: Bool { true }
     override var iconKey: IconKey { .place }
     
     var palette: ObjectPalette? = nil
 
-    var intentShadow: RuntimeEntity? = nil
+    var blockIntent: RuntimeEntity? = nil
     
     override func activate() {
         guard let document,
               let notation: Notation = document.world.singleton()
         else { return }
         
+        document.changeSelection(.removeAll)
         var items: [PaletteItem] = []
         
         for type in placeableBlockTypes() {
@@ -38,7 +38,8 @@ class PlacementTool: CanvasTool {
     }
     
     override func deactivate() {
-        removeIntentShadow()
+        removeBlockIntent()
+        document?.endInteractivePreview()
     }
     
     override func drawPalette() {
@@ -57,25 +58,64 @@ class PlacementTool: CanvasTool {
         return types
     }
     
-    func createIntentShadow(position: Vector2D, typeName: String) {
+//    func OLDcreateBlockIntent(position: Vector2D, typeName: String) {
+//        guard let document,
+//              let notation: Notation = world.singleton(),
+//              let type = document.design.metamodel.objectType(name: typeName)
+//        else { return }
+//        let world = document.world
+//        let pictogram = notation.pictogram(type.name)
+//
+//        if blockIntent != nil {
+//            removeIntentShadow()
+//        }
+//        let component = BlockIntent(type: type, position: position, pictogram: pictogram)
+//        self.intentShadow = world.spawn(component)
+//    }
+    
+    func createBlockIntent(position: Vector2D, typeName: String) {
         guard let document,
+              let canvas,
+              let scene = canvas.scene,
               let notation: Notation = world.singleton(),
               let type = document.design.metamodel.objectType(name: typeName)
         else { return }
-        let world = document.world
+
+        let scenePos = canvas.worldToScene(position)
+                                                                                                                                                                                                                
+        removeBlockIntent()
+                                                                                                                                                                                                                
+        let blockNode = world.spawn(
+            BlockIntent(type: type),
+            CanvasNode(),
+            BlockCanvasNode(),
+            PositionComponent(position: scenePos),
+            CanvasNodeStyle(class: .block, modifiers: .preview),
+            DirtyContent.geometry,
+            Visibility.visible,
+        )
+        blockNode.relate(ChildOf(), to: scene)
+        blockNode.relate(MemberOf(), to: scene)
+
         let pictogram = notation.pictogram(type.name)
 
-        if intentShadow != nil {
-            removeIntentShadow()
-        }
-        let component = BlockIntent(type: type, position: position, pictogram: pictogram)
-        self.intentShadow = world.spawn(component)
+        let pictogramNode = world.spawn(
+            CanvasNode(),
+            PictogramCanvasNode(pictogram: pictogram),
+            PositionComponent(position: .zero),
+            Visibility.visible,
+        )
+        pictogramNode.relate(ChildOf(), to: blockNode)
+        blockNode.relate(CanvasNode.Pictogram(), to: pictogramNode)
+
+
+        self.blockIntent = blockNode
     }
-    
-    func removeIntentShadow() {
-        guard let intentShadow else { return }
-        document?.world.despawn(intentShadow)
-        self.intentShadow = nil
+
+    func removeBlockIntent() {
+        guard let blockIntent else { return }
+        document?.world.despawn(blockIntent)
+        self.blockIntent = nil
     }
     
     override func handleEvent(_ event: ToolEvent) -> EngagementResult {
@@ -91,44 +131,49 @@ class PlacementTool: CanvasTool {
         guard let canvas,
               let typeName = palette?.selectedIdentifier
         else { return .pass }
-        removeIntentShadow()
+        removeBlockIntent()
         let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
-        createIntentShadow(position: worldPos, typeName: typeName)
+        createBlockIntent(position: worldPos, typeName: typeName)
+        document?.beginInteractivePreview()
+        document?.queueInteractivePreviewUpdate()
         return .pass
     }
     
     func pointerMove(_ event: ToolEvent) -> EngagementResult {
         guard let canvas,
-              let intentShadow
+              let blockIntent
         else { return .pass }
         let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
-        if var component: BlockIntent = intentShadow.component() {
-            component.position = worldPos
-            intentShadow.setComponent(component)
-        }
-        else if let typeName = palette?.selectedIdentifier {
-            createIntentShadow(position: worldPos, typeName: typeName)
-        }
+        let canvasPos: Vector2D = canvas.worldToScene(worldPos)
+
+        blockIntent.setComponent(PositionComponent(position: canvasPos))
+        blockIntent.setComponent(DirtyContent.geometry)
+        
+        document?.queueInteractivePreviewUpdate()
         return .pass
     }
     
     func hoverEnd(_ event: ToolEvent) -> EngagementResult {
-        removeIntentShadow()
+        removeBlockIntent()
+        document?.queueInteractivePreviewUpdate()
         return .pass
     }
+    
     func pointerUp(_ event: ToolEvent)  -> EngagementResult {
         guard let document,
               let canvas,
-              let intentShadow,
-              let shadow: BlockIntent = intentShadow.component()
+              let blockIntent,
+              let intent: BlockIntent = blockIntent.component()
         else { return .pass }
         let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
 
-        print("Placing \(shadow.type.name) at \(worldPos)")
-        if let objectID = placeObject(type: shadow.type, at: worldPos) {
+        print("Placing \(intent.type.name) at \(worldPos)")
+        if let objectID = placeObject(type: intent.type, at: worldPos) {
             document.queueCommand(SwitchToolCommand("selection"))
             document.changeSelection(.replaceAllWithOne(objectID))
         }
+        document.queueInteractivePreviewUpdate()
+        document.endInteractivePreview()
         return .consumed
     }
     

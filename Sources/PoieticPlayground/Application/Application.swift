@@ -40,6 +40,7 @@ class Application {
     static let PictogramAdjustmentScale = 0.5
     
     var showMetrics = false
+    var debugCanvasRendering = false
     var quitRequested: Bool = false
     
     // -- Document --
@@ -107,7 +108,6 @@ class Application {
             ImGui.TextUnformatted("World frame: \(wFrameLabel)")
             ImGui.TextUnformatted("Has Transaction: \(document.hasTransaction)")
             ImGui.TextUnformatted("Selection count: \(document.selection.count)")
-            ImGui.TextUnformatted("Interactive preview update: \(document.requiresInteractivePreviewUpdate)")
         }
         ImGui.End()
     }

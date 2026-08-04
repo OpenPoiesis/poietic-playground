@@ -9,6 +9,8 @@ import CIimgui
 import PoieticCore
 import Diagramming
 
+/// Selection tool is ...
+///
 class SelectionTool: CanvasTool {
     // TODO: Implement the tool (empty stub for now)
 
@@ -29,12 +31,23 @@ class SelectionTool: CanvasTool {
         /// Dragging handle around.
         case handleMove(RuntimeID)
         /// Object part was hit, such as label or issue indicator.
-        case objectPartHit(RuntimeID, CanvasHitTarget.ObjectPart)
+        case objectPartHit(RuntimeID, CanvasHitTarget.Kind.ObjectPart)
     }
     
     var state: State = .idle
     var dragStartScreenPos: ImVec2 = ImVec2()
     
+    override func bind(canvas: DiagramCanvas, document: Document) {
+        super.bind(canvas: canvas, document: document)
+        document.addObserver(onDesignFrameChanged, on: .designFrameChanged)
+    }
+
+    func onDesignFrameChanged(_ document: Document) {
+        // We need this especially for undo operations, to recreate handles for re-added objects.
+        removeHandles()
+        createHandles()
+    }
+
     // MARK: - Events
 
     override func handleEvent(_ event: ToolEvent) -> EngagementResult {
@@ -56,19 +69,19 @@ class SelectionTool: CanvasTool {
         dragStartScreenPos = event.screenPos
         
         // TODO: Close inline popup
-        
         let target = canvas.hitTarget(screenPosition: event.screenPos)
+        print("---     got target: \(target)")
         let selection = document.selection
 
-        switch target {
+        switch target?.kind {
         case .none:
             document.changeSelection(.removeAll)
             state = .objectSelect
-            self.removeHandles()
+            removeHandles()
             return .consumed
         case .object(let runtimeID, .body):
             // TODO: Defer opening of context menu on inputEnded or move context menu out of the tool
-            guard let objectID = world.entityToObject(runtimeID)
+            guard let objectID = world.entity(runtimeID)?.objectID
             else { return .consumed } // Not a design object
             
             if event.modifiers.contains(.shift) {
@@ -84,16 +97,13 @@ class SelectionTool: CanvasTool {
                 }
             }
             self.removeHandles()
-            if let objectID = selection.selectionOfOne(),
-               let runtimeID = world.objectToEntity(objectID)
-            {
-                createHandles(for: runtimeID)
-            }
+            self.createHandles()
+
             state = .objectHit
         case .object(let runtimeID, .issueIndicator):
             self.removeHandles()
             state = .idle
-            guard let objectID = world.entityToObject(runtimeID) else { break }
+            guard let objectID = world.entity(runtimeID)?.objectID else { break }
             self.document?.queueCommand(OpenIssuesCommand(objectID))
         case .object(let runtimeID, let part):
             self.removeHandles()
@@ -115,33 +125,34 @@ class SelectionTool: CanvasTool {
             return .pass
         case .objectHit, .objectMove, .objectPartHit:
 //            Input.setDefaultCursorShape(.drag)
+            document?.beginInteractivePreview()
             previewSelectionMove(screenDelta: event.delta)
             state = .objectMove
             
-        case .handleEngaged(let runtimeID), .handleMove(let runtimeID):
-            print("DRAG START WITHG HANDLE")
+        case .handleEngaged(let handleID), .handleMove(let handleID):
 //            Input.setDefaultCursorShape(.drag)
 //            dragHandle(byCanvasDelta: delta)
-            state = .handleMove(runtimeID)
+            document?.beginInteractivePreview()
+            dragHandle(handleID, screenDelta: event.delta)
+            state = .handleMove(handleID)
         }
-        print("Drag started: \(state)")
+//        print("▶️🖐️ Drag Start: \(state)")
         return .engaged
     }
     func dragMove(_ event: ToolEvent) -> EngagementResult {
+//        print("🖐️ Drag Move: \(state)")
+
 //        TODO: popupManager?.closeInlinePopup()
-        
         switch state {
         case .idle: break
         case .objectSelect: break
-        case .objectHit,
-                .objectMove,
-                .objectPartHit:
+        case .objectHit, .objectMove, .objectPartHit:
 //            Input.setDefaultCursorShape(.drag)
             previewSelectionMove(screenDelta: event.delta)
+            syncHandlesToPreview()
             state = .objectMove
             
-        case .handleEngaged(let handleID),
-                .handleMove(let handleID):
+        case .handleEngaged(let handleID), .handleMove(let handleID):
 //            Input.setDefaultCursorShape(.drag)
             dragHandle(handleID, screenDelta: event.delta)
             state = .handleMove(handleID)
@@ -200,10 +211,12 @@ class SelectionTool: CanvasTool {
 //            case .handle: break
 //            }
         }
+        document.endInteractivePreview()
         return .consumed
     }
     func dragCancel(_ event: ToolEvent) -> EngagementResult {
         cleanUp()
+        document?.endInteractivePreview()
         return .consumed
     }
     
@@ -211,6 +224,7 @@ class SelectionTool: CanvasTool {
     
     func previewSelectionMove(screenDelta: ImVec2) {
         guard let canvas,
+              let scene = canvas.scene,
               let document,
               let frame = document.world.frame
         else { return }
@@ -223,9 +237,16 @@ class SelectionTool: CanvasTool {
             guard let entity = world.entity(objectID),
                   let block: DiagramBlock = entity.component()
             else { continue }
-            var preview: BlockPreview = entity.component() ?? BlockPreview(position: block.position)
+            
+            entity.setComponent(DirtyContent.geometry)
+            
+            var preview: PreviewPositionComponent
+            preview = entity.component() ?? PreviewPositionComponent(position: block.position)
             preview.position += worldDelta
             entity.setComponent(preview)
+            entity.modifyOrSet(default: DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
             
             let deps = frame.dependentEdges(objectID)
             dependentEdges.formUnion(deps)
@@ -237,21 +258,33 @@ class SelectionTool: CanvasTool {
                   !connector.midpoints.isEmpty
             else { continue }
 
-            var preview: ConnectorPreview = entity.component()
-                        ??  ConnectorPreview(midpoints: connector.midpoints)
+            var preview: PreviewMidpoints = entity.component()
+                        ??  PreviewMidpoints(midpoints: connector.midpoints)
             
             preview.midpoints = preview.midpoints.map { $0 + worldDelta }
             entity.setComponent(preview)
+            entity.modifyOrSet(default: DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
         }
         
-        for id in dependentEdges {
-            // FIXME: Implement this
+        for objectID in dependentEdges {
+            guard let entity = world.entity(objectID) else { continue }
+            entity.modifyOrSet(default: DirtyContent.geometry) {
+                $0.insert(.geometry)
+            }
         }
-        document.requiresInteractivePreviewUpdate = true
+        
+        scene.modifyOrSet(default: DirtyContent.geometry) {
+            $0.insert(.geometry)
+        }
+        
+        document.queueInteractivePreviewUpdate()
     }
     
     func finalizeSelectionMove(_ selection: Selection, by designDelta: Vector2D) {
-        guard let document
+        guard let document,
+              let scene = canvas?.scene
         else { return }
 
         let trans = document.createOrReuseTransaction()
@@ -261,8 +294,8 @@ class SelectionTool: CanvasTool {
             let object = trans.mutate(id)
             moveObject(object, by: designDelta)
         }
+
         cleanUp()
-        document.requiresInteractivePreviewUpdate = false
     }
 
     func moveObject(_ object: TransientObject, by designDelta: Vector2D) {
@@ -281,11 +314,16 @@ class SelectionTool: CanvasTool {
     
 
     // MARK: - Handle Drag
-    func createHandles(for runtimeID: RuntimeID) {
-        guard let world = document?.world,
-              let entity = world.entity(runtimeID)
+    /// Create handles for selected object.
+    ///
+    /// - Note: Currently handles are supported only for selection of one object.
+    func createHandles() {
+        guard let objectID = document?.selection.selectionOfOne(),
+              let world = document?.world,
+              let entity = world.entity(objectID)
         else { return }
-        
+
+        // Dispatch by handle type
         if entity.contains(DiagramConnector.self) {
             createMidpointHandles(entity)
         }
@@ -293,10 +331,21 @@ class SelectionTool: CanvasTool {
     }
     
     func createMidpointHandles(_ entity: RuntimeEntity) {
-        guard let connector: DiagramConnector = entity.component()
+        guard let connector: DiagramConnector = entity.component(),
+              let canvas,
+              let scene = canvas.scene
         else { return }
         
-        let preview: ConnectorPreview? = entity.component()
+        let handleSize: Double
+        
+        if let style = self.canvas?.style {
+            handleSize = style.metric(.handleSize, default: CanvasHandle.DefaultSize)
+        }
+        else {
+            handleSize = CanvasHandle.DefaultSize
+        }
+        
+        let preview: PreviewMidpoints? = entity.component()
         let midpoints = preview?.midpoints ?? connector.midpoints
         
         if midpoints.isEmpty {
@@ -308,23 +357,61 @@ class SelectionTool: CanvasTool {
 
             let segment = LineSegment(from: originBlock.position, to: targetBlock.position)
             let midpoint = segment.midpoint
-            
-            let component = CanvasHandle(owner: entity.runtimeID,
-                                         position: midpoint,
-                                         kind: .midpoint(0))
-            
-            let _: RuntimeEntity = world.spawn(component, OwnedBy(entity.runtimeID))
+
+            createMidpointHandle(worldPosition: midpoint,
+                                 scenePosition: canvas.worldToScene(midpoint),
+                                 index: 0,
+                                 handles: entity,
+                                 parent: scene,
+                                 size: handleSize)
         }
         else {
             for (index, point) in midpoints.enumerated() {
-                let component = CanvasHandle(owner: entity.runtimeID,
-                                          position: point,
-                                          kind: .midpoint(index))
-                let _: RuntimeEntity = world.spawn(component, OwnedBy(entity.runtimeID))
+                createMidpointHandle(worldPosition: point,
+                                     scenePosition: canvas.worldToScene(point),
+                                     index: index,
+                                     handles: entity,
+                                     parent: scene,
+                                     size: handleSize)
             }
         }
     }
     
+    func createMidpointHandle(worldPosition: Vector2D,
+                              scenePosition: Vector2D,
+                              index: Int,
+                              handles handledEntity: RuntimeEntity,
+                              parent: RuntimeEntity,
+                              size: Double)
+    {
+        let handle = world.spawn(
+            CanvasNode(),
+            CanvasHandle(position: worldPosition, kind: .midpoint(index)),
+            CollisionShape(position: .zero, shape: .circle(size / 2.0)),
+            PositionComponent(position: scenePosition),
+            Interactivity.interactive,
+        )
+        handle.relate(Handles(), to: handledEntity)
+        handle.relate(ChildOf(), to: parent)
+    }
+    
+    func syncHandlesToPreview() {
+        guard let canvas else { return }
+
+        for (entity, var handle) in world.query(CanvasHandle.self) {
+            guard let target = entity.target(Handles.self),
+                  let preview: PreviewMidpoints = target.component(),
+                  case .midpoint(let index) = handle.kind,
+                  index < preview.midpoints.count
+            else { continue }
+            
+            let pos = preview.midpoints[index]
+            handle.worldPosition = pos
+            entity.setComponent(handle)
+            entity.setComponent(PositionComponent(position: canvas.worldToScene(pos)))
+        }
+    }
+
     func dragHandle(_ handleRuntimeID: RuntimeID, screenDelta: ImVec2) {
         guard let document,
               let canvas,
@@ -332,31 +419,34 @@ class SelectionTool: CanvasTool {
               var component: CanvasHandle = handle.component()
         else { return }
         let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
-        component.position += worldDelta
+        component.worldPosition += worldDelta
         handle.setComponent(component)
-        
+        handle.setComponent(PositionComponent(position: canvas.worldToScene(component.worldPosition)))
+
         switch component.kind {
         case .midpoint(let index):
-            guard let owner = document.world.entity(component.owner) else { break }
-            dragMidpointHandle(owner, index: index, currentPosition: component.position, currentDelta: worldDelta)
+            guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
+            dragMidpointHandle(target, index: index, currentPosition: component.worldPosition, currentDelta: worldDelta)
+            target.setComponent(DirtyContent.geometry)
         }
         
-        document.requiresInteractivePreviewUpdate = true
+        
+        document.queueInteractivePreviewUpdate()
     }
     
     /// Reflect handle position to connector preview.
     ///
-    func dragMidpointHandle(_ owner: RuntimeEntity, index: Int, currentPosition: Vector2D, currentDelta: Vector2D) {
+    func dragMidpointHandle(_ target: RuntimeEntity, index: Int, currentPosition: Vector2D, currentDelta: Vector2D) {
         var midpoints: [Vector2D]
         
-        if let preview: ConnectorPreview = owner.component() {
+        if let preview: PreviewMidpoints = target.component() {
             if preview.midpoints.isEmpty {
                 midpoints = [currentPosition]
             }
             else {
                 midpoints = preview.midpoints
 
-                if index < preview.midpoints.count {
+                if index >= 0 && index < preview.midpoints.count {
                     midpoints[index] = currentPosition
                 }
             }
@@ -365,8 +455,8 @@ class SelectionTool: CanvasTool {
             midpoints = [currentPosition]
         }
         
-        let newPreview = ConnectorPreview(midpoints: midpoints)
-        owner.setComponent(newPreview)
+        let newPreview = PreviewMidpoints(midpoints: midpoints)
+        target.setComponent(newPreview)
     }
 
     /// Parameters:
@@ -379,15 +469,15 @@ class SelectionTool: CanvasTool {
 
         switch component.kind {
         case .midpoint(let index):
-            guard let owner = document.world.entity(component.owner) else { break }
-            finalizeMidpointMove(owner: owner, index: index, finalPosition: finalPosition)
+            guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
+            finalizeMidpointMove(target: target, index: index, finalPosition: finalPosition)
         }
-        document.requiresInteractivePreviewUpdate = true
+        document.queueInteractivePreviewUpdate()
     }
 
-    func finalizeMidpointMove(owner: RuntimeEntity, index: Int, finalPosition: Vector2D) {
+    func finalizeMidpointMove(target: RuntimeEntity, index: Int, finalPosition: Vector2D) {
         guard let document,
-              let objectID = owner.objectID
+              let objectID = target.objectID
         else { return }
         
         let trans = document.createOrReuseTransaction()
@@ -409,8 +499,8 @@ class SelectionTool: CanvasTool {
     // MARK: - Clean-up
     
     func cleanUp() {
-        world.removeComponentForAll(BlockPreview.self)
-        world.removeComponentForAll(ConnectorPreview.self)
+        world.removeComponentForAll(PreviewPositionComponent.self)
+        world.removeComponentForAll(PreviewMidpoints.self)
     }
     
     func removeHandles() {
@@ -418,5 +508,4 @@ class SelectionTool: CanvasTool {
             world.despawn(runtimeID)
         }
     }
-
 }

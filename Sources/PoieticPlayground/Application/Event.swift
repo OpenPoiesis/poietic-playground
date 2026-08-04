@@ -27,5 +27,7 @@ enum ApplicationEvent: CaseIterable {
     case previewChanged
         // -> Update visuals schedule
         // -> Interactive preview
-    
+
+    /// Canvas zoom or origin changed.
+    case viewportChanged
 }

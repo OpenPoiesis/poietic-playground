@@ -43,14 +43,13 @@ class ResultPlayer {
     }
     
     func update(_ delta: Double) {
-        if isRunning {
-            if timeToStep <= 0 {
-                nextStep()
-                timeToStep = stepDuration
-            }
-            else {
-                timeToStep -= delta
-            }
+        guard isRunning else { return }
+        if timeToStep <= 0 {
+            nextStep()
+            timeToStep = stepDuration
+        }
+        else {
+            timeToStep -= delta
         }
     }
    
@@ -85,7 +84,13 @@ class ResultPlayer {
         let component = SimulationReplayTime(step: currentStep, time: currentTime)
         document.world.setSingleton(component)
         document.trigger(.simulationPlayerStep)
-        //        world.run(schedule: ReplayStepSchedule.self) else { return }
+        do {
+            try document.world.run(schedule: PlayerStepSchedule.self)
+        }
+        catch {
+            document.queueAlert(title: "Player Schedule Failed",
+                                message: "Please file an issue with developers")
+        }
 //        simulationPlayerStep.emit()
     }
     

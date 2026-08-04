@@ -57,25 +57,9 @@ extension DiagramCanvas {
     static let SecondaryLabelPadding: Double = 4.0
     static let ColorSwatchSize: Vector2D = Vector2D(10.0, 10.0)
 
-    func drawMainOverlay(_ context: DrawingContext) {
-//        context.setColor(style.background)
-//        cairo_set_antialias(cairoContext, CAIRO_ANTIALIAS_DEFAULT)
-        drawGrid(context)
-        drawBlocks(context)
-        drawConnectors(context)
-        drawIntents(context)
-        drawHandles(context)
-    }
-    func drawIndicatorOverlay(_ context: DrawingContext) {
-        if world.hasIssues {
-            drawIssueIndicators(context)
-        }
-        else {
-            drawValueIndicators(context)
-        }
-    }
-    
-    func drawHandles(_ context: DrawingContext) {
+#if false // Old code, here only for the reference during refactoring
+
+    func drawHandles(_ context: CairoDrawingContext) {
         context.save()
         let radius = Self.HandleSize / 2
 
@@ -88,41 +72,36 @@ extension DiagramCanvas {
         context.restore()
     }
     
-    func drawIntents(_ context: DrawingContext) {
-        for component: BlockIntent in world.query(BlockIntent.self) {
-            drawBlockIntent(context, block: component)
-        }
-    }
-    
-    func drawBlocks(_ context: DrawingContext) {
+    func drawBlocks(_ context: CairoDrawingContext) {
         context.save()
         let selection: Selection? = world.singleton()
         
-        for (entity, component) in world.query(DiagramBlock.self) {
-            guard let objectID = world.entityToObject(entity.runtimeID) else { continue }
-
+        for (entity, block) in world.query(DiagramBlock.self) {
+            guard let objectID = entity.objectID else { continue }
             let isSelected = selection?.contains(objectID) ?? false
-            drawBlock(context, entity: entity, isSelected: isSelected, block: component)
+            
+            guard !entity.contains(BlockPreview.self) else { continue }
+            drawBlock(context,
+                      entity: entity,
+                      block: block,
+                      preview: nil,
+                      isSelected: isSelected)
+            drawBlockHighlight(context,
+                      entity: entity,
+                      block: block,
+                      preview: nil,
+                      isSelected: isSelected)
         }
         context.restore()
     }
 
-    func drawBlockIntent(_ context: DrawingContext, block: BlockIntent) {
-        let transform = AffineTransform(translation: toOverlayTransform.apply(to: block.position))
-        context.save()
-        context.setColor(style.intentShadowColor)
-        context.addPath(block.pictogram.path, transform: transform)
-        context.stroke()
-        context.restore()
-    }
-
-    func drawIssueIndicators(_ context: DrawingContext) {
+    func drawIssueIndicators(_ context: CairoDrawingContext) {
         for (_, indicator) in world.query(IssueIndicator.self) {
             drawIssueIndicator(context, indicator: indicator)
         }
     }
 
-    func drawIssueIndicator(_ context: DrawingContext, indicator: IssueIndicator) {
+    func drawIssueIndicator(_ context: CairoDrawingContext, indicator: IssueIndicator) {
         // TODO: pass parent as argument to get errorIndicatorAnchorOffset (once hierarchical drawing is available)
         let pictogram = indicator.pictogram
         let trans = AffineTransform(translation: toOverlayTransform.apply(to: indicator.position))
@@ -140,15 +119,16 @@ extension DiagramCanvas {
 //        context.stroke()
     }
 
-    func drawBlock(_ context: DrawingContext, entity: RuntimeEntity, isSelected: Bool, block: DiagramBlock) {
+    func drawBlock(_ context: CairoDrawingContext,
+                   entity: RuntimeEntity,
+                   block: DiagramBlock,
+                   preview: BlockPreview? = nil,
+                   isSelected: Bool)
+    {
         let blockPosition: Vector2D
         
-        if let preview: BlockPreview = entity.component() {
-            blockPosition = preview.position
-        }
-        else {
-            blockPosition = block.position
-        }
+        if let preview { blockPosition = preview.position }
+        else { blockPosition = block.position }
         
         var swatchCenter: Vector2D
         var labelCenter: Vector2D
@@ -160,26 +140,6 @@ extension DiagramCanvas {
 //            context.setColor(style.pictogramMaskColor)
 //            context.fillPath(pictogram.mask, transform: blockTrans)
             
-            if isSelected {
-                context.setColor(style.selectionFillColor)
-                context.fillPath(pictogram.mask, transform: blockTrans)
-                context.setColor(style.selectionOutlineColor)
-                context.strokePath(pictogram.mask, transform: blockTrans)
-            }
-            
-            if let highlight: TargetHighlight = entity.component() {
-                switch highlight {
-                case .accepting:
-                    context.setColor(style.acceptingColor)
-                    context.strokePath(pictogram.mask, transform: blockTrans)
-                case .notAllowed:
-                    context.setColor(style.notAllowedColor)
-                    context.strokePath(pictogram.mask, transform: blockTrans)
-                case .none:
-                    break
-                }
-            }
-
             context.setColor(style.pictogramColor)
             context.strokePath(pictogram.path, transform: blockTrans)
             
@@ -215,30 +175,69 @@ extension DiagramCanvas {
             context.showText(label, at: position)
         }
 
-        if let colorName = block.accentColorName {
-            let color = style.adaptableColor(colorName, default: .black)
+        if let colorKey = block.accentColor {
+            let color = style.adaptableColor(colorKey, default: .black)
             let swatchOrigin = swatchCenter - (Self.ColorSwatchSize / 2.0)
             context.setColor(color)
             context.fillRect(origin: swatchOrigin, size: Self.ColorSwatchSize)
         }
     }
     
-    func drawConnectors(_ context: DrawingContext) {
+    func drawBlockHighlight(_ context: CairoDrawingContext,
+                   entity: RuntimeEntity,
+                   block: DiagramBlock,
+                   preview: BlockPreview? = nil,
+                   isSelected: Bool)
+    {
+        let blockPosition: Vector2D
+        
+        if let preview { blockPosition = preview.position }
+        else { blockPosition = block.position }
+        
+        let blockOverlayPos = toOverlayTransform.apply(to: blockPosition)
+        let blockTrans = AffineTransform(translation: blockOverlayPos)
+
+        if let pictogram = block.pictogram {
+            let pictogram = pictogram.scaled(self.zoomLevel)
+            
+            if isSelected {
+                context.setColor(style.selectionFillColor)
+                context.fillPath(pictogram.mask, transform: blockTrans)
+                context.setColor(style.selectionOutlineColor)
+                context.strokePath(pictogram.mask, transform: blockTrans)
+            }
+            
+            if let highlight: TargetHighlight = entity.component() {
+                switch highlight {
+                case .accepting:
+                    context.setColor(style.acceptingColor)
+                    context.strokePath(pictogram.mask, transform: blockTrans)
+                case .notAllowed:
+                    context.setColor(style.notAllowedColor)
+                    context.strokePath(pictogram.mask, transform: blockTrans)
+                case .none:
+                    break
+                }
+            }
+
+        }
+
+    }
+
+    func drawConnectors(_ context: CairoDrawingContext) {
         context.save()
         let selection: Selection? = world.singleton()
-        for (entity, component) in world.query(DiagramConnectorGeometry.self) {
-            if let objectID = entity.objectID {
-                let isSelected = selection?.contains(objectID) ?? false
-                drawConnector(context, geometry: component, isSelected: isSelected, isIntent: false)
-            }
-            else if entity.contains(ConnectorIntent.self) {
-                drawConnector(context, geometry: component, isSelected: false, isIntent: true)
-            }
+        for (entity, geometry) in world.query(DiagramConnectorGeometry.self) {
+            guard let objectID = entity.objectID else { continue }
+            let isSelected = selection?.contains(objectID) ?? false
+            guard !entity.contains(InteractivePreview.self) else { continue }
+            
+            drawConnector(context, geometry: geometry, isSelected: isSelected)
         }
         context.restore()
     }
     
-    func drawConnector(_ context: DrawingContext, geometry: DiagramConnectorGeometry, isSelected: Bool, isIntent: Bool) {
+    func drawConnector(_ context: CairoDrawingContext, geometry: DiagramConnectorGeometry, isSelected: Bool, isIntent: Bool = false) {
         let transform = toOverlayTransform
 
         // Open curves
@@ -277,7 +276,7 @@ extension DiagramCanvas {
         }
     }
 
-    func drawGrid(_ context: DrawingContext) {
+    func drawGrid(_ context: CairoDrawingContext) {
         guard showGrid else { return }
         context.save()
         // Calculate visible area in world coordinates
@@ -315,19 +314,19 @@ extension DiagramCanvas {
         context.restore()
     }
     
-    func drawValueIndicators(_ context: DrawingContext) {
+    func drawValueIndicators(_ context: CairoDrawingContext) {
         // TODO: Implement proper "indicator trait"
         context.save()
         
         for (entity, component) in world.query(DiagramBlock.self) {
-            guard let objectID = world.entityToObject(entity.runtimeID) else { continue }
+            guard let objectID = entity.objectID else { continue }
 
             drawValueIndicator(context, entity: entity, block: component)
         }
         context.restore()
 
     }
-    func drawValueIndicator(_ context: DrawingContext, entity: RuntimeEntity, block: DiagramBlock) {
+    func drawValueIndicator(_ context: CairoDrawingContext, entity: RuntimeEntity, block: DiagramBlock) {
         // TODO: Make relevant data per-entity components
         // Assumption: result reflects plan
         guard let result: SimulationResult = world.singleton(),
@@ -377,7 +376,7 @@ extension DiagramCanvas {
         context.showText(indicatorLabel, at: position)
     }
     
-    func drawValueIndicatorBar(_ context: DrawingContext,
+    func drawValueIndicatorBar(_ context: CairoDrawingContext,
                                frame: Rect2D,
                                value: Double?,
                                bounds: ValueBounds,
@@ -442,4 +441,6 @@ extension DiagramCanvas {
 //        context.addLine(from: line.start, to: line.end)
 //        context.stroke()
     }
+    
+#endif
 }

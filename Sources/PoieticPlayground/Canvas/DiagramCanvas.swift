@@ -9,49 +9,52 @@ import CIimgui
 import Diagramming
 import PoieticCore
 
-/*
- Frame 1: Mouse button pressed at (100, 100)
-   → PointerDown event
-   → State machine: IDLE → PRESSED
-   
- Frame 2-5: Mouse still pressed, no movement (or < 3px)
-   → PointerMove events (minimal delta)
-   → State machine: stays in PRESSED
-   
- Frame 6: Mouse moved to (150, 100) - exceeds threshold!
-   → DragStart event (first time!)
-   → PointerMove event (still happens)
-   → State machine: PRESSED → DRAGGING
-   
- Frame 7-10: Mouse continues moving while pressed
-   → DragMove events
-   → PointerMove events
-   → State machine: stays in DRAGGING
-   
- Frame 11: Mouse button released
-   → DragEnd event
-   → PointerUp event
-   → State machine: DRAGGING → IDLE
- */
+/// View that draws a diagram and handles events to be dispatched to canvas tools.
+///
+/// Responsibilities:
+/// - Owns overlays and Cairo drawing contexts
+/// - Performs diagram scene rendering
+///
+/// The canvas draws a scene rooted in ``/Diagramming/DiagramCanvas``.
+///
 class DiagramCanvas: View {
     static let DefaultHitRadius: Double = 5.0
 
-    var editorManager: InlineEditorManager
+    var debugRendering: Bool = false
     
-    // TODO: Not fully implemented, only one overlay at the moment
-    var overlays: OverlayStack
-    var mainOverlay: Overlay
-    var indicatorOverlay: Overlay
-
     weak var document: Document?
     internal var world: World {
         guard let document else { fatalError("DiagramCanvas used before binding")}
         return document.world
     }
+    /// Diagram presented in this canvas view.
+    ///
+    /// Owned and managed by the ``Document``.
+    ///
+    /// - SeeAlso: ``scene`` – renderable representation of the diagram.
+    var diagram: RuntimeEntity?
+
+    /// Root entity for diagram canvas scene hierarchy presented in this canvas.
+    ///
+    /// Owned and managed by this diagram canvas view.
+    ///
+    /// When there is no canvas scene, it is created on the next ``update(_:)`` from
+    /// the ``diagram``.
+    ///
+    /// - SeeAlso: ``diagram`` – source for the scene.
+    var scene: RuntimeEntity?
+
     var style: CanvasStyle
-    
-    var debugMessage: String = ""
-    
+
+    // TODO: Not fully implemented, only one overlay at the moment
+    var overlays: OverlayStack
+    /// Overlay for the main content – diagram blocks, connectors, labels.
+    var mainOverlay: Overlay
+    /// Interactive preview of connection, placement or other operations.
+    var previewOverlay: Overlay
+    var indicatorOverlay: Overlay
+    var highlightOverlay: Overlay
+
     var isMouseInViewport: Bool = false
     var inputState: InputState = InputState()
     
@@ -69,6 +72,9 @@ class DiagramCanvas: View {
     ///
     private(set) var zoomLevel: Double = 1.0
     
+    // TODO: Replace the viewOffset and zoomLevel variables with viewportState
+    var viewportState: ViewportState { ViewportState(offset: viewOffset, zoom: zoomLevel)}
+    
     /// Transformation from world coordinates to the drawing context/surface coordinates.
     ///
     /// The transform is derived from canvas view offset and zoom level.
@@ -80,18 +86,23 @@ class DiagramCanvas: View {
     var gridSize: Double = 50.0
     var showGrid = true
 
+    var editorManager: InlineEditorManager
+
     init(document: Document? = nil) {
         self.document = document
-        self.style = CanvasStyle()
+        self.style = CanvasStyle.Default
 
         self.overlays = OverlayStack()
         
-        self.mainOverlay = Overlay(name: "main")
+        self.mainOverlay = Overlay(name: "main", type: .main)
         self.overlays.add(self.mainOverlay)
-
-        self.indicatorOverlay = Overlay(name: "indicator")
+        self.previewOverlay = Overlay(name: "preview", type: .preview)
+        self.overlays.add(self.previewOverlay)
+        self.indicatorOverlay = Overlay(name: "indicator", type: .indicator)
         self.overlays.add(self.indicatorOverlay)
-        
+        self.highlightOverlay = Overlay(name: "highlight", type: .highlight)
+        self.overlays.add(self.highlightOverlay)
+
         self.editorManager = InlineEditorManager()
         
         self.editorManager.register(name: "name", editor: NameInlineEditor())
@@ -102,25 +113,9 @@ class DiagramCanvas: View {
                                     editor: NumericValueInlineEditor(attribute: "window_time", iconKey: .timeWindow))
     }
     
-    func onSelectionChanged(_ document: Document) {
-        // TODO: Make only selection overlay dirty (once we have selection overlays)
-        overlays.setAllNeedsRender()
-    }
-
-    func onDesignFrameChanged(_ document: Document) {
-        overlays.setAllNeedsRender()
-    }
-
-    func onInteractivePreviewChanged(_ document: Document) {
-        // TODO: Make only preview overlay dirty (once we have selection overlays)
-        overlays.setAllNeedsRender()
-    }
-    
-    func onSimulationPlayerStep(_ document: Document) {
-        indicatorOverlay.setNeedsRender()
-    }
-
     func bind(_ document: Document) {
+        self.scene = nil
+        self.diagram = nil
         self.document = document
         self.editorManager.bind(document: document, canvas: self)
     }
@@ -144,12 +139,12 @@ class DiagramCanvas: View {
         return ImVec2(screenPos) + canvasPos
     }
    
-    /// Convert world coordinates to canvas overlay coordinates.
-    func worldToOverlay(_ worldPos: Vector2D) -> Vector2D {
+    /// Convert world coordinates to scene coordinates.
+    func worldToScene(_ worldPos: Vector2D) -> Vector2D {
         return toOverlayTransform.apply(to: worldPos)
     }
-    func overlayToWorld(_ overlayPos: Vector2D) -> Vector2D {
-        let worldPos = overlayPos / zoomLevel + viewOffset
+    func sceneToWorld(_ scenePos: Vector2D) -> Vector2D {
+        let worldPos = scenePos / zoomLevel + viewOffset
         return worldPos
     }
     
@@ -157,10 +152,84 @@ class DiagramCanvas: View {
         Rect2D(origin: viewOffset, size: (Vector2D(canvasSize) / zoomLevel))
     }
     
-
+    // MARK: - Update and Events
+    
     func update(_ timeDelta: Double) {
-        // Nothing for now
+        // TODO: Move to bind(), once we are sure we have diagram at that time.
+        if scene == nil {
+            createScene()
+        }
     }
+
+    func onSelectionChanged(_ document: Document) {
+        highlightOverlay.setNeedsRender()
+    }
+
+    /// Update renderable scene and mark the whole canvas as needing to be rendered.
+    ///
+    func onDesignFrameChanged(_ document: Document) {
+        self.diagram = document.mainDiagram
+        updateScene()
+        self.scene?.setComponent(LayoutDirty())
+    }
+    
+    func onSimulationPlayerStep(_ document: Document) {
+        indicatorOverlay.setNeedsRender()
+    }
+
+    func onPreviewStarted(_ document: Document) {
+        self.mainOverlay.setNeedsRender()
+        self.previewOverlay.setNeedsRender()
+    }
+
+    func onInteractivePreviewChanged(_ document: Document) {
+        mainOverlay.setNeedsRender()
+        highlightOverlay.setNeedsRender()
+        indicatorOverlay.setNeedsRender()
+    }
+    
+    func onPreviewEnded(_ document: Document) {
+//        self.overlays.setAllNeedsRender()
+        self.mainOverlay.setNeedsRender()
+        self.highlightOverlay   .setNeedsRender()
+        self.previewOverlay.setNeedsRender()
+    }
+
+    // MARK: - Scene
+    
+    private func createScene() {
+        guard let diagram else {
+            self.scene = nil
+            return
+        }
+
+        let composer = DiagramSceneComposer(world: world)
+
+        let scene = composer.createScene(diagram: diagram, viewport: viewportState)
+
+        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
+        scene.setComponent(SceneLayoutProvider(provider: provider))
+        composer.layout(scene: scene, layout: provider)
+        
+        self.scene = scene
+        overlays.setAllNeedsRender()
+    }
+    private func updateScene() {
+        guard let scene else { return }
+        let composer = DiagramSceneComposer(world: world)
+
+        composer.syncScene(scene)
+
+        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
+        scene.setComponent(SceneLayoutProvider(provider: provider))
+        composer.layout(scene: scene, layout: provider)
+        
+        self.scene = scene
+        overlays.setAllNeedsRender()
+    }
+
+
+    // MARK: - Drawing
     
     func draw() {
         let viewport = ImGui.GetMainViewport()
@@ -173,9 +242,18 @@ class DiagramCanvas: View {
             ImGuiWindowFlags_NoBringToFrontOnFocus |
             ImGuiWindowFlags_NoNavFocus)
         
+        // Canvas color
+        let color: Color
+        if let canvasStyle = style.shapeStyle(class: .canvas) {
+            color = canvasStyle.fill ?? CanvasStyle.DefaultCanvasColor
+        }
+        else {
+            color = CanvasStyle.DefaultCanvasColor
+        }
+        
         // Disable padding
         ImGui.PushStyleVar(ImGuiStyleVar(ImGuiStyleVar_WindowPadding.rawValue), ImVec2(0, 0))
-        ImGui.PushStyleColor(ImGuiCol(ImGuiCol_ChildBg.rawValue), style.background.imIntValue)
+        ImGui.PushStyleColor(ImGuiCol(ImGuiCol_ChildBg.rawValue), color.imIntValue)
         ImGui.BeginChild("canvas",
                          ImVec2(0.0, 0.0),
                          ImGuiChildFlags_None | ImGuiChildFlags_Borders,
@@ -183,9 +261,6 @@ class DiagramCanvas: View {
         ImGui.PopStyleColor()
         ImGui.PopStyleVar()
 
-        canvasPos = ImGui.GetCursorScreenPos()
-        canvasSize = ImGui.GetContentRegionAvail()
-        
         // Note: We need to do it here for processUnhandledInput(...) to correctly capture
         // the mouse events for canvas. If there is a better solution, I am open.
         isMouseInViewport = ImGui.IsWindowHovered(
@@ -193,10 +268,10 @@ class DiagramCanvas: View {
             ImGuiHoveredFlags_AllowWhenBlockedByPopup
         )
 
-        // Ensure all layers match canvas size
-        overlays.ensureSize(width: Int32(canvasSize.x),
-                            height: Int32(canvasSize.y))
-        
+        canvasPos = ImGui.GetCursorScreenPos()
+        canvasSize = ImGui.GetContentRegionAvail()
+        overlays.ensureSize(width: Int32(canvasSize.x), height: Int32(canvasSize.y))
+
         drawOverlays()
         try! overlays.uploadIfNeeded()
         drawOverlayTextures()
@@ -208,16 +283,31 @@ class DiagramCanvas: View {
     }
     
     func drawOverlays() {
+        guard let scene else { return }
+        assert(scene.contains(DiagramScene.self))
+
+        let renderer = CairoDiagramSceneRenderer(style: style, debug: debugRendering)
+        
+        // TODO: Handle exceptions
         if mainOverlay.needsRender {
-            // TODO: Handle exception
             try! mainOverlay.render { context in
-                drawMainOverlay(context)
+//                drawGrid(context)
+                renderer.render(scene, context: context)
+            }
+        }
+        if previewOverlay.needsRender {
+            try! previewOverlay.render { context in
+                renderer.render(scene, context: context)
+            }
+        }
+        if highlightOverlay.needsRender {
+            try! highlightOverlay.render { context in
+                renderer.render(scene, context: context)
             }
         }
         if indicatorOverlay.needsRender {
-            // TODO: Handle exception
             try! indicatorOverlay.render { context in
-                drawIndicatorOverlay(context)
+                renderer.render(scene, context: context)
             }
         }
     }
@@ -266,6 +356,12 @@ class DiagramCanvas: View {
         zoomLevel = max(0.01, min(100.0, zoom))
         toOverlayTransform = AffineTransform(translation: -viewOffset)
                                 .scaled(Vector2D(zoomLevel, zoomLevel))
+
+        // Viewport Changed
+        if let scene {
+            scene.setComponent(self.viewportState)
+            scene.setComponent(ViewportDirty())
+        }
         overlays.setAllNeedsRender()
     }
     
@@ -276,66 +372,71 @@ class DiagramCanvas: View {
         setView(offset: offset, zoom: useZoom)
     }
     func hitTarget(screenPosition: ImVec2) -> CanvasHitTarget? {
-        // TODO: Rework this as described below
-        /*
-         - Two kinds of hit targets: CollisionHitTarget, WireHitTarget
-         - Use CollisionCanvasHitTarget component for collision-shape based hit targets
-         - Use WireCanvasHitTarget component for connectors or potentially other wire-based targets
-         - either must implement containsTouch(worldPosition:Vector2D, radius:Double) -> Bool
-         - then content will be:
-            - for direct object hit: entity owning the component
-            - for object part (labels): OwnedBy target + part
-            - for indicator: same as for part
-            - for owned handle: (owner, handle)
-            - for free-standing handle: (handle ID, handle component)
-         */
-        var targets: [CanvasHitTarget] = []
+        guard let scene else { return nil }
+        
+        let scenePosition = worldToScene(screenToWorld(screenPosition))
+        let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
+        
+        guard let hitEntity = hitTest(node: scene, scenePosition: scenePosition, radius: radius),
+              let parent: RuntimeEntity = hitEntity.target(ChildOf.self)
+        else { return nil }
 
-        // TODO: This is expensive
-        let worldTouchPosition: Vector2D = screenToWorld(screenPosition)
-        let touchShape = CollisionShape(position: worldTouchPosition, shape: .circle(Self.DefaultHitRadius))
-
-        // Blocks (collision shape) and Error indicators
-        for (entity, block) in world.query(DiagramBlock.self) {
-            let blockShape = block.collisionShape.translated(block.position)
-            if blockShape.collide(with: touchShape) {
-                let target: CanvasHitTarget = .object(entity.runtimeID, .body)
-                targets.append(target)
-            }
+        // Determine hit target type
+        //
+        if hitEntity.contains(CanvasHandle.self) {
+            return CanvasHitTarget(sceneNode: hitEntity.runtimeID,
+                                   kind: .handle(hitEntity.runtimeID))
         }
         
-        // Connectors (distance to wire)
-        for (entity, connector) in world.query(DiagramConnectorGeometry.self) {
-            // TODO: Have the wire tessellated already
-            let wire = connector.wire.tessellate()
+        // Resolve the design entity: for blocks/connectors it's the hit entity itself;
+        // for labels/indicators it is the parent block.
+        let designEntity: RuntimeEntity?
+        if hitEntity.contains(BlockCanvasNode.self) || hitEntity.contains(ConnectorCanvasNode.self) {
+            designEntity = hitEntity.target(RepresentationOf.self)
+        }
+        else {  // Label, indicator, etc. — parent is the block scene node
+            designEntity = parent.target(RepresentationOf.self)
+        }
+        let designRuntimeID = designEntity?.runtimeID ?? hitEntity.runtimeID
+        
+        let kind: CanvasHitTarget.Kind
+        
+        if parent.relates(CanvasNode.PrimaryLabel.self, to: hitEntity) {
+            kind = .object(designRuntimeID, .primaryLabel)
+        } else if parent.relates(CanvasNode.SecondaryLabel.self, to: hitEntity) {
+            kind = .object(designRuntimeID, .secondaryLabel)
+        } else if hitEntity.contains(IssueIndicatorCanvasNode.self) {
+            kind = .object(designRuntimeID, .issueIndicator)
+        } else if hitEntity.contains(BlockCanvasNode.self) || hitEntity.contains(ConnectorCanvasNode.self) {
+            kind = .object(designRuntimeID, .body)
+        }
+        else {
+            return nil
+        }
+        
+        return CanvasHitTarget(sceneNode: hitEntity.runtimeID, kind: kind)
+    }
+    func hitTest(node: RuntimeEntity, scenePosition: Vector2D, radius: Double) -> RuntimeEntity? {
+        // FIXME: This is temporary solution. We need z-index ordering
+        for handle in node.children where handle.contains(CanvasHandle.self) {
+            guard let region: TouchRegion = handle.component(),
+                  region.isHit(at: scenePosition, radius: radius)
+            else { continue }
 
-            for i in 0..<(wire.count-1) {
-                let segment = LineSegment(from: wire[i], to: wire[i + 1])
-                if segment.distance(to: worldTouchPosition) < Self.DefaultHitRadius {
-                    let target: CanvasHitTarget = .object(entity.runtimeID, .body)
-                    targets.append(target)
-                }
+            return handle
+        }
+
+        for child in node.children {
+            if let region: TouchRegion = child.component(),
+               region.isHit(at: scenePosition, radius: radius)
+            {
+                return child
+            }
+            if let found = hitTest(node: child, scenePosition: scenePosition, radius: radius) {
+                return found
             }
         }
-
-        // Issue indicators
-        for (entity, indicator) in world.query(IssueIndicator.self) {
-            guard let owner: OwnedBy = entity.component() else { continue }
-            let shape = indicator.collisionShape
-            if shape.collide(with: touchShape) {
-                let target: CanvasHitTarget = .object(owner.target, .issueIndicator)
-                targets.append(target)
-            }
-        }
-        // Handles
-        for (entity, handle) in world.query(CanvasHandle.self) {
-            let distance = worldTouchPosition.distance(to: handle.position)
-            guard distance <= Self.DefaultHitRadius else { continue }
-            let target: CanvasHitTarget = .handle(entity.runtimeID)
-            targets.append(target)
-        }
-
-        return targets.last
+        return nil
     }
     
     // MARK: - Inline Editors
