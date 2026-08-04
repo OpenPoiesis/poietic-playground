@@ -49,7 +49,8 @@ extension Application {
         inspector.bind(document)
         issuesPanel.bind(document)
         player.bind(document)
-
+        dashboard.bind(document)
+        
         for tool in canvasTools {
             tool.bind(canvas: canvas, document: document)
         }

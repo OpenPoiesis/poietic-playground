@@ -16,6 +16,10 @@ class Dashboard {
     var isVisible: Bool = true
     var chartViews: [ChartView] = []
     
+    func bind(_ document: Document) {
+        chartViews.removeAll()
+    }
+    
     func onDesignFrameChanged(_ document: Document) {
         // TODO: Reload all charts
         let world = document.world

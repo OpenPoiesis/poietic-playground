@@ -114,6 +114,8 @@ class DiagramCanvas: View {
     }
     
     func bind(_ document: Document) {
+        self.scene = nil
+        self.diagram = nil
         self.document = document
         self.editorManager.bind(document: document, canvas: self)
     }
@@ -290,26 +292,21 @@ class DiagramCanvas: View {
         if mainOverlay.needsRender {
             try! mainOverlay.render { context in
 //                drawGrid(context)
-                print("--- Rendering MAIN overlay")
                 renderer.render(scene, context: context)
-//                drawHandles(context)
             }
         }
         if previewOverlay.needsRender {
             try! previewOverlay.render { context in
-                print("--- Rendering PREVIEW overlay")
                 renderer.render(scene, context: context)
             }
         }
         if highlightOverlay.needsRender {
             try! highlightOverlay.render { context in
-                print("--- Rendering HIGHLIGHT overlay")
                 renderer.render(scene, context: context)
             }
         }
         if indicatorOverlay.needsRender {
             try! indicatorOverlay.render { context in
-                print("--- Rendering INDICATOR overlay")
                 renderer.render(scene, context: context)
             }
         }
