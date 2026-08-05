@@ -394,7 +394,7 @@ class DiagramCanvas: View {
         // Resolve the design entity: for blocks/connectors it's the hit entity itself;
         // for labels/indicators it is the parent block.
         let designEntity: RuntimeEntity?
-        if hitEntity.contains(BlockCanvasNode.self) || hitEntity.contains(ConnectorCanvasNode.self) {
+        if hitEntity.contains(BlockSceneNode.self) || hitEntity.contains(ConnectorSceneNode.self) {
             designEntity = hitEntity.target(RepresentationOf.self)
         }
         else {  // Label, indicator, etc. — parent is the block scene node
@@ -404,13 +404,13 @@ class DiagramCanvas: View {
         
         let kind: CanvasHitTarget.Kind
         
-        if parent.relates(CanvasNode.PrimaryLabel.self, to: hitEntity) {
+        if parent.relates(SceneNode.PrimaryLabel.self, to: hitEntity) {
             kind = .object(designRuntimeID, .primaryLabel)
-        } else if parent.relates(CanvasNode.SecondaryLabel.self, to: hitEntity) {
+        } else if parent.relates(SceneNode.SecondaryLabel.self, to: hitEntity) {
             kind = .object(designRuntimeID, .secondaryLabel)
-        } else if hitEntity.contains(IssueIndicatorCanvasNode.self) {
+        } else if hitEntity.contains(IssueIndicatorSceneNode.self) {
             kind = .object(designRuntimeID, .issueIndicator)
-        } else if hitEntity.contains(BlockCanvasNode.self) || hitEntity.contains(ConnectorCanvasNode.self) {
+        } else if hitEntity.contains(BlockSceneNode.self) || hitEntity.contains(ConnectorSceneNode.self) {
             kind = .object(designRuntimeID, .body)
         }
         else {

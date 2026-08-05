@@ -385,7 +385,7 @@ class SelectionTool: CanvasTool {
                               size: Double)
     {
         let handle = world.spawn(
-            CanvasNode(),
+            SceneNode(),
             CanvasHandle(position: worldPosition, kind: .midpoint(index)),
             CollisionShape(position: .zero, shape: .circle(size / 2.0)),
             PositionComponent(position: scenePosition),
