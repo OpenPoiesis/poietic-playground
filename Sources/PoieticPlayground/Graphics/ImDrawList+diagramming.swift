@@ -110,9 +110,9 @@ extension Pictogram {
         let centeringOffset = (requiredSize - scaledSize) / 2.0
         
         // Move pictogram's bottom-left to origin
-        let originOffset = -bounds.bottomLeft
+        let originOffset = -bounds.topLeft
         
-        let transform = AffineTransform(translation: -bounds.bottomLeft)
+        let transform = AffineTransform(translation: -bounds.topLeft)
             .scaled(Vector2D(scaleFactor, scaleFactor))
             .translated(centeringOffset)
 
