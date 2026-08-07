@@ -12,7 +12,7 @@ import Foundation
 class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     static let DebugColor = Color.screenRed.withTransparency(0.5)
 
-    typealias Context = CairoDrawingContext
+    typealias Context = CairoRenderingContext
     
     let style: CanvasStyle
     let debug: Bool

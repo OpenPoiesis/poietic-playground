@@ -79,7 +79,6 @@ final class CanvasStyle: Sendable {
         }
     }
     
-    // TODO: [REFACTORING] [IMPORTANT] Add styles with modifiers, especially for indicator normal, negative, overflow, underflow and empty
     public static let DefaultFontSize: Double = 11.0
 
     public static let Default = CanvasStyle(

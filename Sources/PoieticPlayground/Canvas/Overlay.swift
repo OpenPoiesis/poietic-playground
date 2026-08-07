@@ -8,7 +8,6 @@
 import Ccairo
 
 enum OverlayError: Error {
-    case noContext
     case noSurface
     case noData
     case uploadFailed(any Error)
@@ -121,9 +120,9 @@ class Overlay {
         self.state = .uninitialized
     }
     
-    func render(_ draw: (CairoDrawingContext) -> Void) throws (OverlayError) {
+    func render(_ draw: (CairoRenderingContext) -> Void) {
         guard let context else {
-            throw .noContext
+            preconditionFailure("No Cairo context to render overlay to")
         }
         
         cairo_save(context)
@@ -133,7 +132,7 @@ class Overlay {
 
         cairo_save(context)
         cairo_set_operator(context, CAIRO_OPERATOR_OVER)
-        draw(CairoDrawingContext(context, overlay: type))
+        draw(CairoRenderingContext(context, overlay: type))
         cairo_restore(context)
 
         self.state = .needsUpload

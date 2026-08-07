@@ -288,25 +288,24 @@ class DiagramCanvas: View {
 
         let renderer = CairoDiagramSceneRenderer(style: style, debug: debugRendering)
         
-        // TODO: Handle exceptions
         if mainOverlay.needsRender {
-            try! mainOverlay.render { context in
+            mainOverlay.render { context in
                 drawGrid(context)
                 renderer.render(scene, context: context)
             }
         }
         if previewOverlay.needsRender {
-            try! previewOverlay.render { context in
+            previewOverlay.render { context in
                 renderer.render(scene, context: context)
             }
         }
         if highlightOverlay.needsRender {
-            try! highlightOverlay.render { context in
+            highlightOverlay.render { context in
                 renderer.render(scene, context: context)
             }
         }
         if indicatorOverlay.needsRender {
-            try! indicatorOverlay.render { context in
+            indicatorOverlay.render { context in
                 renderer.render(scene, context: context)
             }
         }

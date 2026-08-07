@@ -5,8 +5,6 @@
 //  Created by Stefan Urbanek on 05/02/2026.
 //
 
-// TODO: [IMPORTANT] This whole file contains early prototype of all canvas drawing and needs to be split.
-
 import CIimgui
 import Ccairo
 import PoieticCore
@@ -49,7 +47,7 @@ enum DetailLevel {
 }
 
 extension DiagramCanvas {
-    func drawGrid(_ context: CairoDrawingContext) {
+    func drawGrid(_ context: CairoRenderingContext) {
         guard showGrid else { return }
         context.save()
         
