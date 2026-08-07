@@ -195,7 +195,7 @@ class SimulationInspectorSection: DesignInspectorSection {
             mutable = trans.mutate(infoObjectID)
         }
         else {
-            mutable = trans.create(.DesignInfo)
+            mutable = trans.create(.Simulation)
             self.infoObjectID = mutable.objectID
             
         }
@@ -214,7 +214,7 @@ class SimulationInspectorSection: DesignInspectorSection {
             mutable = trans.mutate(infoObjectID)
         }
         else {
-            mutable = trans.create(.DesignInfo)
+            mutable = trans.create(.Simulation)
             self.infoObjectID = mutable.objectID
             
         }

@@ -156,7 +156,6 @@ class ConnectTool: CanvasTool {
               let originSceneNode = intendedConnector.target(ConnectorSceneNode.Origin.self)
         else { return .pass}
         
-        
         // -- Handle --
         let worldPosition: Vector2D = canvas.screenToWorld(event.screenPos)
         let scenePosition: Vector2D = canvas.worldToScene(worldPosition)
