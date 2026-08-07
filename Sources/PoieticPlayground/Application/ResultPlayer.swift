@@ -59,22 +59,18 @@ class ResultPlayer {
             return
             // TODO: Reset variables
         }
-        updateFromSettings(plan.simulationSettings)
-    }
-    
-    func updateFromSettings(_ settings: SimulationSettings) {
-        print("Updating from settings: \(settings)")
+        let settings = plan.simulationSettings
         self.initialTime = settings.initialTime
         self.timeDelta = settings.timeDelta
         self.lastStep = Int(settings.steps)
         self.currentStep = max(0, min(self.currentStep, Int(settings.steps) - 1))
-        stateChanged()
     }
+
     func onSimulationFailed(_ document: Document) {
         self.isRunning = false
     }
     func onSimulationFinished(_ document: Document) {
-        // Nothing
+        stateChanged()
     }
     /// Run the systems for player step and then notify Godot through a signal.
     ///
