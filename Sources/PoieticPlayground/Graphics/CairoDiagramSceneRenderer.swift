@@ -138,10 +138,17 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
         
         let nodeStyle: CanvasNodeStyle? = entity.component()
         let labelStyle = style.labelStyle(class: nodeStyle?.class ?? .label)
+        let offset: Vector2D
+        if let renderingOffset: RenderingOffset = entity.component() {
+            offset = renderingOffset.offset
+        }
+        else {
+            offset = .zero
+        }
         
         context.setFontSize(labelStyle?.size ?? CanvasStyle.DefaultFontSize)
         context.setColor(labelStyle?.color ?? CanvasStyle.DefaultLabelColor)
-        context.showText(label.text, at: .zero)
+        context.showText(label.text, at: offset)
     }
 
     /// - Expectations:

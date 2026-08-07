@@ -124,8 +124,8 @@ final class CanvasStyle: Sendable {
         ],
         metrics: [
             .colorSwatchSize: 10.0,
-            .primaryLabelPadding: 10.0,
-            .secondaryLabelPadding: 16.0,
+            .primaryLabelPadding: 2.0,
+            .secondaryLabelPadding: 4.0,
             .handleSize: 10.0,
             .valueIndicatorPadding: 10.0,
         ]
