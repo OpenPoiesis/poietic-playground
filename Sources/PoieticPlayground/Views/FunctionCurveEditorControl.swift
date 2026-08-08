@@ -2,10 +2,9 @@
 //  FunctionCurveEditorView.swift
 //  PoieticPlayground
 //
-//  Stub for the curve editor widget. Reusable by both the panel and the inline editor.
+//  Curve editor widget. Reusable by both the panel and the inline editor.
 //
-
-// Translated from early Poietic-Playground Godot prototype
+// Ported with help of an agent from Playground prototype written in Godot.
 
 import CIimgui
 import PoieticCore
@@ -253,6 +252,15 @@ class FunctionCurveEditorControl {
 
     func clearSelection() {
         selectedPointIndex = -1
+    }
+
+    /// Replace a point by its current value. Finds the point in the unsorted array
+    /// by value, replaces it, re-sorts, and fires `onPointsChanged`.
+    func replacePoint(oldValue: Vector2D, newValue: Vector2D) {
+        guard let index = points.firstIndex(where: { $0 == oldValue }) else { return }
+        points[index] = newValue
+        sortPoints()
+        onPointsChanged?()
     }
 
     /// Fit the visible range to contain all points.

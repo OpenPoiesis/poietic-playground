@@ -2,8 +2,9 @@
 //  GraphicalFunctionPanel.swift
 //  PoieticPlayground
 //
-//  Stub for the stand-alone graphical function editor panel.
+//  Graphical function editor panel.
 //
+// Ported with help of an agent from Playground prototype written in Godot.
 
 import CIimgui
 import PoieticCore
@@ -152,14 +153,33 @@ class GraphicalFunctionPanel {
         ImGui.TableHeadersRow()
 
         let sorted = curveView.sortedPoints()
-        for point in sorted {
+        for (index, point) in sorted.enumerated() {
             ImGui.TableNextRow(ImGuiTableRowFlags(ImGuiTableRowFlags_None.rawValue), 0)
-            // TODO: Editable cells — need per-cell buffer management
-            //       and callbacks to update workingPoints ↔ curveView.points
+
+            var x = point.x
+            var y = point.y
+
             ImGui.TableNextColumn()
-            ImGui.TextUnformatted(String(format: "%.2f", point.x))
+            ImGui.PushID(Int32(index * 2))
+            ImGui.PushItemWidth(-1)
+            ImGui.InputDouble("##x", &x, 0, 0, "%.2f")
+            if ImGui.IsItemDeactivatedAfterEdit() {
+                curveView.replacePoint(oldValue: point, newValue: Vector2D(x: x, y: point.y))
+                curveView.fitRange()
+            }
+            ImGui.PopItemWidth()
+            ImGui.PopID()
+
             ImGui.TableNextColumn()
-            ImGui.TextUnformatted(String(format: "%.2f", point.y))
+            ImGui.PushID(Int32(index * 2 + 1))
+            ImGui.PushItemWidth(-1)
+            ImGui.InputDouble("##y", &y, 0, 0, "%.2f")
+            if ImGui.IsItemDeactivatedAfterEdit() {
+                curveView.replacePoint(oldValue: point, newValue: Vector2D(x: point.x, y: y))
+                curveView.fitRange()
+            }
+            ImGui.PopItemWidth()
+            ImGui.PopID()
         }
         ImGui.EndTable()
 
