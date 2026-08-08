@@ -45,10 +45,10 @@ class GraphicalFunctionPanel {
 
     // MARK: - Range fields (string buffers for ImGui input)
 
-    private var minXStr: String = "0.0"
-    private var maxXStr: String = "100.0"
-    private var minYStr: String = "0.0"
-    private var maxYStr: String = "100.0"
+    private var minXStr = InputTextBuffer("0.0")
+    private var maxXStr = InputTextBuffer("100.0")
+    private var minYStr = InputTextBuffer("0.0")
+    private var maxYStr = InputTextBuffer("100.0")
 
     // MARK: - Interpolation radio state
 
@@ -184,16 +184,63 @@ class GraphicalFunctionPanel {
         let fieldWidth: Float = 80
 
         ImGui.PushItemWidth(fieldWidth)
-        // TODO: Use InputText or InputDouble with proper buffer management
-        if ImGui.InputText("Min X", &minXStr, 0, 0) { /* range changed */ }
+        if ImGui.InputText("Min X", buffer: minXStr) { applyRange(.minX) }
         ImGui.SameLine()
-        if ImGui.InputText("Max X", &maxXStr, 0, 0) { /* range changed */ }
+        if ImGui.InputText("Max X", buffer: maxXStr) { applyRange(.maxX) }
         ImGui.SameLine()
-        if ImGui.InputText("Min Y", &minYStr, 0, 0) { /* range changed */ }
+        if ImGui.InputText("Min Y", buffer: minYStr) { applyRange(.minY) }
         ImGui.SameLine()
-        if ImGui.InputText("Max Y", &maxYStr, 0, 0) { /* range changed */ }
+        if ImGui.InputText("Max Y", buffer: maxYStr) { applyRange(.maxY) }
         ImGui.PopItemWidth()
     }
+
+    private func applyRange(_ field: RangeField) {
+        let buf: InputTextBuffer
+        let current: Double
+        switch field {
+        case .minX: buf = minXStr; current = curveView.minX
+        case .maxX: buf = maxXStr; current = curveView.maxX
+        case .minY: buf = minYStr; current = curveView.minY
+        case .maxY: buf = maxYStr; current = curveView.maxY
+        }
+
+        guard let value = Double(buf.string.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+            // Revert to previous
+            buf.string = String(format: "%.2f", current)
+            return
+        }
+
+        var newMinX = curveView.minX
+        var newMaxX = curveView.maxX
+        var newMinY = curveView.minY
+        var newMaxY = curveView.maxY
+
+        switch field {
+        case .minX: newMinX = value
+        case .maxX: newMaxX = value
+        case .minY: newMinY = value
+        case .maxY: newMaxY = value
+        }
+
+        // Ensure max > min
+        if newMinX >= newMaxX {
+            if field == .minX { newMaxX = newMinX + 1 }
+            else { newMinX = newMaxX - 1 }
+        }
+        if newMinY >= newMaxY {
+            if field == .minY { newMaxY = newMinY + 1 }
+            else { newMinY = newMaxY - 1 }
+        }
+
+        curveView.minX = newMinX
+        curveView.maxX = newMaxX
+        curveView.minY = newMinY
+        curveView.maxY = newMaxY
+
+        syncRangeFieldsFromCurve()
+    }
+
+    private enum RangeField { case minX, maxX, minY, maxY }
 
     // MARK: - Interpolation controls
 
@@ -270,10 +317,10 @@ class GraphicalFunctionPanel {
     }
 
     private func syncRangeFieldsFromCurve() {
-        minXStr = String(format: "%.2f", curveView.minX)
-        maxXStr = String(format: "%.2f", curveView.maxX)
-        minYStr = String(format: "%.2f", curveView.minY)
-        maxYStr = String(format: "%.2f", curveView.maxY)
+        minXStr = InputTextBuffer(String(format: "%.2f", curveView.minX))
+        maxXStr = InputTextBuffer(String(format: "%.2f", curveView.maxX))
+        minYStr = InputTextBuffer(String(format: "%.2f", curveView.minY))
+        maxYStr = InputTextBuffer(String(format: "%.2f", curveView.maxY))
     }
 
     private func syncInterpolationRadio() {

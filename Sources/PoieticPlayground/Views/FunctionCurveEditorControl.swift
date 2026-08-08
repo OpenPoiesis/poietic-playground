@@ -75,16 +75,9 @@ class FunctionCurveEditorControl {
         // Background
         drawList?.pointee.AddRectFilled(origin, origin + size, backgroundColor)
 
-        // Grid
         drawGrid(drawList: drawList, origin: origin, size: size)
-
-        // Axes
         drawAxes(drawList: drawList, origin: origin, size: size)
-
-        // Curve
         drawCurve(drawList: drawList, origin: origin, size: size)
-
-        // Points
         drawPoints(drawList: drawList, origin: origin, size: size)
 
         // Invisible interaction area
@@ -112,7 +105,7 @@ class FunctionCurveEditorControl {
     // MARK: - Coordinate transforms
 
     func valueToScreen(_ value: Vector2D, origin: ImVec2, size: ImVec2) -> ImVec2 {
-        let x = Float((value.x - minX) / (maxX - minX)) * size.x + origin.x
+        let x = origin.x +          Float((value.x - minX) / (maxX - minX)) * size.x
         let y = origin.y + size.y - Float((value.y - minY) / (maxY - minY)) * size.y
         return ImVec2(x, y)
     }
@@ -126,11 +119,33 @@ class FunctionCurveEditorControl {
     // MARK: - Grid & axes drawing (stubs)
 
     private func drawGrid(drawList: UnsafeMutablePointer<ImDrawList>?, origin: ImVec2, size: ImVec2) {
-        // TODO: Draw vertical and horizontal grid lines
+        for i in 1..<gridSegmentsX {
+            let x = origin.x + (size.x / Float(gridSegmentsX)) * Float(i)
+            drawList?.pointee.AddLine(
+                ImVec2(x, origin.y),
+                ImVec2(x, origin.y + size.y),
+                gridColor, 1.0)
+        }
+        for i in 1..<gridSegmentsY {
+            let y = origin.y + (size.y / Float(gridSegmentsY)) * Float(i)
+            drawList?.pointee.AddLine(
+                ImVec2(origin.x, y),
+                ImVec2(origin.x + size.x, y),
+                gridColor, 1.0)
+        }
     }
 
     private func drawAxes(drawList: UnsafeMutablePointer<ImDrawList>?, origin: ImVec2, size: ImVec2) {
-        // TODO: Draw X and Y axes
+        // X-axis at the bottom
+        drawList?.pointee.AddLine(
+            ImVec2(origin.x, origin.y + size.y),
+            ImVec2(origin.x + size.x, origin.y + size.y),
+            axisColor, 2.0)
+        // Y-axis at the left
+        drawList?.pointee.AddLine(
+            ImVec2(origin.x, origin.y),
+            ImVec2(origin.x, origin.y + size.y),
+            axisColor, 2.0)
     }
 
     // MARK: - Curve drawing (stub — delegates to GraphicalFunction math)
@@ -138,8 +153,18 @@ class FunctionCurveEditorControl {
     private func drawCurve(drawList: UnsafeMutablePointer<ImDrawList>?, origin: ImVec2, size: ImVec2) {
         guard points.count >= 2 else { return }
         let sorted = sortedPoints()
-        // TODO: Sample the curve using GraphicalFunction.apply(x:) at regular intervals,
-        //       convert to screen space, and draw as a polyline.
+        let path = GraphicalFunction.bezierPath(sortedPoints: sorted, method: interpolation)
+        let screenPath = path.transform(valueToScreenTransform(origin: origin, size: size))
+        drawList?.pointee.StrokePath(screenPath, color: Color(curveColor), lineWidth: 2.0)
+    }
+
+    /// Returns an AffineTransform that maps value-space to screen-space.
+    private func valueToScreenTransform(origin: ImVec2, size: ImVec2) -> AffineTransform {
+        let sx = Double(size.x) / (maxX - minX)
+        let sy = -Double(size.y) / (maxY - minY)
+        let tx = Double(origin.x) - minX * sx
+        let ty = Double(origin.y + size.y) + minY * (-sy)
+        return AffineTransform(a: sx, b: 0, c: 0, d: sy, tx: tx, ty: ty)
     }
 
     private func drawPoints(drawList: UnsafeMutablePointer<ImDrawList>?, origin: ImVec2, size: ImVec2) {
