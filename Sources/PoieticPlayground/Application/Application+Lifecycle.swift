@@ -77,8 +77,17 @@ extension Application {
     }
     func processInput() {
         if let actionName = globalShortcutAction() {
-            self.handleAction(actionName)
+            var actionHandled = false
+            for panel in panels {
+                if panel.isVisible && panel.handleAction(actionName) {
+                    actionHandled = true
+                }
+            }
+            if !actionHandled {
+                self.handleAction(actionName)
+            }
         }
+        
     }
     
     func update(_ timeDelta: Double) {
@@ -108,12 +117,12 @@ extension Application {
 
         // Update UI components
         canvas.update(timeDelta)
-        inspector.update(timeDelta)
         toolBar.update(timeDelta)
         alertPanel.update(timeDelta)
-        issuesPanel.update(timeDelta)
-        controlBar.update(timeDelta)
-        graphicFunctionPanel.update(timeDelta)
+
+        for panel in panels {
+            panel.update(timeDelta)
+        }
         
         // TODO: Is this the right place to call this?
         document?.run(schedule: DocumentCleanupSchedule.self)
@@ -122,21 +131,15 @@ extension Application {
     func draw() {
         mainMenu()
         canvas.draw()
-        inspector.draw()
-
-        settingsPanel.draw()
-        toolBar.draw()
-        aboutPanel.draw()
-        issuesPanel.draw()
-        controlBar.draw()
-        dashboard.draw(document: document)
-
-        filePicker.draw()
-        alertPanel.draw()
-        graphicFunctionPanel.draw()
         
-        // Help
-        keyboardShortcutsPanel.draw()
+        toolBar.draw()
+        alertPanel.draw()
+        filePicker.draw()
+
+        for panel in panels {
+            guard panel.isVisible else { continue }
+            panel.draw()
+        }
     }
     
     func processUnhandledInput() {

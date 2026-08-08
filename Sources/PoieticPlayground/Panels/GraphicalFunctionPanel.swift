@@ -21,8 +21,10 @@ import Diagramming
 ///
 /// Corresponds to `GraphicalCurvesEditorWindow` in the Godot prototype.
 @MainActor
-class GraphicalFunctionPanel {
-
+class GraphicalFunctionPanel: Panel {
+    var isVisible: Bool = true
+    var isFocused: Bool = false
+    
     // MARK: - State
 
     weak var document: Document?
@@ -104,13 +106,26 @@ class GraphicalFunctionPanel {
         syncRangeFieldsFromCurve()
         syncInterpolationRadio()
     }
+    
+    func handleAction(_ actionName: String) -> Bool {
+        guard isVisible && isFocused else { return false }
+        switch actionName {
+        case "delete":
+            if let pointIndex = curveView.selectedPointIndex {
+                curveView.removePoint(at: pointIndex)
+            }
+            return true
+        default:
+            return false
+        }
+    }
 
     // MARK: - Drawing
 
     func draw() {
         guard let document else { return }
-
         ImGui.Begin("Graphical Function Editor")
+        isFocused = ImGui.IsWindowFocused(ImGuiFocusedFlags(ImGuiFocusedFlags_RootAndChildWindows.rawValue))
 
         if !isActive {
             ImGui.TextUnformatted("Select a single Graphical Function object to edit.")
@@ -196,7 +211,7 @@ class GraphicalFunctionPanel {
             }
         }
     }
-
+    
     // MARK: - Range controls
 
     private func drawRangeControls() {

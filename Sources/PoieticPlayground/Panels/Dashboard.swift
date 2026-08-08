@@ -11,13 +11,15 @@ import PoieticFlows
 
 /// Makeshift dashboard.
 @MainActor
-class Dashboard {
+class Dashboard: Panel {
+    var document: Document?
     static let ChartSize = ImVec2(100, 80)
     var isVisible: Bool = true
     var chartViews: [ChartView] = []
     
     func bind(_ document: Document) {
         chartViews.removeAll()
+        self.document = document
     }
     
     func onDesignFrameChanged(_ document: Document) {
@@ -32,7 +34,7 @@ class Dashboard {
         }
     }
     
-    func draw(document: Document?) {
+    func draw() {
         guard isVisible else { return }
         
         ImGui.Begin("Dashboard", &isVisible,
@@ -73,6 +75,9 @@ class Dashboard {
         }
         
         ImGui.End()
-
     }
+    func update(_ timeDelta: Double) {
+        // Nothing
+    }
+    
 }

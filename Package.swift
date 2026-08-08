@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "PoieticPlayground",
-    platforms: [ .macOS(.v15), ],
+    platforms: [ .macOS(.v25), ],
     products: [
         .executable(
             name: "PoieticPlayground",
