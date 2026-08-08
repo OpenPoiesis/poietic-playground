@@ -23,7 +23,6 @@ import Diagramming
 @MainActor
 class GraphicalFunctionPanel: Panel {
     var isVisible: Bool = true
-    var isFocused: Bool = false
     
     // MARK: - State
 
@@ -58,6 +57,11 @@ class GraphicalFunctionPanel: Panel {
     private var interpolationLinear: Bool = true
     private var interpolationStep: Bool = false
     private var interpolationCubic: Bool = false
+
+    // MARK: - Focus & tabs
+
+    private var isFocused: Bool = false
+    private var activeTab: Int32 = 0  // 0 = Graphical, 1 = Table
 
     // MARK: - Lifecycle
 
@@ -123,7 +127,7 @@ class GraphicalFunctionPanel: Panel {
     // MARK: - Drawing
 
     func draw() {
-        guard let document else { return }
+        guard document != nil else { return }
         ImGui.Begin("Graphical Function Editor")
         isFocused = ImGui.IsWindowFocused(ImGuiFocusedFlags(ImGuiFocusedFlags_RootAndChildWindows.rawValue))
 
@@ -133,23 +137,34 @@ class GraphicalFunctionPanel: Panel {
             return
         }
 
-        // -- Curve editor --
-        let curveSize = ImVec2(Float(ImGui.GetContentRegionAvail().x), 350)
-        ImGui.BeginChild("##curve_area", curveSize, ImGuiChildFlags(ImGuiChildFlags_Borders.rawValue))
-        
-        curveView.draw(size: curveSize)
-        ImGui.EndChild()
+        // -- Tab bar: Graphical | Table --
+        if ImGui.BeginTabBar("##editor_tabs") {
+            if ImGui.BeginTabItem("Graphical") {
+                activeTab = 0
 
-        // -- Points table --
-        drawPointsTable()
+                let curveSize = ImVec2(Float(ImGui.GetContentRegionAvail().x), 350)
+                ImGui.BeginChild("##curve_area", curveSize, ImGuiChildFlags(ImGuiChildFlags_Borders.rawValue))
+                curveView.draw(size: curveSize)
+                ImGui.EndChild()
 
-        // -- Range controls --
+                if ImGui.Button("Remove", ImVec2(120, 0)) {
+                    if let index = curveView.selectedPointIndex {
+                        curveView.removePoint(at: index)
+                    }
+                }
+
+                ImGui.EndTabItem()
+            }
+            if ImGui.BeginTabItem("Table") {
+                activeTab = 1
+                drawPointsTable()
+                ImGui.EndTabItem()
+            }
+            ImGui.EndTabBar()
+        }
+
         drawRangeControls()
-
-        // -- Interpolation --
         drawInterpolationControls()
-
-        // -- Action buttons --
         drawActionButtons()
 
         ImGui.End()
@@ -298,7 +313,7 @@ class GraphicalFunctionPanel: Panel {
 
     private func drawActionButtons() {
         ImGui.Spacing()
-        if ImGui.Button("Set", ImVec2(120, 0)) {
+        if ImGui.Button("Apply", ImVec2(120, 0)) {
             commitChanges()
         }
         ImGui.SameLine()
