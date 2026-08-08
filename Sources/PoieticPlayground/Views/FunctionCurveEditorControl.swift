@@ -2,6 +2,8 @@
 //  FunctionCurveEditorView.swift
 //  PoieticPlayground
 //
+//  Created by Stefan Urbanek on 08/08/2026.
+
 //  Curve editor widget. Reusable by both the panel and the inline editor.
 //
 // Ported with help of an agent from Playground prototype written in Godot.
@@ -106,7 +108,8 @@ class FunctionCurveEditorControl {
                 handleMouseDrag(screenPos: mousePos, origin: origin, size: size)
             }
         }
-        ImGui.SetCursorPos(cursor)
+        ImGui.SetCursorPos(ImVec2(cursor.x, cursor.y + size.y))
+//        ImGui.SetCursorPos(cursor)
     }
 
     // MARK: - Coordinate transforms

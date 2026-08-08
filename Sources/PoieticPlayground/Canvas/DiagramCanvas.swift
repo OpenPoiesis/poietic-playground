@@ -111,6 +111,7 @@ class DiagramCanvas: View {
                                     editor: NumericValueInlineEditor(attribute: "delay_duration", iconKey: .timeWindow))
         self.editorManager.register(name: "smooth",
                                     editor: NumericValueInlineEditor(attribute: "window_time", iconKey: .timeWindow))
+        self.editorManager.register(name: "graphical_function", editor: GraphicalFunctionInlineEditor())
     }
     
     func bind(_ document: Document) {
