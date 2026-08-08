@@ -64,6 +64,9 @@ class Application {
     let controlBar: ControlBar
     let dashboard: Dashboard
     
+    // Inline Editors
+    var editorManager: InlineEditorManager
+
     // ## GUI
     //
     // ## The Document – Design and World
@@ -110,7 +113,18 @@ class Application {
             ConnectTool(),
             PanTool(),
         ]
-
+        
+        // Register inline editors
+        editorManager = InlineEditorManager()
+        self.editorManager.register(name: "name", editor: NameInlineEditor())
+        self.editorManager.register(name: "formula", editor: FormulaInlineEditor())
+        self.editorManager.register(name: "delay",
+                                    editor: NumericValueInlineEditor(attribute: "delay_duration", iconKey: .timeWindow))
+        self.editorManager.register(name: "smooth",
+                                    editor: NumericValueInlineEditor(attribute: "window_time", iconKey: .timeWindow))
+        self.editorManager.register(name: "graphical_function",
+                                    editor: GraphicalFunctionInlineEditor(panel: graphicFunctionPanel))
+        canvas.editorManager = editorManager
         
         Self._shared = self
     }

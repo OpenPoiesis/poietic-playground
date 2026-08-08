@@ -25,17 +25,24 @@ import Diagramming
 class GraphicalFunctionInlineEditor: InlineEditor {
 
     static let PopupID = "##graphical_function_inline_editor"
+
+    var justOpened: Bool = false
     var worldPosition: Vector2D = .zero
 
     /// The curve editor subview.
-    private let curveView = FunctionCurveEditorControl()
+    private let curveView = CurveEditorControl()
 
     /// Object being edited.
     private var editingObjectID: ObjectID?
     private var grabFocus: Bool = false
 
+    var fullEditorPanel: GraphicalFunctionPanel? = nil
     // MARK: - InlineEditor overrides
 
+    init(panel: GraphicalFunctionPanel? = nil) {
+        self.fullEditorPanel = panel
+    }
+    
     override func open(for entity: RuntimeEntity) -> Bool {
         guard let object = entity.designObject,
               object.type.hasTrait(.GraphicalFunction),
@@ -50,9 +57,10 @@ class GraphicalFunctionInlineEditor: InlineEditor {
         curveView.points = rawPoints
 
         let methodName: String = object["interpolation_method"] ?? "linear"
-        curveView.interpolation = parseInterpolation(methodName)
+        curveView.interpolation = GraphicalFunction.InterpolationMethod(rawValue: methodName) ?? .linear
         curveView.fitRange()
 
+        justOpened = true
         return true
     }
 
@@ -70,8 +78,9 @@ class GraphicalFunctionInlineEditor: InlineEditor {
                         | ImGuiWindowFlags_NoMove
                         | ImGuiWindowFlags_AlwaysAutoResize
 
-        if !ImGui.IsPopupOpen(Self.PopupID) {
+        if justOpened {
             ImGui.OpenPopup(Self.PopupID)
+            justOpened = false
         }
 
         if ImGui.BeginPopup(Self.PopupID, flags) {
@@ -82,12 +91,7 @@ class GraphicalFunctionInlineEditor: InlineEditor {
 
             let curveSize = ImVec2(220, 180)
             if grabFocus { ImGui.SetKeyboardFocusHere() }
-            ImGui.BeginChild("##curve_scroll", curveSize, ImGuiChildFlags(ImGuiChildFlags_Borders.rawValue))
             curveView.draw(size: curveSize)
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + curveSize.y)
-            ImGui.Dummy(ImVec2())
-            ImGui.EndChild()
-
             let escapePressed = ImGui.IsKeyPressed(ImGuiKey(ImGuiKey_Escape.rawValue), false)
 
             if escapePressed {
@@ -97,8 +101,12 @@ class GraphicalFunctionInlineEditor: InlineEditor {
 
             ImGui.Separator()
 
-            if ImGui.Button("Open Editor", ImVec2(100, 0)) {
-                // How to reference a panel in the Application?
+            if let fullEditorPanel,
+               ImGui.Button("Open Editor", ImVec2(100, 0))
+            {
+                document?.changeSelection(.replaceAllWithOne(editingObjectID))
+                fullEditorPanel.isVisible = true
+                ImGui.CloseCurrentPopup()
                 return true
             }
 
@@ -112,6 +120,10 @@ class GraphicalFunctionInlineEditor: InlineEditor {
                 ImGui.CloseCurrentPopup()
                 return true
             }
+        }
+        else {
+            ImGui.CloseCurrentPopup()
+            return true
         }
 
         return false
@@ -131,27 +143,6 @@ class GraphicalFunctionInlineEditor: InlineEditor {
 
         let sorted = curveView.sortedPoints()
         mutable["graphical_function_points"] = Variant(sorted)
-        mutable["interpolation_method"] = Variant(interpolationMethodName(curveView.interpolation))
-    }
-
-    // MARK: - Helpers
-
-    // TODO: Remove this. Use InterpolationMethod directly
-    private func parseInterpolation(_ name: String) -> GraphicalFunction.InterpolationMethod {
-        switch name.lowercased() {
-        case "step": return .step
-        case "cubic": return .cubic
-        default: return .linear
-        }
-    }
-
-    // TODO: Remove this. Use InterpolationMethod directly
-    private func interpolationMethodName(_ method: GraphicalFunction.InterpolationMethod) -> String {
-        switch method {
-        case .step: return "step"
-        case .cubic: return "cubic"
-        case .linear: return "linear"
-        default: return "linear"
-        }
+        mutable["interpolation_method"] = Variant(curveView.interpolation.rawValue)
     }
 }

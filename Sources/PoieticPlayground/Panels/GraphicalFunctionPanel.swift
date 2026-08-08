@@ -22,7 +22,7 @@ import Diagramming
 /// Corresponds to `GraphicalCurvesEditorWindow` in the Godot prototype.
 @MainActor
 class GraphicalFunctionPanel: Panel {
-    var isVisible: Bool = true
+    var isVisible: Bool = false
     
     // MARK: - State
 
@@ -32,7 +32,7 @@ class GraphicalFunctionPanel: Panel {
     private var editingObjectID: ObjectID?
 
     /// The curve editor subview.
-    private let curveView = FunctionCurveEditorControl()
+    private let curveView = CurveEditorControl()
 
     /// Points being edited — a working copy of the design object's data.
     private var workingPoints: [Vector2D] = []
@@ -73,7 +73,6 @@ class GraphicalFunctionPanel: Panel {
         // Nothing yet
     }
     
-    /// Called when the document selection changes.
     func onSelectionChanged(_ document: Document) {
         let selection = document.selection
         guard selection.ids.count == 1,
@@ -91,22 +90,18 @@ class GraphicalFunctionPanel: Panel {
         isActive = true
         editingObjectID = objectID
 
-        // Read points from design object
         let rawPoints: [Vector2D] = object["graphical_function_points"] ?? []
         workingPoints = rawPoints
         originalPoints = rawPoints
 
-        // Read interpolation method
         let methodName: String = object["interpolation_method"] ?? "linear"
         workingInterpolation = parseInterpolation(methodName)
         originalInterpolation = workingInterpolation
 
-        // Push to curve view
         curveView.points = workingPoints
         curveView.interpolation = workingInterpolation
         curveView.fitRange()
 
-        // Sync range fields
         syncRangeFieldsFromCurve()
         syncInterpolationRadio()
     }
@@ -213,7 +208,7 @@ class GraphicalFunctionPanel: Panel {
         }
         ImGui.EndTable()
 
-        // Add / Remove buttons
+        // Buttons: [Add] [Remove]
         if ImGui.Button("Add Point", ImVec2(120, 0)) {
             let midX = (curveView.minX + curveView.maxX) / 2
             let midY = (curveView.minY + curveView.maxY) / 2

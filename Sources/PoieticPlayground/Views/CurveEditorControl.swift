@@ -21,7 +21,7 @@ import PoieticFlows
 ///
 /// Corresponds to `FunctionCurveEditor` in the Godot prototype.
 @MainActor
-class FunctionCurveEditorControl {
+class CurveEditorControl {
 
     // MARK: - Data
 
@@ -95,7 +95,6 @@ class FunctionCurveEditorControl {
         let isActive = ImGui.IsItemActive()
         let isHovered = ImGui.IsItemHovered()
         let mousePos = ImGui.GetMousePos()
-//        let localPos = ImVec2(mousePos.x - origin.x, size.y - (mousePos.y - origin.y)) // flip Y
 
         if isHovered {
             if ImGui.IsMouseClicked(ImGuiMouseButton(ImGuiMouseButton_Left.rawValue), false) {
@@ -109,7 +108,6 @@ class FunctionCurveEditorControl {
             }
         }
         ImGui.SetCursorPos(ImVec2(cursor.x, cursor.y + size.y))
-//        ImGui.SetCursorPos(cursor)
     }
 
     // MARK: - Coordinate transforms
