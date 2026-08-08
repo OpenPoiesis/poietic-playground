@@ -86,7 +86,7 @@ class DiagramCanvas: View {
     var gridSize: Double = 50.0
     var showGrid = true
 
-    var editorManager: InlineEditorManager
+    var editorManager: InlineEditorManager? = nil
 
     init(document: Document? = nil) {
         self.document = document
@@ -104,20 +104,13 @@ class DiagramCanvas: View {
         self.overlays.add(self.highlightOverlay)
 
         self.editorManager = InlineEditorManager()
-        
-        self.editorManager.register(name: "name", editor: NameInlineEditor())
-        self.editorManager.register(name: "formula", editor: FormulaInlineEditor())
-        self.editorManager.register(name: "delay",
-                                    editor: NumericValueInlineEditor(attribute: "delay_duration", iconKey: .timeWindow))
-        self.editorManager.register(name: "smooth",
-                                    editor: NumericValueInlineEditor(attribute: "window_time", iconKey: .timeWindow))
     }
     
     func bind(_ document: Document) {
         self.scene = nil
         self.diagram = nil
         self.document = document
-        self.editorManager.bind(document: document, canvas: self)
+        self.editorManager?.bind(document: document, canvas: self)
     }
     
     /// Convert screen coordinates to world coordinates
@@ -276,7 +269,7 @@ class DiagramCanvas: View {
         try! overlays.uploadIfNeeded()
         drawOverlayTextures()
        
-        editorManager.draw()
+        editorManager?.draw()
         
         ImGui.EndChild()
         ImGui.End()
@@ -448,7 +441,7 @@ class DiagramCanvas: View {
               let entity = document.world.entity(objectID)
         else { return }
         
-        self.editorManager.openEditor(editorName, for: entity)
+        self.editorManager?.openEditor(editorName, for: entity)
     }
 
     func openSecondaryInlineEditorForSelection() {
@@ -459,17 +452,16 @@ class DiagramCanvas: View {
         else { return }
        
         if object.type.hasTrait(.Formula) {
-            self.editorManager.openEditor("formula", for: entity)
+            self.editorManager?.openEditor("formula", for: entity)
         }
         else if object.type.hasTrait(.Delay) {
-            self.editorManager.openEditor("delay", for: entity)
+            self.editorManager?.openEditor("delay", for: entity)
         }
         else if object.type.hasTrait(.Smooth) {
-            self.editorManager.openEditor("smooth", for: entity)
+            self.editorManager?.openEditor("smooth", for: entity)
         }
         else if object.type.hasTrait(.GraphicalFunction) {
-            // TODO: Implement graphical function editor
-            self.editorManager.openEditor("graphical_function", for: entity)
+            self.editorManager?.openEditor("graphical_function", for: entity)
         }
     }
 }

@@ -55,6 +55,8 @@ class Application {
     let settingsPanel: SettingsPanel
     let keyboardShortcutsPanel: KeyboardShortcutsPanel
     let issuesPanel: IssuesPanel
+    let graphicFunctionPanel: GraphicalFunctionPanel
+    var panels: [any Panel] = []
     
     var canvasTools: [CanvasTool]
     var currentTool: CanvasTool? { toolBar.currentTool }
@@ -62,6 +64,9 @@ class Application {
     let controlBar: ControlBar
     let dashboard: Dashboard
     
+    // Inline Editors
+    var editorManager: InlineEditorManager
+
     // ## GUI
     //
     // ## The Document – Design and World
@@ -76,26 +81,54 @@ class Application {
         self.player = ResultPlayer()
         
         // User Interface
-        self.inspector = InspectorPanel()
-        self.toolBar = ToolBar()
-        self.controlBar = ControlBar()
         self.canvas = DiagramCanvas()
-        self.settingsPanel = SettingsPanel()
-        self.issuesPanel = IssuesPanel()
+
+        // Special panels
+        self.toolBar = ToolBar()
         self.alertPanel = AlertPanel()
-        self.aboutPanel = AboutPanel()
-        self.dashboard = Dashboard()
         self.filePicker = FilePickerPanel()
+
+        // Regualr Panels
+        panels = []
+        self.inspector = InspectorPanel()
+        panels.append(self.inspector)
+        self.aboutPanel = AboutPanel()
+        panels.append(self.aboutPanel)
+        self.controlBar = ControlBar()
+        panels.append(self.controlBar)
+        self.settingsPanel = SettingsPanel()
+        panels.append(self.settingsPanel)
+        self.issuesPanel = IssuesPanel()
+        panels.append(self.issuesPanel)
+        self.dashboard = Dashboard()
+        panels.append(self.dashboard)
         self.keyboardShortcutsPanel = KeyboardShortcutsPanel()
-        
+        panels.append(self.keyboardShortcutsPanel)
+        self.graphicFunctionPanel = GraphicalFunctionPanel()
+        panels.append(self.graphicFunctionPanel)
+
         self.canvasTools = [
             SelectionTool(),
             PlacementTool(),
             ConnectTool(),
             PanTool(),
         ]
+        
+        // Register inline editors
+        editorManager = InlineEditorManager()
+        self.editorManager.register(name: "name", editor: NameInlineEditor())
+        self.editorManager.register(name: "formula", editor: FormulaInlineEditor())
+        self.editorManager.register(name: "delay",
+                                    editor: NumericValueInlineEditor(attribute: "delay_duration", iconKey: .timeWindow))
+        self.editorManager.register(name: "smooth",
+                                    editor: NumericValueInlineEditor(attribute: "window_time", iconKey: .timeWindow))
+        self.editorManager.register(name: "graphical_function",
+                                    editor: GraphicalFunctionInlineEditor(panel: graphicFunctionPanel))
+        canvas.editorManager = editorManager
+        
         Self._shared = self
     }
+   
     
     func applicationSessionDebugWindow() {
         ImGui.Begin("Application Session")

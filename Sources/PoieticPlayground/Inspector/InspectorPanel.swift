@@ -170,7 +170,7 @@ class InspectorPanel: Panel {
     
     func draw() {
         guard isVisible, let document else { return }
-        ImGui.Begin("Inspector")
+        ImGui.Begin("Inspector", &isVisible)
         
         drawTitle(document)
 
