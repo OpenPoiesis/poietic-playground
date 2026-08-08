@@ -55,6 +55,7 @@ class Application {
     let settingsPanel: SettingsPanel
     let keyboardShortcutsPanel: KeyboardShortcutsPanel
     let issuesPanel: IssuesPanel
+    let graphicFunctionPanel: GraphicalFunctionPanel
     
     var canvasTools: [CanvasTool]
     var currentTool: CanvasTool? { toolBar.currentTool }
@@ -87,6 +88,7 @@ class Application {
         self.dashboard = Dashboard()
         self.filePicker = FilePickerPanel()
         self.keyboardShortcutsPanel = KeyboardShortcutsPanel()
+        self.graphicFunctionPanel = GraphicalFunctionPanel()
         
         self.canvasTools = [
             SelectionTool(),

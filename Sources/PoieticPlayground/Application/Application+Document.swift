@@ -41,6 +41,8 @@ extension Application {
         document.addObserver(player.onDesignFrameChanged, on: .designFrameChanged)
         document.addObserver(player.onSimulationFailed, on: .simulationFailed)
         document.addObserver(dashboard.onDesignFrameChanged, on: .designFrameChanged)
+
+        document.addObserver(graphicFunctionPanel.onSelectionChanged, on: .selectionChanged)
     }
     
     func bindToDocument(_ document: Document) {
@@ -51,6 +53,7 @@ extension Application {
         issuesPanel.bind(document)
         player.bind(document)
         dashboard.bind(document)
+        graphicFunctionPanel.bind(document)
         
         for tool in canvasTools {
             tool.bind(canvas: canvas, document: document)

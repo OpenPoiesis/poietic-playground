@@ -113,6 +113,7 @@ extension Application {
         alertPanel.update(timeDelta)
         issuesPanel.update(timeDelta)
         controlBar.update(timeDelta)
+        graphicFunctionPanel.update(timeDelta)
         
         // TODO: Is this the right place to call this?
         document?.run(schedule: DocumentCleanupSchedule.self)
@@ -132,6 +133,7 @@ extension Application {
 
         filePicker.draw()
         alertPanel.draw()
+        graphicFunctionPanel.draw()
         
         // Help
         keyboardShortcutsPanel.draw()
