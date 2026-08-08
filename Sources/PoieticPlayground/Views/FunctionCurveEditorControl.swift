@@ -44,13 +44,21 @@ class FunctionCurveEditorControl {
 
     // MARK: - Colors
     // TODO: resolved colors from style
-    var backgroundColor: UInt32 = 0xFF282828
-    var gridColor: UInt32 = 0xFF505050
-    var axisColor: UInt32 = 0xFF808080
-    var curveColor: UInt32 = 0xFF66B2FF
-    var pointNormalColor: UInt32 = 0xFFCCCCCC
-    var pointSelectedColor: UInt32 = 0xFFFFDD44
-    var pointDraggingColor: UInt32 = 0xFFFF8855
+    var backgroundColor: UInt32   = 0xFFFFFFFF   // crisp white
+    var gridColor: UInt32         = 0xFFE0E0E8   // cool light gray
+    var axisColor: UInt32         = 0xFFB0B0B8   // mid gray
+    var curveColor: UInt32        = 0xFF3B82D0   // medium blue, visible on white
+    var pointNormalColor: UInt32  = 0xFF585860   // dark slate
+    var pointSelectedColor: UInt32 = 0xFFD4980A   // amber gold
+    var pointDraggingColor: UInt32 = 0xFFE04830   // warm red
+    // Dark - for future theming
+    //    var backgroundColor: UInt32   = 0xFF1E1E28   // charcoal, near-black with blue undertone
+    //    var gridColor: UInt32         = 0xFF3A3A48   // muted slate
+    //    var axisColor: UInt32         = 0xFF686878   // mid gray
+    //    var curveColor: UInt32        = 0xFF5E9CF4   // soft blue
+    //    var pointNormalColor: UInt32  = 0xFFC8C8D0   // light silver
+    //    var pointSelectedColor: UInt32 = 0xFFF0C944   // warm gold
+    //    var pointDraggingColor: UInt32 = 0xFFFF7744   // vivid orange
 
     // MARK: - Interaction state
 

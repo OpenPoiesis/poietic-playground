@@ -142,6 +142,9 @@ extension Application {
                 if ImGui.MenuItem("Show Issues", nil, &issuesPanel.isVisible) {
                     // Nothing
                 }
+                if ImGui.MenuItem("Show Graphical Function Panel", nil, &graphicFunctionPanel.isVisible) {
+                    // Nothing
+                }
                 ImGui.Separator()
                 if ImGui.MenuItem("Show Toolbar", nil, &toolBar.isVisible) {
                     // Nothing

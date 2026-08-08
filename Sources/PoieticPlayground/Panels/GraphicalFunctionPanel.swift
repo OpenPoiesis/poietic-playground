@@ -128,7 +128,7 @@ class GraphicalFunctionPanel: Panel {
 
     func draw() {
         guard document != nil else { return }
-        ImGui.Begin("Graphical Function Editor")
+        ImGui.Begin("Graphical Function Editor", &isVisible)
         isFocused = ImGui.IsWindowFocused(ImGuiFocusedFlags(ImGuiFocusedFlags_RootAndChildWindows.rawValue))
 
         if !isActive {
