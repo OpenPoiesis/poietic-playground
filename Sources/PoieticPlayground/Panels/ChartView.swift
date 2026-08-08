@@ -85,6 +85,20 @@ class ChartView {
         else { return }
         
         var wrap = _TimeSeriesWrapper(series: timeSeries)
+
+        // TODO: Use style from CanvasStyle
+        let color: Color
+        if let key = chartSeries.colorKey,
+           let seriesColor = DefaultAdaptableColors[key]
+        {
+            color = seriesColor
+        }
+        else {
+            color = Color(gray: 0.5)
+        }
+
+        ImGui.PushStyleColor(ImGuiCol(ImGuiCol_FrameBg.rawValue), Color(gray: 0.0, alpha: 0.0).imVecValue)
+        ImGui.PushStyleColor(ImGuiCol(ImGuiCol_PlotLines.rawValue), color.imVecValue)
         ImGui.PlotLines("##plot\(seriesEntity.runtimeID)",
                         chartValueGetter,
                         &wrap,
@@ -94,6 +108,8 @@ class ChartView {
                         Float.greatestFiniteMagnitude,
                         Float.greatestFiniteMagnitude,
                         plotSize)
+        ImGui.PopStyleColor()
+        ImGui.PopStyleColor()
     }
 }
 

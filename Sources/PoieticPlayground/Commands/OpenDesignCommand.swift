@@ -89,10 +89,16 @@ class ExportSVGCommand: Command {
         let scene = composer.createScene(diagram: diagram)
         // TODO: Make user pick a SVG style
         let style = SVGDiagramStyle.Default
+        scene.setComponent(SceneLayoutProvider(provider: style))
+        let system = SceneCompositionSystem(context.world)
 
-        composer.updateData(scene: scene)
-        composer.layout(scene: scene, layout: style)
-        composer.updateGeometry(scene: scene)
+        do {
+            try system.update(context.world)
+        }
+        catch {
+            throw CommandError(String(describing: error), underlyingError: error)
+        }
+
         let renderer = SVGDiagramSceneRenderer(world: context.world)
 
         do {

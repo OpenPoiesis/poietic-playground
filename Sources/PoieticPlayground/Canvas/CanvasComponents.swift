@@ -26,7 +26,7 @@ struct BlockIntent: Component {
 ///
 /// Entity structure with connector intent:
 /// - ``DiagramSceneNode``: primary entity type tag
-/// - ``ConnectorCanvasNode``: tag, picked up by the renderer
+/// - ``ConnectorSceneNode``: tag, picked up by the renderer
 /// - ``ConnectorGlyph``
 /// - ``CanvasNodeStyle/preview``: denotes that this is an intent
 ///
@@ -38,8 +38,8 @@ struct BlockIntent: Component {
 ///
 /// Relationships:
 /// - ``ChildOf``: scene
-/// - ``ConnectorCanvasNode/Origin``: origin canvas block entity for computing geometry
-/// - ``ConnectorCanvasNode/Target``: target canvas block entity or just an entity with position component
+/// - ``ConnectorSceneNode/Origin``: origin canvas block entity for computing geometry
+/// - ``ConnectorSceneNode/Target``: target canvas block entity or just an entity with position component
 ///
 /// - Note: ``ConnectorIntent`` should not have ``RepresentationOf`` relationship, as it does not yet
 /// represent anything.

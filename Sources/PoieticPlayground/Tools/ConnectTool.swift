@@ -117,7 +117,7 @@ class ConnectTool: CanvasTool {
 
         // -- Handle --
         let handle = world.spawn(
-            CanvasNode(),
+            SceneNode(),
             PositionComponent(position: scenePosition)
         )
         handle.relate(ChildOf(), to: scene)
@@ -125,8 +125,8 @@ class ConnectTool: CanvasTool {
         
         // -- Connector --
         let connector = world.spawn(
-            CanvasNode(),
-            ConnectorCanvasNode(),
+            SceneNode(),
+            ConnectorSceneNode(),
             glyph,
             ConnectorIntent(type:type),
             CanvasNodeStyle(class: .connector, modifiers: .preview),
@@ -134,8 +134,8 @@ class ConnectTool: CanvasTool {
         )
         connector.relate(ChildOf(), to: scene)
         connector.relate(MemberOf(), to: scene)
-        connector.relate(ConnectorCanvasNode.Origin(),to: hitTarget.sceneNode)
-        connector.relate(ConnectorCanvasNode.Target(),to: handle)
+        connector.relate(ConnectorSceneNode.Origin(),to: hitTarget.sceneNode)
+        connector.relate(ConnectorSceneNode.Target(),to: handle)
 
         self.intendedConnector = connector
 
@@ -153,9 +153,8 @@ class ConnectTool: CanvasTool {
               let intendedConnector,
               let connectorHandle,
               let intent: ConnectorIntent = intendedConnector.component(),
-              let originSceneNode = intendedConnector.target(ConnectorCanvasNode.Origin.self)
+              let originSceneNode = intendedConnector.target(ConnectorSceneNode.Origin.self)
         else { return .pass}
-        
         
         // -- Handle --
         let worldPosition: Vector2D = canvas.screenToWorld(event.screenPos)
@@ -178,12 +177,12 @@ class ConnectTool: CanvasTool {
             newTargetID = nil
         }
 
-        let oldTarget: RuntimeEntity? = intendedConnector.target(ConnectorCanvasNode.Target.self)
+        let oldTarget: RuntimeEntity? = intendedConnector.target(ConnectorSceneNode.Target.self)
         if let newTargetID {
-            intendedConnector.relate(ConnectorCanvasNode.Target(), to: newTargetID)
+            intendedConnector.relate(ConnectorSceneNode.Target(), to: newTargetID)
         }
         else {
-            intendedConnector.relate(ConnectorCanvasNode.Target(), to: connectorHandle)
+            intendedConnector.relate(ConnectorSceneNode.Target(), to: connectorHandle)
         }
 
         if let oldTarget {
@@ -229,7 +228,7 @@ class ConnectTool: CanvasTool {
         guard let intendedConnector,
               let canvas,
               let intent: ConnectorIntent = intendedConnector.component(),
-              let origin: RuntimeEntity = intendedConnector.target(ConnectorCanvasNode.Origin.self),
+              let origin: RuntimeEntity = intendedConnector.target(ConnectorSceneNode.Origin.self),
               let hitTarget = canvas.hitTarget(screenPosition: event.screenPos),
               case .object(let targetID, _) = hitTarget.kind
         else { return .pass }
@@ -258,15 +257,15 @@ class ConnectTool: CanvasTool {
         guard let entity = world.entity(runtimeID)
         else { return false }
         
-        return entity.contains(BlockCanvasNode.self)
+        return entity.contains(BlockSceneNode.self)
     }
     
     func representedObjectsOfIntent() -> (origin: ObjectID, target: ObjectID)? {
         guard let intent = self.intendedConnector,
-              let originSceneNode: RuntimeEntity = intent.target(ConnectorCanvasNode.Origin.self),
+              let originSceneNode: RuntimeEntity = intent.target(ConnectorSceneNode.Origin.self),
               let origin = originSceneNode.target(RepresentationOf.self),
               let originID = origin.objectID,
-              let targetSceneNode: RuntimeEntity = intent.target(ConnectorCanvasNode.Target.self),
+              let targetSceneNode: RuntimeEntity = intent.target(ConnectorSceneNode.Target.self),
               let target = targetSceneNode.target(RepresentationOf.self),
               let targetID = target.objectID
         else {
@@ -290,13 +289,12 @@ class ConnectTool: CanvasTool {
               let (originObjectID, targetObjectID) = representedObjectsOfIntent()
         else { return }
         let trans = document.createOrReuseTransaction()
-        // FIXME: [IMPORTANT] [REFACTORING] We must use the targetRuntimeID to determine target ID
         trans.createEdge(type, origin: originObjectID, target: targetObjectID)
     }
 
     func removeDragConnector() {
         if let intendedConnector {
-            if let target: RuntimeEntity = intendedConnector.target(ConnectorCanvasNode.Target.self) {
+            if let target: RuntimeEntity = intendedConnector.target(ConnectorSceneNode.Target.self) {
                 target.modify(CanvasNodeStyle.self) {
                     $0.modifiers.subtract(.allowedMask)
                 }

@@ -12,7 +12,7 @@ import Foundation
 class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     static let DebugColor = Color.screenRed.withTransparency(0.5)
 
-    typealias Context = CairoDrawingContext
+    typealias Context = CairoRenderingContext
     
     let style: CanvasStyle
     let debug: Bool
@@ -24,8 +24,8 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     
     func renderBlock(_ entity: RuntimeEntity, context: Context) {
         // TODO: [REFACTORING] Separate pictogram rendering into renderPictogram(...)
-        guard let pictogramNode: RuntimeEntity = entity.target(CanvasNode.Pictogram.self),
-              let pictComp: PictogramCanvasNode = pictogramNode.component()
+        guard let pictogramNode: RuntimeEntity = entity.target(SceneNode.Pictogram.self),
+              let pictComp: PictogramSceneNode = pictogramNode.component()
         else { return }
         let nodeStyle: CanvasNodeStyle? = entity.component()
         
@@ -133,22 +133,31 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     }
     func renderLabel(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .main,
-              let label: LabelCanvasNode = entity.component()
+              let label: LabelSceneNode = entity.component()
         else { return }
         
         let nodeStyle: CanvasNodeStyle? = entity.component()
         let labelStyle = style.labelStyle(class: nodeStyle?.class ?? .label)
+        let offset: Vector2D
+        if let renderingOffset: RenderingOffset = entity.component() {
+            offset = renderingOffset.offset
+        }
+        else {
+            offset = .zero
+        }
         
         context.setFontSize(labelStyle?.size ?? CanvasStyle.DefaultFontSize)
         context.setColor(labelStyle?.color ?? CanvasStyle.DefaultLabelColor)
-        context.showText(label.text, at: .zero)
+        context.showText(label.text, at: offset)
     }
 
     /// - Expectations:
     ///     - parent's represented entity has NumericValueSample()
     func renderValueIndicator(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .indicator,
-              let indicator: ValueIndicatorCanvasNode = entity.component()
+              let visibility: Visibility = entity.component(),
+              visibility == .visible,
+              let indicator: ValueIndicatorSceneNode = entity.component()
         else { return }
 
         // Get probed value and value bounds from the probed entity
@@ -201,7 +210,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
                                frame: Rect2D,
                                value: Double?,
                                bounds: ValueBounds,
-                               orientation: ValueIndicatorCanvasNode.Orientation)
+                               orientation: ValueIndicatorSceneNode.Orientation)
     {
         let ValueIndicatorBarPadding: Double = 2.0
 //        let fullRect = Rect2D(position: -rect.size / 2, size: rect.size)
@@ -309,12 +318,12 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     
     func renderColorSwatch(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .main,
-              let swatch: ColorSwatchCanvasNode = entity.component()
+              let swatch: ColorSwatchSceneNode = entity.component()
         else { return }
         
         let color = style.adaptableColor(swatch.colorKey,
                                          default: DefaultAdaptableColors[swatch.colorKey] ?? Color.init(gray: 0.5))
-        let size = style.metric(.colorSwatchSize, default: ColorSwatchCanvasNode.DefaultSize)
+        let size = style.metric(.colorSwatchSize, default: ColorSwatchSceneNode.DefaultSize)
         context.setColor(color)
         let rect = Rect2D(center: .zero, size: Vector2D(size, size))
         context.fillRect(origin: rect.origin, size: rect.size)

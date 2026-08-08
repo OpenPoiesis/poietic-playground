@@ -37,4 +37,7 @@ struct CairoLayoutProvider: LayoutProvider {
         return Rect2D(origin: Vector2D(ext.x_bearing, ext.y_bearing),
                       size: Vector2D(ext.width, ext.height))
     }
+    func labelRenderingOffset(extents: Rect2D, anchor: Vector2D) -> Vector2D {
+        return -(extents.origin + extents.size * anchor)
+    }
 }

@@ -1,5 +1,5 @@
 //
-//  DrawingContext.swift
+//  CairoRenderingContext.swift
 //  PoieticPlayground
 //
 //  Created by Stefan Urbanek on 23/02/2026.
@@ -8,10 +8,7 @@
 import Ccairo
 import Diagramming
 
-
-// TODO: [REFACTORING] Rename to CairoRenderingContext
-// TODO: [REFACTORING] Add LayoutProvider conformance (requires style)
-struct CairoDrawingContext: RenderingContextProtocol {
+struct CairoRenderingContext: RenderingContextProtocol {
     fileprivate let context: OpaquePointer
     let overlay: OverlayType
     

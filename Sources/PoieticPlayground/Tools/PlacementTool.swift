@@ -87,8 +87,8 @@ class PlacementTool: CanvasTool {
                                                                                                                                                                                                                 
         let blockNode = world.spawn(
             BlockIntent(type: type),
-            CanvasNode(),
-            BlockCanvasNode(),
+            SceneNode(),
+            BlockSceneNode(),
             PositionComponent(position: scenePos),
             CanvasNodeStyle(class: .block, modifiers: .preview),
             DirtyContent.geometry,
@@ -100,13 +100,13 @@ class PlacementTool: CanvasTool {
         let pictogram = notation.pictogram(type.name)
 
         let pictogramNode = world.spawn(
-            CanvasNode(),
-            PictogramCanvasNode(pictogram: pictogram),
+            SceneNode(),
+            PictogramSceneNode(pictogram: pictogram),
             PositionComponent(position: .zero),
             Visibility.visible,
         )
         pictogramNode.relate(ChildOf(), to: blockNode)
-        blockNode.relate(CanvasNode.Pictogram(), to: pictogramNode)
+        blockNode.relate(SceneNode.Pictogram(), to: pictogramNode)
 
 
         self.blockIntent = blockNode
