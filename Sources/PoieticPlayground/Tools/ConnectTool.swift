@@ -289,7 +289,6 @@ class ConnectTool: CanvasTool {
               let (originObjectID, targetObjectID) = representedObjectsOfIntent()
         else { return }
         let trans = document.createOrReuseTransaction()
-        // FIXME: [IMPORTANT] [REFACTORING] We must use the targetRuntimeID to determine target ID
         trans.createEdge(type, origin: originObjectID, target: targetObjectID)
     }
 

@@ -155,6 +155,8 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     ///     - parent's represented entity has NumericValueSample()
     func renderValueIndicator(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .indicator,
+              let visibility: Visibility = entity.component(),
+              visibility == .visible,
               let indicator: ValueIndicatorSceneNode = entity.component()
         else { return }
 
