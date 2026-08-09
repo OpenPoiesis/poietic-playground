@@ -153,11 +153,6 @@ extension Application {
                 if ImGui.MenuItem("Show Metrics", nil, &showMetrics) {
                     ImGui.ShowMetricsWindow()
                 }
-                ImGui.Separator()
-                if ImGui.MenuItem("Debug Diagram Canvas Rendering", nil, &debugCanvasRendering) {
-                    self.canvas.debugRendering = self.debugCanvasRendering
-                    self.canvas.overlays.setAllNeedsRender()
-                }
 
                 ImGui.EndMenu()
             }
@@ -182,7 +177,18 @@ extension Application {
                 }
                 ImGui.EndMenu()
             }
-            
+
+            if ImGui.BeginMenu("Debug") {
+                if ImGui.MenuItem("Objects Panel") {
+                    self.debugDesignPanel.isVisible = true
+                }
+                if ImGui.MenuItem("Debug Diagram Canvas Rendering", nil, &debugCanvasRendering) {
+                    self.canvas.debugRendering = self.debugCanvasRendering
+                    self.canvas.overlays.setAllNeedsRender()
+                }
+                ImGui.EndMenu()
+            }
+
             // Help menu
             if ImGui.BeginMenu("Help") {
                 if ImGui.MenuItem("Keyboard Shortcuts") {

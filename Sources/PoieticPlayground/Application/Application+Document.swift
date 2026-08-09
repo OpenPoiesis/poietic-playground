@@ -43,6 +43,8 @@ extension Application {
         document.addObserver(dashboard.onDesignFrameChanged, on: .designFrameChanged)
 
         document.addObserver(graphicFunctionPanel.onSelectionChanged, on: .selectionChanged)
+
+        document.addObserver(debugDesignPanel.onSelectionChanged, on: .selectionChanged)
     }
     
     func bindToDocument(_ document: Document) {
@@ -55,6 +57,7 @@ extension Application {
         dashboard.bind(document)
         graphicFunctionPanel.bind(document)
         metamodelPanel.bind(document)
+        debugDesignPanel.bind(document)
 
         for tool in canvasTools {
             tool.bind(canvas: canvas, document: document)
