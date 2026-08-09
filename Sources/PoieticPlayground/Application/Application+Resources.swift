@@ -19,6 +19,9 @@ extension Application {
     }
 
     func loadNotation(url: URL) {
+        // Notations are created from pictograms which are created by `pictogram` CLI tool of
+        // Diagramming (poietic-diagram) package. See the Diagramming package documentation.
+        //
         let data: Data
         do {
             data = try Data(contentsOf: url)

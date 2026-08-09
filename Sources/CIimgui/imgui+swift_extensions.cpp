@@ -11,3 +11,7 @@
 void ImGui::TextWrappedUnformatted(const char* text) {
     TextWrapped("%s", text);
 }
+
+void ImGui::TextDisabledUnformatted(const char* text) {
+    TextDisabled("%s", text);
+}

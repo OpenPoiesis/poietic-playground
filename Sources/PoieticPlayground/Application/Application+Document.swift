@@ -54,7 +54,8 @@ extension Application {
         player.bind(document)
         dashboard.bind(document)
         graphicFunctionPanel.bind(document)
-        
+        metamodelPanel.bind(document)
+
         for tool in canvasTools {
             tool.bind(canvas: canvas, document: document)
         }

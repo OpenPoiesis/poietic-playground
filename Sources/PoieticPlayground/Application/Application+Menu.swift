@@ -188,6 +188,9 @@ extension Application {
                 if ImGui.MenuItem("Keyboard Shortcuts") {
                     self.keyboardShortcutsPanel.isVisible = true
                 }
+                if ImGui.MenuItem("Metamodel Documentation") {
+                    self.metamodelPanel.isVisible = true
+                }
                 ImGui.EndMenu()
             }
             

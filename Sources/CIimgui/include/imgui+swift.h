@@ -9,5 +9,6 @@
 #include "imgui_impl_sdl3gpu3+Pipeline.h"
 namespace ImGui {
     IMGUI_API void TextWrappedUnformatted(const char* text);
+    IMGUI_API void TextDisabledUnformatted(const char* text);
     const ImDrawCallback ImDrawCallback_ResetRenderState_D = ImDrawCallback_ResetRenderState;
 }

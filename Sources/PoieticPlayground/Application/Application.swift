@@ -53,9 +53,14 @@ class Application {
     var alertPanel: AlertPanel
     let aboutPanel: AboutPanel
     let settingsPanel: SettingsPanel
-    let keyboardShortcutsPanel: KeyboardShortcutsPanel
+    // Document Content Panels
     let issuesPanel: IssuesPanel
     let graphicFunctionPanel: GraphicalFunctionPanel
+    
+    // Help Panels
+    let metamodelPanel: MetamodelPanel
+    let keyboardShortcutsPanel: KeyboardShortcutsPanel
+
     var panels: [any Panel] = []
     
     var canvasTools: [CanvasTool]
@@ -106,6 +111,8 @@ class Application {
         panels.append(self.keyboardShortcutsPanel)
         self.graphicFunctionPanel = GraphicalFunctionPanel()
         panels.append(self.graphicFunctionPanel)
+        self.metamodelPanel = MetamodelPanel()
+        panels.append(self.metamodelPanel)
 
         self.canvasTools = [
             SelectionTool(),
