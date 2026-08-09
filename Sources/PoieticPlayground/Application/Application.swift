@@ -56,6 +56,7 @@ class Application {
     // Document Content Panels
     let issuesPanel: IssuesPanel
     let graphicFunctionPanel: GraphicalFunctionPanel
+    let dataTablePanel: DataTablePanel
     
     // Help Panels
     let metamodelPanel: MetamodelPanel
@@ -118,6 +119,9 @@ class Application {
         self.debugDesignPanel = DebugDesignPanel()
         panels.append(self.debugDesignPanel)
 
+        self.dataTablePanel = DataTablePanel()
+        panels.append(self.dataTablePanel)
+        
         self.canvasTools = [
             SelectionTool(),
             PlacementTool(),

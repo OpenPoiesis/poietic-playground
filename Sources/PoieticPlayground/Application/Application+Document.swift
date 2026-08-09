@@ -58,6 +58,7 @@ extension Application {
         graphicFunctionPanel.bind(document)
         metamodelPanel.bind(document)
         debugDesignPanel.bind(document)
+        dataTablePanel.bind(document)
 
         for tool in canvasTools {
             tool.bind(canvas: canvas, document: document)
