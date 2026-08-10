@@ -134,7 +134,7 @@ extension Application {
             
             // View menu
             if ImGui.BeginMenu("View") {
-                if ImGui.MenuItem("Show Value Indicators", nil) {
+                if ImGui.MenuItem("Show Value Indicators", nil, &canvas.showValueIndicators) {
                 }
                 if ImGui.MenuItem("Show Inspector", "Cmd+I", &inspector.isVisible) {
                     // Nothing

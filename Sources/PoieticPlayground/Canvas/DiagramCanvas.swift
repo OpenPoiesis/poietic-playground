@@ -45,6 +45,9 @@ class DiagramCanvas: View {
     var scene: RuntimeEntity?
 
     var style: CanvasStyle
+    var showValueIndicators: Bool = true {
+        didSet { self.indicatorOverlay.setNeedsRender() }
+    }
 
     // TODO: Not fully implemented, only one overlay at the moment
     var overlays: OverlayStack
@@ -279,7 +282,9 @@ class DiagramCanvas: View {
         guard let scene else { return }
         assert(scene.contains(DiagramScene.self))
 
-        let renderer = CairoDiagramSceneRenderer(style: style, debug: debugRendering)
+        let renderer = CairoDiagramSceneRenderer(style: style,
+                                                 showValueIndicators: showValueIndicators,
+                                                 debug: debugRendering)
         
         if mainOverlay.needsRender {
             mainOverlay.render { context in

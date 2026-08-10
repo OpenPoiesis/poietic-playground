@@ -65,10 +65,10 @@ extension Application {
             self.processUnhandledInput()
             
             // BEGIN Debug
-            applicationSessionDebugWindow()
+//            applicationSessionDebugWindow()
 //            ImGui.ShowDebugLogWindow()
 //            ImGui.ShowIDStackToolWindow()
-            ImGui.ShowDemoWindow()
+//            ImGui.ShowDemoWindow()
             // END Debug
             
             ImGui.Render()

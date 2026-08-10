@@ -16,10 +16,12 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     
     let style: CanvasStyle
     let debug: Bool
-    
-    init(style: CanvasStyle, debug: Bool = false) {
+    let showValueIndicators: Bool
+
+    init(style: CanvasStyle, showValueIndicators: Bool = true, debug: Bool = false) {
         self.style = style
         self.debug = debug
+        self.showValueIndicators = showValueIndicators
     }
     
     func renderBlock(_ entity: RuntimeEntity, context: Context) {
@@ -154,7 +156,8 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     /// - Expectations:
     ///     - parent's represented entity has NumericValueSample()
     func renderValueIndicator(_ entity: RuntimeEntity, context: Context) {
-        guard context.overlay == .indicator,
+        guard showValueIndicators,
+              context.overlay == .indicator,
               let visibility: Visibility = entity.component(),
               visibility == .visible,
               let indicator: ValueIndicatorSceneNode = entity.component()
