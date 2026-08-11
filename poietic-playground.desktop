@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Poietic Playground
+GenericName=Stock and Flow Simulation Laboratory
+Comment=Virtual laboratory for modelling and simulation of dynamical systems using Stock and Flow methodology
+Exec=PoieticPlayground %f
+Icon=poietic-playground
+Terminal=false
+Categories=Education;Science;Development;
+Keywords=system;dynamics;stock;flow;modelling;simulation;
+MimeType=application/x-poietic;

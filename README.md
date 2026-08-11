@@ -33,6 +33,24 @@ Install Swift:
 
 To build and run the application: `swift run`.
 
+## Installation on Linux
+
+To install Poietic Playground on Linux:
+
+```sh
+# User-level install (~/.local/bin and ~/.local/share/poietic-playground)
+./install.sh --user
+
+# System-wide install (/usr/local/bin and /usr/local/share/poietic-playground)
+sudo ./install.sh --system
+```
+
+To build a standalone AppImage:
+
+```sh
+./scripts/build-appimage.sh
+```
+
 ## See Also
 
 - [Poietic Core](https://github.com/OpenPoiesis/poietic-core) – Model and design representation library
