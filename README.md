@@ -2,6 +2,8 @@
 
 **IMPORTANT:** This is just an unstable and experimental prototype.
 
+**IMPORTANT:** If you want to contribute, please read below.
+
 An educational tool, a virtual laboratory for modelling and simulation of
 dynamical systems using the [Stock and Flow](https://en.wikipedia.org/wiki/Stock_and_flow)
 methodology.
@@ -37,6 +39,27 @@ To build and run the application: `swift run`.
 
 - [Poietic Core](https://github.com/OpenPoiesis/poietic-core) – Model and design representation library
 - [Poietic Flows](https://github.com/OpenPoiesis/poietic-flows) – Stock and Flow simulation library
+
+## Contributing
+
+_All humans are more than welcome to contribute to the project._
+
+**Contributions that are substantially generative AI/LLM-generated (such as code or issues)**,
+without substantive human authorship, verification and understanding, will be rejected
+without further review, regardless of content.
+
+
+**Generative AI/LLM-assisted human contribution might be allowed** with prior discussion
+and disclosure. The disclosure must confirm that:
+
+
+- You fully understand every part of the contribution, and can answer questions about it
+  without using AI assistance.
+- You have personally tested and verified it.
+- You clearly indicate which parts of the content is AI generated.
+
+The human contributor takes full responsibility for all code, including its correctness
+and licensing compliance.
 
 ## Authors
 
