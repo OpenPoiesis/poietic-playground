@@ -33,6 +33,16 @@ Install Swift:
 
 To build and run the application: `swift run`.
 
+## Building macOS App Bundle
+
+To build a standalone macOS `.app` bundle containing all resources:
+
+```sh
+./scripts/build-macos-app.sh
+```
+
+The generated application bundle will be located at `.build/macos/Poietic Playground.app`.
+
 ## See Also
 
 - [Poietic Core](https://github.com/OpenPoiesis/poietic-core) – Model and design representation library

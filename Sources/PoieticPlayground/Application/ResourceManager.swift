@@ -41,9 +41,89 @@ class ResourceManager {
     var backend: any GraphicsBackendProtocol
     var textureCache: [String:TextureHandle] = [:]
     
-    init(_ rootPath: String, backend: any GraphicsBackendProtocol) {
-        self.root = URL(fileURLWithPath: rootPath)
+    init(_ rootPath: String = DefaultResourcesPath, backend: any GraphicsBackendProtocol) {
+        self.root = Self.locateResourcesRoot(preferredPath: rootPath)
         self.backend = backend
+    }
+
+    init(rootURL: URL, backend: any GraphicsBackendProtocol) {
+        self.root = rootURL
+        self.backend = backend
+    }
+
+    static func locateResourcesRoot(preferredPath: String? = nil) -> URL {
+        let fm = FileManager.default
+
+        func isValid(_ url: URL) -> Bool {
+            let marker = url.appendingPathComponent("stock_flow_pictograms.json")
+            return fm.fileExists(atPath: marker.path)
+        }
+
+        // 1. Explicitly passed preferred path (if it exists and is valid)
+        if let preferred = preferredPath {
+            let url = URL(fileURLWithPath: preferred)
+            if isValid(url) {
+                return url
+            }
+        }
+
+        // 2. Environment variable override
+        if let envPath = ProcessInfo.processInfo.environment["POIETIC_RESOURCES_PATH"] {
+            let url = URL(fileURLWithPath: envPath)
+            if isValid(url) {
+                return url
+            }
+        }
+
+        // 3. macOS App Bundle main resource URL
+        if let mainResourceURL = Bundle.main.resourceURL, isValid(mainResourceURL) {
+            return mainResourceURL.standardized
+        }
+
+        // 4. Relative to executable path (e.g. Contents/MacOS/../Resources inside macOS .app bundle)
+        if let execURL = Bundle.main.executableURL {
+            let execDir = execURL.deletingLastPathComponent()
+            let candidates = [
+                execDir.appendingPathComponent("../Resources"),
+                execDir.appendingPathComponent("../share/poietic-playground"),
+                execDir.appendingPathComponent("../share/poietic-playground/Resources"),
+                execDir.appendingPathComponent("Resources")
+            ]
+            for candidate in candidates {
+                if isValid(candidate) {
+                    return candidate.standardized
+                }
+            }
+        }
+
+        // 5. Standard user and system installation locations
+        let homeDir = fm.homeDirectoryForCurrentUser
+        let searchPaths = [
+            homeDir.appendingPathComponent(".local/share/poietic-playground"),
+            homeDir.appendingPathComponent(".local/share/poietic-playground/Resources"),
+            URL(fileURLWithPath: "/usr/local/share/poietic-playground"),
+            URL(fileURLWithPath: "/usr/local/share/poietic-playground/Resources"),
+            URL(fileURLWithPath: "/usr/share/poietic-playground"),
+            URL(fileURLWithPath: "/usr/share/poietic-playground/Resources")
+        ]
+        for path in searchPaths {
+            if isValid(path) {
+                return path
+            }
+        }
+
+        // 6. Default repository / CWD fallback
+        let fallbackCandidates = [
+            URL(fileURLWithPath: DefaultResourcesPath),
+            URL(fileURLWithPath: "Resources")
+        ]
+        for fallback in fallbackCandidates {
+            if isValid(fallback) {
+                return fallback
+            }
+        }
+
+        return URL(fileURLWithPath: DefaultResourcesPath)
     }
     
     func resourceURL(_ resourcePath: String) -> URL {
