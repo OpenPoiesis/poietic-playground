@@ -20,7 +20,8 @@ class SettingsPanel: Panel {
         guard isVisible else { return }
         ImGui.Begin("Settings", &isVisible, ImGuiWindowFlags_None | ImGuiWindowFlags_NoCollapse)
         drawInterfaceStyleSettings()
-//        drawNotationSettings()
+        ImGui.Spacing()
+        drawNotationSettings()
         ImGui.End()
     }
    
@@ -38,7 +39,23 @@ class SettingsPanel: Panel {
     }
     
     func drawNotationSettings() {
-        ImGui.SeparatorText("Notation")
+        guard let app else { return }
+        ImGui.SeparatorText("Canvas Style")
+
+        for style in app.canvasStyles {
+            let isSelected = (app.currentCanvasStyleID == style.id)
+            if ImGui.RadioButton(style.name, isSelected) {
+                app.selectCanvasStyle(style)
+            }
+        }
+
+        ImGui.Spacing()
+        if ImGui.Button("Load Style from JSON...") {
+            app.filePicker.open(mode: .open, filter: "*.json") { path in
+                let url = URL(fileURLWithPath: path)
+                app.loadCanvasStyleFromJSON(url: url)
+            }
+        }
     }
     
     func setInterfaceColorScheme(_ scheme: InterfaceStyle.ColorScheme) {

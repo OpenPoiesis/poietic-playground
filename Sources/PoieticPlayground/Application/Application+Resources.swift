@@ -55,6 +55,36 @@ extension Application {
         )
         self.log("Notation loaded. \(notation.pictograms.count) pictograms, \(notation.connectorGlyphs.count) connector glyphs.")
         self.notation = notation
-        // TODO: Update the world
+        if let document {
+            document.world.setSingleton(notation)
+            document.needsWorldFrameUpdate = true
+        }
+    }
+
+    func selectCanvasStyle(_ style: CanvasStyleDescriptor) {
+        if let resourcePath = style.resourcePath {
+            let url = ResourceManager.shared.resourceURL(resourcePath)
+            self.loadNotation(url: url)
+            self.currentCanvasStyleID = style.id
+        }
+    }
+
+    func selectCanvasStyle(id: String) {
+        guard let style = canvasStyles.first(where: { $0.id == id }) else { return }
+        selectCanvasStyle(style)
+    }
+
+    func loadCanvasStyleFromJSON(url: URL) {
+        self.loadNotation(url: url)
+        let styleName = url.deletingPathExtension().lastPathComponent
+        let customStyleID = "custom_\(url.path)"
+        let customStyle = CanvasStyleDescriptor(id: customStyleID, name: "Custom (\(styleName))", resourcePath: nil)
+        
+        if let index = canvasStyles.firstIndex(where: { $0.id == customStyleID }) {
+            canvasStyles[index] = customStyle
+        } else {
+            canvasStyles.append(customStyle)
+        }
+        self.currentCanvasStyleID = customStyleID
     }
 }

@@ -12,6 +12,12 @@ import Csdl3
 import Diagramming
 import Foundation
 
+struct CanvasStyleDescriptor: Identifiable, Equatable {
+    let id: String
+    let name: String
+    let resourcePath: String?
+}
+
 /// Main orchestrator
 ///
 /// Responsibilities:
@@ -30,6 +36,16 @@ class Application {
     }
     internal static var _shared: Application? = nil
     
+    static let BuiltinCanvasStyles: [CanvasStyleDescriptor] = [
+        CanvasStyleDescriptor(id: "default", name: "Standard Stock & Flow", resourcePath: "stock_flow_pictograms.json"),
+        CanvasStyleDescriptor(id: "jolly", name: "Jolly Stock & Flow", resourcePath: "stock_flow_pictograms-jolly.json"),
+        CanvasStyleDescriptor(id: "old", name: "Classic Stock & Flow", resourcePath: "stock_flow_pictograms-old.json"),
+        CanvasStyleDescriptor(id: "jolly-old", name: "Classic Jolly Stock & Flow", resourcePath: "stock_flow_pictograms-jolly-old.json"),
+    ]
+
+    var canvasStyles: [CanvasStyleDescriptor] = Self.BuiltinCanvasStyles
+    var currentCanvasStyleID: String = "default"
+
     // Dumping ground of globals (for now)
     //    static let NewDesignTemplatePath = "designs/new_canvas.json"
     static let NewDesignTemplatePath = "designs/design-capital.poietic"
