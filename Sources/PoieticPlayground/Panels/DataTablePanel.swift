@@ -80,7 +80,7 @@ class DataTablePanel: Panel {
             visibleObjects.append(simObj)
         }
 
-        // Resolve object names from the frame
+        // Resolve object names from the plane
         let objectNames: [ObjectID: String] = {
             var dict: [ObjectID: String] = [:]
             for simObj in visibleObjects {

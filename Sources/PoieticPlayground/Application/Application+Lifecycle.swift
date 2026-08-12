@@ -104,7 +104,7 @@ extension Application {
             catch {
                 // This is not user's fault and never should be.
                 // The application failed to make sure structural integrity is assured
-                Application.shared.alert(title: "Frame validation error (report to developers)",
+                Application.shared.alert(title: "Plane validation error (report to developers)",
                                          message: String(describing: error))
                 return
             }

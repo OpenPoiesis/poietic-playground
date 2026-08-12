@@ -150,10 +150,10 @@ class Application {
         ImGui.TextUnformatted("Current tool: \(toolBar.currentTool?.name, default: "no tool")")
         if let document {
             let frame = document.world.frame
-            let wFrameLabel: String = frame.map { String(describing: $0.id) } ?? "(no frame)"
-            let cFrameLabel: String = document.design.currentFrame.map { String(describing: $0.id) } ?? "(no frame)"
-            ImGui.TextUnformatted("Design frame: \(cFrameLabel)")
-            ImGui.TextUnformatted("World frame: \(wFrameLabel)")
+            let wFrameLabel: String = frame.map { String(describing: $0.id) } ?? "(no plane)"
+            let cFrameLabel: String = document.design.currentPlane.map { String(describing: $0.id) } ?? "(no plane)"
+            ImGui.TextUnformatted("Design plane: \(cFrameLabel)")
+            ImGui.TextUnformatted("World plane: \(wFrameLabel)")
             ImGui.TextUnformatted("Has Transaction: \(document.hasTransaction)")
             ImGui.TextUnformatted("Selection count: \(document.selection.count)")
         }

@@ -46,7 +46,7 @@ class Document {
     
     /// - SeeAlso: ``Application/connectObservers(_:)``.
     enum Event {
-        /// Triggered when world frame has been changed, usually after a transaction or
+        /// Triggered when world plane has been changed, usually after a transaction or
         /// on undo/redo action.
         ///
         /// Handled by:
@@ -59,7 +59,7 @@ class Document {
         
         /// Triggered:
         /// - when selection is changed, through ``Document/changeSelection(_:)
-        /// - on frame change
+        /// - on plane change
         /// Handled by:
         /// - ``InspectorPanel``
         case selectionChanged
@@ -91,13 +91,13 @@ class Document {
     let design: Design
     var designURL: URL? = nil
     
-    var transaction: TransientFrame?
+    var transaction: TransientPlane?
     var hasTransaction: Bool { transaction != nil }
     var commandQueue: [any Command]
 
     let world: World
     
-    /// Flag whether we need to update the world frame on next call to update.
+    /// Flag whether we need to update the world plane on next call to update.
     var needsWorldFrameUpdate: Bool = false
     
     var selection: Selection
@@ -109,7 +109,7 @@ class Document {
     var mainDiagramScene: RuntimeEntity? = nil
     
     /// Flag whether ``InteractivePreviewSchedule`` is run at the end of the update.
-    /// The flag is reset each application frame.
+    /// The flag is reset each application plane.
     internal private(set) var requiresInteractivePreviewUpdate: Bool
     /// Interactive preview in progress.
     var isPreviewing: Bool
@@ -164,7 +164,7 @@ class Document {
     }
     /// Called on:
     /// - selection changed with ``changeSelection(_:)``
-    /// - frame changed with ``Application/accept(_:)``
+    /// - plane changed with ``Application/accept(_:)``
     func updateSelectionOverview() {
         if self.selection.isEmpty {
             self.selectionOverview.clear()

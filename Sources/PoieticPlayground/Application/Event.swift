@@ -12,7 +12,7 @@ enum ApplicationEvent: CaseIterable {
     // NOTE: We might consider changing the app event to a protocol, similar to schedule label.
     case worldChanged // design reset
     case designFrameChanged // from Command
-        // -> Frame Change schedule
+        // -> Plane Change schedule
         // -> triggers Simulation schedule
     case selectionChanged
 

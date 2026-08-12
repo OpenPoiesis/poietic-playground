@@ -47,7 +47,7 @@ extension Document {
                 ]
             ),
             Schedule(
-                label: FrameChangeSchedule.self,
+                label: PlaneChangeSchedule.self,
                 systems:
                     PoieticFlows.SimulationPlanningSystems
                     + [
@@ -98,15 +98,15 @@ extension Document {
     
     /// Update the world by running system schedules.
     ///
-    /// When design frame changes:
+    /// When design plane changes:
     ///
-    /// 1. Run frame change schedule
+    /// 1. Run plane change schedule
     /// 2. Update selection overview – ``SelectionOverview`` stats in ``selectionOverview``.
     /// 3. Run simulation schedule
     /// 4. If required, run interactive preview schedule
     ///
     func update(_ timeDelta: Double) {
-        if needsWorldFrameUpdate || design.currentFrame !== world.frame {
+        if needsWorldFrameUpdate || design.currentPlane !== world.frame {
             changeWorldFrame()
         }
         
@@ -120,13 +120,13 @@ extension Document {
     }
     // TODO: Maybe we need a better name?
     func changeWorldFrame() {
-        if let frame = design.currentFrame {
+        if let frame = design.currentPlane {
             world.setFrame(frame)
         }
         else {
             world.removeFrame()
         }
-        self.run(schedule: FrameChangeSchedule.self)
+        self.run(schedule: PlaneChangeSchedule.self)
         createOrUpdateMainDiagram()
         updateSelectionOverview()
         trigger(.designFrameChanged)

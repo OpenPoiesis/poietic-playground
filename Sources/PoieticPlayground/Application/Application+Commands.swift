@@ -49,9 +49,9 @@ extension Application {
     
     func newDesign() {
         let design = Design(metamodel: StockFlowMetamodel)
-        // Create a new frame, so we can undo first action (can't undo to no-frame)
-        let frame = design.createFrame()
-        try! design.accept(frame) // We can force, because empty frame must be always valid.
+        // Create a new plane, so we can undo first action (can't undo to no-plane)
+        let frame = design.createPlane()
+        try! design.accept(frame) // We can force, because empty plane must be always valid.
         self.newDocument(design)
     }
     // TODO: Move to Session (document)

@@ -86,7 +86,7 @@ class DebugDesignPanel: Panel {
             if let object = frame[objectID] {
                 drawObjectDetail(object)
             } else {
-                ImGui.TextUnformatted("Object \(objectID) not found in current frame.")
+                ImGui.TextUnformatted("Object \(objectID) not found in current plane.")
             }
         } else {
             ImGui.TextUnformatted("Select an object for details.")
@@ -187,7 +187,7 @@ class DebugDesignPanel: Panel {
         }
     }
 
-    private func makeLabel(for objectID: ObjectID, in frame: DesignFrame) -> String {
+    private func makeLabel(for objectID: ObjectID, in frame: DesignPlane) -> String {
         guard let object = frame[objectID] else {
             return "\(objectID) (not found)"
         }

@@ -9,7 +9,7 @@ import PoieticCore
 import CIimgui
 
 class SelectionOverview {
-    /// Number of objects from the selection actually contained in the current frame/world.
+    /// Number of objects from the selection actually contained in the current plane/world.
     var containedCount: Int
     /// Collection of distinct types of selected objects.
     var distinctTypes: [ObjectType]
@@ -35,7 +35,7 @@ class SelectionOverview {
         self.distinctValues = [:]
     }
 
-    func update(_ selection: Selection, frame: DesignFrame) {
+    func update(_ selection: Selection, frame: DesignPlane) {
         self.containedCount = frame.contained(selection).count
         self.distinctTypes = frame.distinctTypes(selection)
         self.sharedTraits = frame.sharedTraits(selection)
@@ -43,7 +43,7 @@ class SelectionOverview {
         self.distinctValues = [:]
     }
     
-    func updateAttribute(_ attribute: String, selection: Selection, frame: DesignFrame) {
+    func updateAttribute(_ attribute: String, selection: Selection, frame: DesignPlane) {
         let values = frame.distinctAttribute(attribute, ids: selection)
         self.distinctValues[attribute] = Array(values)
     }

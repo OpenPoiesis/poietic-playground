@@ -11,7 +11,7 @@ import Foundation
 import CIimgui
 
 extension Command {
-    func copySelectionAsText(ids: [ObjectID], frame: DesignFrame) throws (CommandError) -> String {
+    func copySelectionAsText(ids: [ObjectID], frame: DesignPlane) throws (CommandError) -> String {
         let design = frame.design
         let ids = frame.contained(ids)
         
