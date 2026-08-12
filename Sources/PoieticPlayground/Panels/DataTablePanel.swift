@@ -47,7 +47,7 @@ class DataTablePanel: Panel {
     func update(_ timeDelta: Double) {}
 
     func draw() {
-        guard let document, let frame = document.world.frame else {
+        guard let document, let frame = document.world.plane else {
             ImGui.Begin("Data Table", &self.isVisible)
             ImGui.TextUnformatted("No data available.")
             ImGui.End()

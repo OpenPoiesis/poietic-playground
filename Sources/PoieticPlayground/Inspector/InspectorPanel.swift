@@ -134,7 +134,7 @@ class InspectorPanel: Panel {
             activeSections.append(section)
         }
 
-        if let frame = document.world.frame {
+        if let frame = document.world.plane {
             for attribute in attributes {
                 overview.updateAttribute(attribute, selection: selection, frame: frame)
             }

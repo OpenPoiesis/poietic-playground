@@ -169,7 +169,7 @@ class Document {
         if self.selection.isEmpty {
             self.selectionOverview.clear()
         }
-        if let frame = world.frame {
+        if let frame = world.plane {
             self.selectionOverview.update(selection, frame: frame)
         }
         else {

@@ -72,7 +72,7 @@ extension Application {
 
     func selectAll() {
         guard let document,
-              let frame = document.world.frame
+              let frame = document.world.plane
         else { return }
 
         let allIDs: [ObjectID] =

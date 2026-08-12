@@ -34,7 +34,7 @@ class ControlBar: @MainActor Panel {
     }
    
     func onDesignFrameChanged(_ document: Document) {
-        guard let frame = document.world.frame
+        guard let frame = document.world.plane
         else { return }
         
         if let infoObject = frame.first(type: .Simulation) {

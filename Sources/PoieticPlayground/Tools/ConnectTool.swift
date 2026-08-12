@@ -278,7 +278,7 @@ class ConnectTool: CanvasTool {
     {
         guard let document,
               let checker,
-              let frame = document.world.frame,
+              let frame = document.world.plane,
               let (originObjectID, targetObjectID) = representedObjectsOfIntent()
         else { return false }
         

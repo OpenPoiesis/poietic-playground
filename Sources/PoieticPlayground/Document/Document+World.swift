@@ -106,7 +106,7 @@ extension Document {
     /// 4. If required, run interactive preview schedule
     ///
     func update(_ timeDelta: Double) {
-        if needsWorldFrameUpdate || design.currentPlane !== world.frame {
+        if needsWorldFrameUpdate || design.currentPlane !== world.plane {
             changeWorldFrame()
         }
         
@@ -121,10 +121,10 @@ extension Document {
     // TODO: Maybe we need a better name?
     func changeWorldFrame() {
         if let frame = design.currentPlane {
-            world.setFrame(frame)
+            world.setPlane(frame)
         }
         else {
-            world.removeFrame()
+            world.removePlane()
         }
         self.run(schedule: PlaneChangeSchedule.self)
         createOrUpdateMainDiagram()

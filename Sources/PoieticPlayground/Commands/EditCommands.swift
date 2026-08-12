@@ -81,7 +81,7 @@ struct CopyToPasteboardCommand: Command {
         self.ids = ids
     }
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let frame = context.world.frame else { return }
+        guard let frame = context.world.plane else { return }
         let text = try copySelectionAsText(ids: ids, frame: frame)
         try setPasteboardText(text)
         
@@ -96,7 +96,7 @@ struct CutToPasteboardCommand: Command {
         self.ids = ids
     }
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let frame = context.world.frame else { return }
+        guard let frame = context.world.plane else { return }
         let text = try copySelectionAsText(ids: ids, frame: frame)
         try setPasteboardText(text)
 

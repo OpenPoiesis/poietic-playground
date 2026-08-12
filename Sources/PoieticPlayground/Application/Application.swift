@@ -149,7 +149,7 @@ class Application {
         ImGui.Begin("Application Session")
         ImGui.TextUnformatted("Current tool: \(toolBar.currentTool?.name, default: "no tool")")
         if let document {
-            let frame = document.world.frame
+            let frame = document.world.plane
             let wFrameLabel: String = frame.map { String(describing: $0.id) } ?? "(no plane)"
             let cFrameLabel: String = document.design.currentPlane.map { String(describing: $0.id) } ?? "(no plane)"
             ImGui.TextUnformatted("Design plane: \(cFrameLabel)")

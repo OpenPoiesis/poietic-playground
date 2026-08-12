@@ -43,7 +43,7 @@ class DebugDesignPanel: Panel {
     }
 
     func draw() {
-        guard let document, let frame = document.world.frame else {
+        guard let document, let frame = document.world.plane else {
             ImGui.Begin("Design Debug")
             ImGui.TextUnformatted("No design loaded.")
             ImGui.End()

@@ -44,7 +44,7 @@ class DesignInfoInspectorSection: DesignInspectorSection {
     }
     
     func inspectDesign(_ document: Document) {
-        guard let frame = document.world.frame
+        guard let frame = document.world.plane
         else { return }
         
         if let infoObject = frame.first(type: .DesignInfo) {
@@ -131,7 +131,7 @@ class SimulationInspectorSection: DesignInspectorSection {
     }
     
     func inspectDesign(_ document: Document) {
-        guard let frame = document.world.frame
+        guard let frame = document.world.plane
         else { return }
         
         if let infoObject = frame.first(type: .Simulation) {

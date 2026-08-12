@@ -226,7 +226,7 @@ class SelectionTool: CanvasTool {
         guard let canvas,
               let scene = canvas.scene,
               let document,
-              let frame = document.world.frame
+              let frame = document.world.plane
         else { return }
         let selection = document.selection
 

@@ -24,7 +24,7 @@ extension Document {
             return transaction
         }
         else {
-            let transaction = design.createPlane(deriving: world.frame)
+            let transaction = design.createPlane(deriving: world.plane)
             self.transaction = transaction
             return transaction
         }

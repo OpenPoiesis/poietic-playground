@@ -69,7 +69,7 @@ class IssuesPanel: Panel {
         ImGui.End()
     }
     func drawIssues(_ issues: [ObjectID: [Issue]]) {
-        guard let frame = document?.world.frame else { return }
+        guard let frame = document?.world.plane else { return }
         for (objectID, objectIssues) in issues {
             guard let object = frame[objectID] else { continue }
             drawObjectNode(object, issues: objectIssues)
