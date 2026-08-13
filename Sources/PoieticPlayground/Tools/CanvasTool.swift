@@ -86,7 +86,7 @@ class CanvasTool {
     /// Function called when tool was released and set inactive.
     func deactivate() { /* Implementation in subclasses */ }
 
-    /// Function called on frame update when the tool is active.
+    /// Function called on plane update when the tool is active.
     func update() { /* Implementation in subclasses */ }
 
     /// Function called when tool operation was cancelled.

@@ -47,7 +47,9 @@ class DataTablePanel: Panel {
     func update(_ timeDelta: Double) {}
 
     func draw() {
-        guard let document, let frame = document.world.frame else {
+        guard let document,
+              let plane = document.world.plane
+        else {
             ImGui.Begin("Data Table", &self.isVisible)
             ImGui.TextUnformatted("No data available.")
             ImGui.End()
@@ -80,19 +82,18 @@ class DataTablePanel: Panel {
             visibleObjects.append(simObj)
         }
 
-        // Resolve object names from the frame
-        let objectNames: [ObjectID: String] = {
-            var dict: [ObjectID: String] = [:]
-            for simObj in visibleObjects {
-                if let object = frame[simObj.objectID],
-                   let name: String = object["name"] {
-                    dict[simObj.objectID] = name
-                } else {
-                    dict[simObj.objectID] = "\(simObj.objectID)"
-                }
+        // Resolve object names from the plane
+        var objectNames: [ObjectID: String] = [:]
+        
+        for simObj in visibleObjects {
+            if let object = plane[simObj.objectID],
+               let name: String = object["name"] {
+                objectNames[simObj.objectID] = name
             }
-            return dict
-        }()
+            else {
+                objectNames[simObj.objectID] = "\(simObj.objectID)"
+            }
+        }
 
         drawContent(result: result, plan: plan,
                     visibleObjects: visibleObjects,

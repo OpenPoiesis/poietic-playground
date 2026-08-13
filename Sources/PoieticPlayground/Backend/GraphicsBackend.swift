@@ -55,11 +55,11 @@ extension GraphicsBackendProtocol {
 }
 
 enum BackendEvent {
-    /// Proceed with frame processing
+    /// Proceed with plane processing
     case none
     /// Quit the application
     case quit
-    /// Skip this frame
+    /// Skip this plane
     case skip
 }
 

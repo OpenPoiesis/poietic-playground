@@ -22,7 +22,7 @@ class Dashboard: Panel {
         self.document = document
     }
     
-    func onDesignFrameChanged(_ document: Document) {
+    func onDesignPlaneChanged(_ document: Document) {
         // TODO: Reload all charts
         let world = document.world
         print("Dashboard here")

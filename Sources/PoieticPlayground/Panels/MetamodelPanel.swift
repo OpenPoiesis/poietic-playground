@@ -222,7 +222,7 @@ class MetamodelPanel: Panel {
 
             
             ImGui.TableNextColumn()
-            if type.structuralType == .node,
+            if type.topologyType == .node,
                let notation: Notation = document?.world.singleton()
             {
                 let pictogram = notation.pictogram(type.name)
@@ -275,7 +275,7 @@ class MetamodelPanel: Panel {
 
         // Edge rules
         ImGui.Spacing()
-        switch type.structuralType {
+        switch type.topologyType {
         case .node:
             let rules = edgeRules(forNodeType: type, in: metamodel)
             if !rules.isEmpty {
@@ -329,7 +329,7 @@ class MetamodelPanel: Panel {
                 ImGui.SameLine()
                 ImGui.TextDisabledUnformatted("(\(adopter.name))")
                 if ImGui.IsItemClicked(ImGuiMouseButton(ImGuiMouseButton_Left.rawValue)) {
-                    switch adopter.structuralType {
+                    switch adopter.topologyType {
                     case .node:         selectedItem = .nodeType(adopter)
                     case .edge:         selectedItem = .edgeType(adopter)
                     case .unstructured: selectedItem = .unstructuredType(adopter)

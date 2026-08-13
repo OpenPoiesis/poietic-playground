@@ -9,28 +9,6 @@ import PoieticCore
 import Foundation
 import Diagramming
 
-/*
- 
- New schedules
- 
- 
- FrameChange
-    Simulation
-
-
- Document Update:
-    1. DocumentUpdate
-    2. PlayerStep
-        - SimulationSamplingSystem
-    3. VisualsUpdate
-        - SceneComposition
-        - SceneInteraction
-    4. CleanUp
-        - Remove dirty
- 
- 
- */
-
 /// Represents and controls the design document.
 ///
 /// Responsibilities:
@@ -46,7 +24,7 @@ class Document {
     
     /// - SeeAlso: ``Application/connectObservers(_:)``.
     enum Event {
-        /// Triggered when world frame has been changed, usually after a transaction or
+        /// Triggered when world plane has been changed, usually after a transaction or
         /// on undo/redo action.
         ///
         /// Handled by:
@@ -55,11 +33,11 @@ class Document {
         /// - control bar
         /// - player
         /// - dashboard
-        case designFrameChanged
+        case designPlaneChanged
         
         /// Triggered:
         /// - when selection is changed, through ``Document/changeSelection(_:)
-        /// - on frame change
+        /// - on plane change
         /// Handled by:
         /// - ``InspectorPanel``
         case selectionChanged
@@ -91,14 +69,14 @@ class Document {
     let design: Design
     var designURL: URL? = nil
     
-    var transaction: TransientFrame?
+    var transaction: TransientPlane?
     var hasTransaction: Bool { transaction != nil }
     var commandQueue: [any Command]
 
     let world: World
     
-    /// Flag whether we need to update the world frame on next call to update.
-    var needsWorldFrameUpdate: Bool = false
+    /// Flag whether we need to update the world plane on next call to update.
+    var needsWorldPlaneUpdate: Bool = false
     
     var selection: Selection
     var selectionOverview: SelectionOverview
@@ -109,7 +87,7 @@ class Document {
     var mainDiagramScene: RuntimeEntity? = nil
     
     /// Flag whether ``InteractivePreviewSchedule`` is run at the end of the update.
-    /// The flag is reset each application frame.
+    /// The flag is reset each application plane.
     internal private(set) var requiresInteractivePreviewUpdate: Bool
     /// Interactive preview in progress.
     var isPreviewing: Bool
@@ -164,13 +142,13 @@ class Document {
     }
     /// Called on:
     /// - selection changed with ``changeSelection(_:)``
-    /// - frame changed with ``Application/accept(_:)``
+    /// - plane changed with ``Application/accept(_:)``
     func updateSelectionOverview() {
         if self.selection.isEmpty {
             self.selectionOverview.clear()
         }
-        if let frame = world.frame {
-            self.selectionOverview.update(selection, frame: frame)
+        if let plane = world.plane {
+            self.selectionOverview.update(selection, plane: plane)
         }
         else {
             self.selectionOverview.clear()

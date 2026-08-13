@@ -44,10 +44,10 @@ class DesignInfoInspectorSection: DesignInspectorSection {
     }
     
     func inspectDesign(_ document: Document) {
-        guard let frame = document.world.frame
+        guard let plane = document.world.plane
         else { return }
         
-        if let infoObject = frame.first(type: .DesignInfo) {
+        if let infoObject = plane.first(type: .DesignInfo) {
             self.infoObjectID = infoObject.objectID
             self.titleBuffer.string = infoObject["title"] ?? ""
             self.authorBuffer.string = infoObject["author"] ?? ""
@@ -131,10 +131,10 @@ class SimulationInspectorSection: DesignInspectorSection {
     }
     
     func inspectDesign(_ document: Document) {
-        guard let frame = document.world.frame
+        guard let plane = document.world.plane
         else { return }
         
-        if let infoObject = frame.first(type: .Simulation) {
+        if let infoObject = plane.first(type: .Simulation) {
             self.infoObjectID = infoObject.objectID
             self.initialTime = infoObject["initialTime"] ?? Self.DefaultSettings.initialTime
             self.timeDelta = infoObject["time_delta"] ?? Self.DefaultSettings.timeDelta

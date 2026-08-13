@@ -42,10 +42,10 @@ struct CommandContext {
 /// at the end of the application main loop after all updates using the ``Application/runCommand(_:)`.
 ///
 /// Commands can use and append a transaction ``Session/transaction``. The transaction,
-/// if contains changes, is committed in the application frame update after the command queue is
+/// if contains changes, is committed in the application plane update after the command queue is
 /// run.
 ///
-/// - Note: Commands operating on "current frame" should use the world frame, as that is the frame
+/// - Note: Commands operating on "current plane" should use the world plane, as that is the plane
 ///         that user sees.
 /// - Remark: In the future, the scriptability of the application can be build around `Command`.
 ///

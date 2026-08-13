@@ -53,7 +53,7 @@ class ResultPlayer {
         }
     }
    
-    func onDesignFrameChanged(_ document: Document) {
+    func onDesignPlaneChanged(_ document: Document) {
         guard let plan: SimulationPlan = document.world.singleton() else {
             self.isRunning = false
             return

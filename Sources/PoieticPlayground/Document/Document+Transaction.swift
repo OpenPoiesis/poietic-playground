@@ -19,12 +19,12 @@ extension Document {
     ///   discard and others in the queue will get a new one. At this stage of development it is
     ///   unlikely to happen, but it is important to acknowledge it.
     ///
-    func createOrReuseTransaction() -> TransientFrame {
+    func createOrReuseTransaction() -> TransientPlane {
         if let transaction {
             return transaction
         }
         else {
-            let transaction = design.createFrame(deriving: world.frame)
+            let transaction = design.createPlane(deriving: world.plane)
             self.transaction = transaction
             return transaction
         }
@@ -41,7 +41,7 @@ extension Document {
     }
     
     /// Accept transaction
-    func consumeAndAcceptTransaction() throws (FrameValidationError) {
+    func consumeAndAcceptTransaction() throws (PlaneValidationError) {
         guard let transaction else { return }
         defer {
             if design.isPending(transaction) {
@@ -52,8 +52,8 @@ extension Document {
         
         guard transaction.hasChanges else { return }
         try design.accept(transaction, appendHistory: true)
-        self.log("Transaction accepted. Current frame: \(transaction.id), frame count: \(design.frames.count)")
+        self.log("Transaction accepted. Current plane: \(transaction.id), plane count: \(design.planes.count)")
 
-        self.needsWorldFrameUpdate = true
+        self.needsWorldPlaneUpdate = true
     }
 }

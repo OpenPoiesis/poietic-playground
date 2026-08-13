@@ -11,12 +11,12 @@ import Foundation
 import CIimgui
 
 extension Command {
-    func copySelectionAsText(ids: [ObjectID], frame: DesignFrame) throws (CommandError) -> String {
-        let design = frame.design
-        let ids = frame.contained(ids)
+    func copySelectionAsText(ids: [ObjectID], plane: DesignPlane) throws (CommandError) -> String {
+        let design = plane.design
+        let ids = plane.contained(ids)
         
         let extractor = DesignExtractor()
-        let extract = extractor.extractPruning(objects: ids, frame: frame)
+        let extract = extractor.extractPruning(objects: ids, plane: plane)
         let rawDesign = RawDesign(metamodelName: design.metamodel.name,
                                   metamodelVersion: design.metamodel.version,
                                   snapshots: extract)
@@ -81,8 +81,8 @@ struct CopyToPasteboardCommand: Command {
         self.ids = ids
     }
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let frame = context.world.frame else { return }
-        let text = try copySelectionAsText(ids: ids, frame: frame)
+        guard let plane = context.world.plane else { return }
+        let text = try copySelectionAsText(ids: ids, plane: plane)
         try setPasteboardText(text)
         
     }
@@ -96,8 +96,8 @@ struct CutToPasteboardCommand: Command {
         self.ids = ids
     }
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let frame = context.world.frame else { return }
-        let text = try copySelectionAsText(ids: ids, frame: frame)
+        guard let plane = context.world.plane else { return }
+        let text = try copySelectionAsText(ids: ids, plane: plane)
         try setPasteboardText(text)
 
         let trans = context.document.createOrReuseTransaction()

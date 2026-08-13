@@ -147,11 +147,11 @@ struct MouseButtonMask: OptionSet, CustomStringConvertible {
 }
 
 enum ToolEventType {
-    /// Mouse button pressed this frame
+    /// Mouse button pressed this plane
     case pointerDown
-    /// Mouse button moved this frame
+    /// Mouse button moved this plane
     case pointerMove
-    /// Mouse released this frame
+    /// Mouse released this plane
     ///
     case pointerUp
     

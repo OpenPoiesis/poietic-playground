@@ -278,11 +278,11 @@ class ConnectTool: CanvasTool {
     {
         guard let document,
               let checker,
-              let frame = document.world.frame,
+              let plane = document.world.plane,
               let (originObjectID, targetObjectID) = representedObjectsOfIntent()
         else { return false }
         
-        return checker.canConnect(type: type, from: originObjectID, to: targetObjectID, in: frame)
+        return checker.canConnect(type: type, from: originObjectID, to: targetObjectID, in: plane)
     }
     func createConnection(type: ObjectType, from originRuntimeID: RuntimeID, to targetRuntimeID: RuntimeID) {
         guard let document,

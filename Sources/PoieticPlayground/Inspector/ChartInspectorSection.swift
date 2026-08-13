@@ -60,7 +60,7 @@ class ChartInspectorSection: InspectorSection {
         chartView.series = series
         chartView.chart = chart
         chartView.world = world
-        // we need world and frame here
+        // we need world and plane here
     }
 
     func update(_ document: Document) { /* Nothing for now */ }
