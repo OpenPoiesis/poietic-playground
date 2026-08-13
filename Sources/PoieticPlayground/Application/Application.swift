@@ -149,11 +149,11 @@ class Application {
         ImGui.Begin("Application Session")
         ImGui.TextUnformatted("Current tool: \(toolBar.currentTool?.name, default: "no tool")")
         if let document {
-            let frame = document.world.plane
-            let wFrameLabel: String = frame.map { String(describing: $0.id) } ?? "(no plane)"
-            let cFrameLabel: String = document.design.currentPlane.map { String(describing: $0.id) } ?? "(no plane)"
-            ImGui.TextUnformatted("Design plane: \(cFrameLabel)")
-            ImGui.TextUnformatted("World plane: \(wFrameLabel)")
+            let plane = document.world.plane
+            let wPlaneLabel: String = plane.map { String(describing: $0.id) } ?? "(no plane)"
+            let cPlaneLabel: String = document.design.currentPlane.map { String(describing: $0.id) } ?? "(no plane)"
+            ImGui.TextUnformatted("Design plane: \(cPlaneLabel)")
+            ImGui.TextUnformatted("World plane: \(wPlaneLabel)")
             ImGui.TextUnformatted("Has Transaction: \(document.hasTransaction)")
             ImGui.TextUnformatted("Selection count: \(document.selection.count)")
         }

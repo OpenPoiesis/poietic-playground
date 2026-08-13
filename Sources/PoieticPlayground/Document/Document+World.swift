@@ -106,8 +106,8 @@ extension Document {
     /// 4. If required, run interactive preview schedule
     ///
     func update(_ timeDelta: Double) {
-        if needsWorldFrameUpdate || design.currentPlane !== world.plane {
-            changeWorldFrame()
+        if needsWorldPlaneUpdate || design.currentPlane !== world.plane {
+                        changeWorldPlane()
         }
         
         self.run(schedule: DocumentUpdateSchedule.self)
@@ -119,9 +119,9 @@ extension Document {
         }
     }
     // TODO: Maybe we need a better name?
-    func changeWorldFrame() {
-        if let frame = design.currentPlane {
-            world.setPlane(frame)
+    func             changeWorldPlane() {
+        if let plane = design.currentPlane {
+            world.setPlane(plane)
         }
         else {
             world.removePlane()
@@ -129,7 +129,7 @@ extension Document {
         self.run(schedule: PlaneChangeSchedule.self)
         createOrUpdateMainDiagram()
         updateSelectionOverview()
-        trigger(.designFrameChanged)
+        trigger(.designPlaneChanged)
         trigger(.selectionChanged)
         
         if self.run(schedule: SimulationSchedule.self) {
@@ -138,7 +138,7 @@ extension Document {
         else {
             trigger(.simulationFailed)
         }
-        needsWorldFrameUpdate = false
+        needsWorldPlaneUpdate = false
     }
     func createOrUpdateMainDiagram() {
         let diagram = DiagramSceneComposer.createDiagramFromAll(world: world, diagram: mainDiagram)

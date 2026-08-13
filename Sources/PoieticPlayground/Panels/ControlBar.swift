@@ -33,11 +33,11 @@ class ControlBar: @MainActor Panel {
         self.app = application
     }
    
-    func onDesignFrameChanged(_ document: Document) {
-        guard let frame = document.world.plane
+    func onDesignPlaneChanged(_ document: Document) {
+        guard let plane = document.world.plane
         else { return }
         
-        if let infoObject = frame.first(type: .Simulation) {
+        if let infoObject = plane.first(type: .Simulation) {
             self.settings = SimulationSettings(fromObject: infoObject)
         }
         else {

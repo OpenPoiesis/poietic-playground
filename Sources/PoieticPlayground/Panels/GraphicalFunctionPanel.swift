@@ -77,8 +77,8 @@ class GraphicalFunctionPanel: Panel {
         let selection = document.selection
         guard selection.ids.count == 1,
               let objectID = selection.ids.first,
-              let frame = document.world.plane,
-              let object = frame[objectID],
+              let plane = document.world.plane,
+              let object = plane[objectID],
               object.type.hasTrait(.GraphicalFunction)
         else {
             isActive = false

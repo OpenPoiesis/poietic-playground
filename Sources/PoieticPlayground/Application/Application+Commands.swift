@@ -50,8 +50,8 @@ extension Application {
     func newDesign() {
         let design = Design(metamodel: StockFlowMetamodel)
         // Create a new plane, so we can undo first action (can't undo to no-plane)
-        let frame = design.createPlane()
-        try! design.accept(frame) // We can force, because empty plane must be always valid.
+        let plane = design.createPlane()
+        try! design.accept(plane) // We can force, because empty plane must be always valid.
         self.newDocument(design)
     }
     // TODO: Move to Session (document)
@@ -72,12 +72,11 @@ extension Application {
 
     func selectAll() {
         guard let document,
-              let frame = document.world.plane
+              let plane = document.world.plane
         else { return }
 
-        let allIDs: [ObjectID] =
-                frame.filter(trait: .DiagramBlock).map {$0.objectID}
-                + frame.filter(trait: .DiagramConnector).map {$0.objectID}
+        let allIDs: [ObjectID] = plane.filter(trait: .DiagramBlock).map {$0.objectID}
+                                 + plane.filter(trait: .DiagramConnector).map {$0.objectID}
         document.changeSelection(.replaceAll(allIDs))
     }
 }

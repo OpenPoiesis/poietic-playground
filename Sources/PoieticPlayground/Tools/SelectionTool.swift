@@ -39,10 +39,10 @@ class SelectionTool: CanvasTool {
     
     override func bind(canvas: DiagramCanvas, document: Document) {
         super.bind(canvas: canvas, document: document)
-        document.addObserver(onDesignFrameChanged, on: .designFrameChanged)
+        document.addObserver(onDesignPlaneChanged, on: .designPlaneChanged)
     }
 
-    func onDesignFrameChanged(_ document: Document) {
+    func onDesignPlaneChanged(_ document: Document) {
         // We need this especially for undo operations, to recreate handles for re-added objects.
         removeHandles()
         createHandles()
@@ -226,7 +226,7 @@ class SelectionTool: CanvasTool {
         guard let canvas,
               let scene = canvas.scene,
               let document,
-              let frame = document.world.plane
+              let plane = document.world.plane
         else { return }
         let selection = document.selection
 
@@ -248,7 +248,7 @@ class SelectionTool: CanvasTool {
                 $0.insert(.geometry)
             }
             
-            let deps = frame.dependentEdges(objectID)
+            let deps = plane.dependentEdges(objectID)
             dependentEdges.formUnion(deps)
         }
         

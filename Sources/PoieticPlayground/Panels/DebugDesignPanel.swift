@@ -43,7 +43,7 @@ class DebugDesignPanel: Panel {
     }
 
     func draw() {
-        guard let document, let frame = document.world.plane else {
+        guard let document, let plane = document.world.plane else {
             ImGui.Begin("Design Debug")
             ImGui.TextUnformatted("No design loaded.")
             ImGui.End()
@@ -64,7 +64,7 @@ class DebugDesignPanel: Panel {
         } else {
             if ImGui.BeginListBox("##lb", ImVec2(-1, -1)) {
                 for (index, objectID) in objectIDs.enumerated() {
-                    let label = makeLabel(for: objectID, in: frame)
+                    let label = makeLabel(for: objectID, in: plane)
                     let isSelected = (index == selectedIndex)
                     if ImGui.Selectable(label, isSelected, 0, ImVec2()) {
                         selectedIndex = index
@@ -83,7 +83,7 @@ class DebugDesignPanel: Panel {
 
         if let selectedIndex, selectedIndex < objectIDs.count {
             let objectID = objectIDs[selectedIndex]
-            if let object = frame[objectID] {
+            if let object = plane[objectID] {
                 drawObjectDetail(object)
             } else {
                 ImGui.TextUnformatted("Object \(objectID) not found in current plane.")
@@ -113,10 +113,10 @@ class DebugDesignPanel: Panel {
         ImGui.SameLine()
         ImGui.TextDisabledUnformatted("(\(object.type.name))")
 
-        // Structure
-        ImGui.TextUnformatted("Structure:")
+        // Topology
+        ImGui.TextUnformatted("Topology:")
         ImGui.SameLine()
-        switch object.structure {
+        switch object.topology {
         case .node:
             ImGui.TextUnformatted("node")
         case .edge(let origin, let target):
@@ -187,8 +187,8 @@ class DebugDesignPanel: Panel {
         }
     }
 
-    private func makeLabel(for objectID: ObjectID, in frame: DesignPlane) -> String {
-        guard let object = frame[objectID] else {
+    private func makeLabel(for objectID: ObjectID, in plane: DesignPlane) -> String {
+        guard let object = plane[objectID] else {
             return "\(objectID) (not found)"
         }
         let name: String = object["name"] ?? ""

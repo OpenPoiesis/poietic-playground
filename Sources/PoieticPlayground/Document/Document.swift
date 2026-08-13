@@ -9,28 +9,6 @@ import PoieticCore
 import Foundation
 import Diagramming
 
-/*
- 
- New schedules
- 
- 
- FrameChange
-    Simulation
-
-
- Document Update:
-    1. DocumentUpdate
-    2. PlayerStep
-        - SimulationSamplingSystem
-    3. VisualsUpdate
-        - SceneComposition
-        - SceneInteraction
-    4. CleanUp
-        - Remove dirty
- 
- 
- */
-
 /// Represents and controls the design document.
 ///
 /// Responsibilities:
@@ -55,7 +33,7 @@ class Document {
         /// - control bar
         /// - player
         /// - dashboard
-        case designFrameChanged
+        case designPlaneChanged
         
         /// Triggered:
         /// - when selection is changed, through ``Document/changeSelection(_:)
@@ -98,7 +76,7 @@ class Document {
     let world: World
     
     /// Flag whether we need to update the world plane on next call to update.
-    var needsWorldFrameUpdate: Bool = false
+    var needsWorldPlaneUpdate: Bool = false
     
     var selection: Selection
     var selectionOverview: SelectionOverview
@@ -169,8 +147,8 @@ class Document {
         if self.selection.isEmpty {
             self.selectionOverview.clear()
         }
-        if let frame = world.plane {
-            self.selectionOverview.update(selection, frame: frame)
+        if let plane = world.plane {
+            self.selectionOverview.update(selection, plane: plane)
         }
         else {
             self.selectionOverview.clear()

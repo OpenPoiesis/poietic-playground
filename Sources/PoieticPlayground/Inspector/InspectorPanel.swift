@@ -35,16 +35,16 @@ class SelectionOverview {
         self.distinctValues = [:]
     }
 
-    func update(_ selection: Selection, frame: DesignPlane) {
-        self.containedCount = frame.contained(selection).count
-        self.distinctTypes = frame.distinctTypes(selection)
-        self.sharedTraits = frame.sharedTraits(selection)
-        self.distinctNames = frame.distinctAttribute("name", ids: selection).compactMap { try? $0.stringValue() }
+    func update(_ selection: Selection, plane: DesignPlane) {
+        self.containedCount = plane.contained(selection).count
+        self.distinctTypes = plane.distinctTypes(selection)
+        self.sharedTraits = plane.sharedTraits(selection)
+        self.distinctNames = plane.distinctAttribute("name", ids: selection).compactMap { try? $0.stringValue() }
         self.distinctValues = [:]
     }
     
-    func updateAttribute(_ attribute: String, selection: Selection, frame: DesignPlane) {
-        let values = frame.distinctAttribute(attribute, ids: selection)
+    func updateAttribute(_ attribute: String, selection: Selection, plane: DesignPlane) {
+        let values = plane.distinctAttribute(attribute, ids: selection)
         self.distinctValues[attribute] = Array(values)
     }
 }
@@ -134,9 +134,9 @@ class InspectorPanel: Panel {
             activeSections.append(section)
         }
 
-        if let frame = document.world.plane {
+        if let plane = document.world.plane {
             for attribute in attributes {
-                overview.updateAttribute(attribute, selection: selection, frame: frame)
+                overview.updateAttribute(attribute, selection: selection, plane: plane)
             }
         }
         

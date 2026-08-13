@@ -56,9 +56,9 @@ extension DiagramCanvas {
             modifiers: currentModifiers
         )
 
-        // # Viewport check and Hover Events
+        // Viewport check and Hover Events
         //
-        // Case 1: Mouse left viewport while idle - bail completely
+        // Mouse left viewport while idle - bail completely
         if !isMouseInViewport && (inputState.pointerState == .idle) {
             if inputState.wasMouseInViewport {
                 let event = ToolEvent(.hoverEnd, body: eventBody)
@@ -68,21 +68,20 @@ extension DiagramCanvas {
             return events
         }
 
-        // Case 2: Mouse left viewport during operation - continue but emit HoverEnd
+        // Mouse left viewport during operation - continue but emit HoverEnd
         if !isMouseInViewport && inputState.wasMouseInViewport {
             let event = ToolEvent(.hoverEnd, body: eventBody)
             events.append(event)
             inputState.wasMouseInViewport = false
         }
-        // Case 3: Mouse returned to viewport - emit HoverStart
+        // Mouse returned to viewport - emit HoverStart
         if isMouseInViewport && !inputState.wasMouseInViewport {
             let event = ToolEvent(.hoverStart, body: eventBody)
             events.append(event)
             inputState.wasMouseInViewport = true
         }
         
-        // # Pointer Events
-        // Pointer Down - ImGui tells us which buttons were clicked THIS FRAME
+        // Pointer Events
         let buttonsClicked = MouseButtonMask(io.MouseClicked)
         for button in buttonsClicked.buttons {
             let event = ToolEvent(.pointerDown,
@@ -91,13 +90,11 @@ extension DiagramCanvas {
             events.append(event)
         }
         
-        // Pointer Move - if mouse moved
         if mouseDelta.lengthSquared() > 0.0 {
             let event = ToolEvent(.pointerMove, body: eventBody)
             events.append(event)
         }
         
-        // Pointer Up - ImGui tells us which buttons were released THIS FRAME
         let buttonsReleased = MouseButtonMask(io.MouseReleased)
         for button in buttonsReleased.buttons {
             let event = ToolEvent(.pointerUp,
@@ -106,8 +103,7 @@ extension DiagramCanvas {
             events.append(event)
         }
         
-        // # Modifier Change
-        //
+        // Modifier Change
         if currentModifiers != inputState.previousModifiers {
             let event = ToolEvent(.modifierChange, body: eventBody)
             events.append(event)
@@ -122,12 +118,10 @@ extension DiagramCanvas {
             events.append(event)
         }
         
-        // # Escape Key Handling
-        //
+        // Escape Key
         let escapePressed = ImGui.IsKeyPressed(ImGuiKey_Escape)
         
-        // # Input State Machine and Gesture Recognition
-        //
+        // Input State Machine and Gesture Recognition
         switch inputState.pointerState {
         case .idle:
             for button in buttonsClicked.buttons {

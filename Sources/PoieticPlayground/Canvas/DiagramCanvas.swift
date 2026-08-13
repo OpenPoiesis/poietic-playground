@@ -163,7 +163,7 @@ class DiagramCanvas: View {
 
     /// Update renderable scene and mark the whole canvas as needing to be rendered.
     ///
-    func onDesignFrameChanged(_ document: Document) {
+    func onDesignPlaneChanged(_ document: Document) {
         self.diagram = document.mainDiagram
         updateScene()
         self.scene?.setComponent(LayoutDirty())

@@ -17,17 +17,17 @@ extension Application {
         }
         
         let document = Document(design: design, url: designURL, notation: notation)
-        document.needsWorldFrameUpdate = true
+        document.needsWorldPlaneUpdate = true
 
         self.document = document
         bindToDocument(document)
     }
     
     func connectObservers(_ document: Document) {
-        document.addObserver(inspector.onSelectionChanged, on: .designFrameChanged)
+        document.addObserver(inspector.onSelectionChanged, on: .designPlaneChanged)
         document.addObserver(inspector.onSelectionChanged, on: .selectionChanged)
         document.addObserver(inspector.onSimulationFinished, on: .simulationFinished)
-        document.addObserver(canvas.onDesignFrameChanged, on: .designFrameChanged)
+        document.addObserver(canvas.onDesignPlaneChanged, on: .designPlaneChanged)
         document.addObserver(canvas.onSelectionChanged, on: .selectionChanged)
         document.addObserver(canvas.onSimulationPlayerStep, on: .simulationPlayerStep)
         document.addObserver(canvas.onSimulationPlayerStep, on: .simulationFinished)
@@ -36,11 +36,11 @@ extension Application {
         document.addObserver(canvas.onPreviewStarted, on: .previewStarted)
         document.addObserver(canvas.onPreviewEnded, on: .previewEnded)
 
-        document.addObserver(controlBar.onDesignFrameChanged, on: .designFrameChanged)
+        document.addObserver(controlBar.onDesignPlaneChanged, on: .designPlaneChanged)
         document.addObserver(controlBar.onSimulationPlayerStep, on: .simulationPlayerStep)
-        document.addObserver(player.onDesignFrameChanged, on: .designFrameChanged)
+        document.addObserver(player.onDesignPlaneChanged, on: .designPlaneChanged)
         document.addObserver(player.onSimulationFailed, on: .simulationFailed)
-        document.addObserver(dashboard.onDesignFrameChanged, on: .designFrameChanged)
+        document.addObserver(dashboard.onDesignPlaneChanged, on: .designPlaneChanged)
 
         document.addObserver(graphicFunctionPanel.onSelectionChanged, on: .selectionChanged)
 

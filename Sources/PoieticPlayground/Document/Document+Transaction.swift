@@ -54,6 +54,6 @@ extension Document {
         try design.accept(transaction, appendHistory: true)
         self.log("Transaction accepted. Current plane: \(transaction.id), plane count: \(design.planes.count)")
 
-        self.needsWorldFrameUpdate = true
+        self.needsWorldPlaneUpdate = true
     }
 }
