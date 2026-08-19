@@ -51,7 +51,7 @@ extension Document {
                 systems:
                     PoieticFlows.SimulationPlanningSystems
                     + [
-                        NewChartResolutionSystem.self,
+                        ChartResolutionSystem.self,
                         TraitsToDiagramObjectsSystem.self,
                         VisualMetadataSystem.self,
                     ]
