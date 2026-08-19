@@ -18,11 +18,11 @@ class ResultPlayer {
     var isLooping: Bool = true
 
     /// Initial simulation time.
-    var initialTime: Double = 0.0   // From result
+    var initialTime: Double = 0.0
     /// Time delta of simulation time.
-    var timeDelta: Double = 1.0     // From result
+    var timeDelta: Double = 1.0
     /// Number of steps.
-    var lastStep: Int = 0           // From result
+    var lastStep: Int = 0
     
     /// Remaining real time to next step.
     var timeToStep: Double = 0
@@ -54,12 +54,14 @@ class ResultPlayer {
     }
    
     func onDesignPlaneChanged(_ document: Document) {
-        guard let plan: SimulationPlan = document.world.singleton() else {
+        // We are assuming that simulation planning schedule was run.
+        // Settings are set regardless whether we have a plan or not.
+        let settings: SimulationSettings = document.world.singleton() ?? SimulationSettings()
+
+        if !document.world.hasSingleton(SimulationPlan.self) {
             self.isRunning = false
-            return
-            // TODO: Reset variables
         }
-        let settings = plan.simulationSettings
+
         self.initialTime = settings.initialTime
         self.timeDelta = settings.timeDelta
         self.lastStep = Int(settings.steps)
@@ -72,14 +74,14 @@ class ResultPlayer {
     func onSimulationFinished(_ document: Document) {
         stateChanged()
     }
-    /// Run the systems for player step and then notify Godot through a signal.
+    /// Run ``PlayerStepSchedule`` and then trigger the ``Document/Event/simulationPlayerStep``
+    /// event.
     ///
     func stateChanged() {
         guard let document else { return }
 
         let component = SimulationReplayTime(step: currentStep, time: currentTime)
         document.world.setSingleton(component)
-        document.trigger(.simulationPlayerStep)
         do {
             try document.world.run(schedule: PlayerStepSchedule.self)
         }
@@ -87,7 +89,7 @@ class ResultPlayer {
             document.queueAlert(title: "Player Schedule Failed",
                                 message: "Please file an issue with developers")
         }
-//        simulationPlayerStep.emit()
+        document.trigger(.simulationPlayerStep)
     }
     
     /// Rewind the player to the first simulation step.

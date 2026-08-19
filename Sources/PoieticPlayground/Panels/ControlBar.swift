@@ -34,15 +34,10 @@ class ControlBar: @MainActor Panel {
     }
    
     func onDesignPlaneChanged(_ document: Document) {
-        guard let plane = document.world.plane
-        else { return }
+        // We are assuming that simulation planning schedule was run.
+        // Settings are set regardless whether we have a plan or not.
+        self.settings = document.world.singleton() ?? SimulationSettings()
         
-        if let infoObject = plane.first(type: .Simulation) {
-            self.settings = SimulationSettings(fromObject: infoObject)
-        }
-        else {
-            self.settings = SimulationSettings()
-        }
         if let player = self.app?.player {
             self.currentStep = Int32(player.currentStep)
             self.currentTime = player.currentTime
