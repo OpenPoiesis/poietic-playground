@@ -16,13 +16,12 @@ extension Document {
     }
     
     func autoConnectParameters() {
-        let system = ParameterConnectionProposalSystem(world)
         
         // We can just run it, as this method is called when the world is populated. If it is not,
         // we are fine too - just do nothing. This is an optional utility, not to be put in a
         // critical path.
         // It is a non-throwing system, we run it gracefully
-        try? system.update(self.world)
+        try? ParameterConnectionProposalSystem.update(self.world)
 
         guard let proposal: ParameterProposal = world.singleton(),
               !proposal.isEmpty

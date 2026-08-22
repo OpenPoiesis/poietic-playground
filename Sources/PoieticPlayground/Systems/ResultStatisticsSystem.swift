@@ -21,11 +21,11 @@ import PoieticFlows
 /// - **Issues:** No issues created.
 ///
 public struct TimeSeriesProcessingSystem: System {
-    nonisolated(unsafe) public static let dependencies: [SystemDependency] = [
+    public static let dependencies: [SystemDependency] = [
         .after(StockFlowSimulationSystem.self),
     ]
-    public init(_ world: World) { }
-    public func update(_ world: World) throws (InternalSystemError) {
+
+    public static func update(_ world: World) throws (InternalSystemError) {
         guard let plan: SimulationPlan = world.singleton(),
               let result: SimulationResult = world.singleton()
         else { return }

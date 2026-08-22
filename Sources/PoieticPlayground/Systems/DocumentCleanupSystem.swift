@@ -23,11 +23,9 @@ import Diagramming
 /// - **Forgiveness:** Nothing to be forgiven.
 ///
 struct DocumentCleanupSystem: System {
-    nonisolated(unsafe) public static let dependencies: [SystemDependency] = [ ]
+    public static let dependencies: [SystemDependency] = [ ]
     
-    init(_ world: PoieticCore.World) { }
-    
-    func update(_ world: PoieticCore.World) throws(PoieticCore.InternalSystemError) {
+    static func update(_ world: PoieticCore.World) throws(PoieticCore.InternalSystemError) {
         world.removeComponentForAll(DirtyContent.self)
         world.removeComponentForAll(ViewportDirty.self)
 //        world.removeComponentForAll(InteractionDirty.self)

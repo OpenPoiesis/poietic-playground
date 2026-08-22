@@ -22,12 +22,9 @@ import PoieticFlows
 ///
 struct SimulationSamplingSystem: System {
     // TODO: This is using old way of storing simulation data - in their respective structures, instead of components.
-    nonisolated(unsafe) public static let dependencies: [SystemDependency] = [
-    ]
+    public static let dependencies: [SystemDependency] = []
     
-    init(_ world: World) {    }
-    
-    func update(_ world: World) throws(InternalSystemError) {
+    static func update(_ world: World) throws(InternalSystemError) {
         guard let result: SimulationResult = world.singleton(),
               let plan: SimulationPlan = world.singleton()
         else { return }
