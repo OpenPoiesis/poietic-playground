@@ -1,6 +1,6 @@
 //
 //  UndoRedoCommand.swift
-//  PoieticPlayground
+//  poietic-tool
 //
 //  Created by Stefan Urbanek on 09/02/2026.
 //
