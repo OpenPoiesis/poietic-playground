@@ -9,27 +9,7 @@ import CIimgui
 import PoieticCore
 import PoieticFlows
 
-//convenience init(entity: RuntimeEntity? = nil) {
-//    var series: [ChartSeries] = []
-//    let chart: Chart?
-//    if let entity {
-//        for child in entity.children {
-//            guard let seriesComponent: ChartSeries = child.component()
-//            else { continue }
-//
-//            series.append(seriesComponent)
-//        }
-//        chart = entity.component()
-//    }
-//    else {
-//        chart = nil
-//        series = []
-//    }
-//    self.init(world: entity?.world, chart: chart ?? Chart(), series: series)
-//}
-//
 // FIXME: Use ImPlot (https://github.com/epezent/implot)
-
 
 struct _TimeSeriesWrapper {
     let series: RegularTimeSeries
@@ -77,9 +57,8 @@ class ChartView {
     }
 
     func drawSeries(chart: RuntimeEntity, seriesEntity: RuntimeEntity) {
-        guard let world else { return }
         guard let chartSeries: ChartSeries = seriesEntity.component(),
-              let target = world.entity(chartSeries.other),
+              let target = seriesEntity.firstOutgoing(RepresentationOf.self),
               let timeSeries: RegularTimeSeries = target.component(),
               let stats: NumericValueStats = target.component()
         else { return }
@@ -87,6 +66,7 @@ class ChartView {
         var wrap = _TimeSeriesWrapper(series: timeSeries)
 
         // TODO: Use style from CanvasStyle
+        // TODO: Get color from series entity if not set for the series
         let color: Color
         if let key = chartSeries.colorKey,
            let seriesColor = DefaultAdaptableColors[key]
@@ -110,50 +90,5 @@ class ChartView {
                         plotSize)
         ImGui.PopStyleColor()
         ImGui.PopStyleColor()
-    }
-}
-
-@MainActor
-class FixedChartView {
-    var world: World?
-
-    var chart: Chart?
-    var series: [ChartSeries]
-    var plotSize: ImVec2
-
-    init(chart: Chart? = nil, series: [ChartSeries] = [], world: World? = nil) {
-        self.chart = chart
-        self.series = series
-        self.world = world
-        plotSize = ImVec2(100.0, 80.0)
-    }
-    
-    func draw() {
-        guard let chart else { return }
-        // 1. Get series
-        let cursor = ImGui.GetCursorPos()
-        for (index, series) in self.series.enumerated() {
-            ImGui.SetCursorPos(cursor)
-            drawSeries(series, id: String(index))
-        }
-    }
-
-    func drawSeries(_ chartSeries: ChartSeries, id: String) {
-        guard let world else { return }
-        guard let target = world.entity(chartSeries.other),
-              let timeSeries: RegularTimeSeries = target.component(),
-              let stats: NumericValueStats = target.component()
-        else { return }
-        
-        var wrap = _TimeSeriesWrapper(series: timeSeries)
-        ImGui.PlotLines("##plot"+id,
-                        chartValueGetter,
-                        &wrap,
-                        Int32(timeSeries.data.count),
-                        0, // offset
-                        nil, // overlay text,
-                        Float.greatestFiniteMagnitude,
-                        Float.greatestFiniteMagnitude,
-                        plotSize)
     }
 }

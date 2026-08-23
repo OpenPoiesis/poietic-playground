@@ -64,7 +64,6 @@ class Dashboard: Panel {
                let document
             {
                 // TODO: Add chart
-                print("ADD CHART")
                 let command = CreateChartCommand(
                     name: nil,
                     series: Array(document.selection.ids)

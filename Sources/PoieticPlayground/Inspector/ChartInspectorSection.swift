@@ -37,30 +37,47 @@ class ChartInspectorSection: InspectorSection {
     static let inspectorCategory: InspectorPanel.Category = .overview
 
     static let ChartSize = ImVec2(100, 80)
-    var chartView: FixedChartView
+    var chartView: ChartView
+    var chartEntity: RuntimeEntity?
     
     init() {
-        self.chartView = FixedChartView()
+        self.chartView = ChartView()
+        self.chartEntity = nil
     }
  
     func onSelectionChanged(_ document: Document) {
         let selection = document.selection
         let world = document.world
-        let chart = Chart() // TODO: Use some default axis setup
-        var series: [ChartSeries] =  []
-        for objectID in selection {
-            guard let entity = world.entity(objectID) else { continue }
-            let chartSeries = ChartSeries(
-                target: entity.runtimeID,
-                colorKey: nil,
-                displayBounds: DisplayValueBounds()
-            )
-            series.append(chartSeries)
+        let chart: RuntimeEntity
+        if let existing = chartEntity, existing.world === world
+        {
+            for child in existing.children { child.despawn() }
+            chart = existing
         }
-        chartView.series = series
-        chartView.chart = chart
-        chartView.world = world
-        // we need world and plane here
+        else {
+            // TODO: Use some default axis setup
+            chart = world.spawn(Chart())
+            self.chartEntity = chart
+        }
+        
+        for objectID in selection {
+            guard let target = world.entity(objectID) else { continue }
+            // TODO: Pass nil and let the ChartView fetch the color
+            let colorKey: AdaptableColorKey?
+            if let color: AdaptableColor = target.component() {
+                colorKey = color.key
+            }
+            else {
+                colorKey = nil
+            }
+            let seriesEntity = world.spawn(
+                ChartSeries(colorKey: colorKey, displayBounds: DisplayValueBounds())
+            )
+            seriesEntity.relate(ChildOf(), to: chart.runtimeID)
+            seriesEntity.relate(RepresentationOf(), to: target.runtimeID)
+        }
+
+        chartView.chartEntity = chart
     }
 
     func update(_ document: Document) { /* Nothing for now */ }
