@@ -57,6 +57,9 @@ protocol InspectorSection: ApplicationObject {
     /// selection overview can be computed.
     var inspectedAttributes: [String] { get }
 
+    /// Bind to a new document, reset entity references if holding any.
+    func bind(_ document: Document)
+
     func onSelectionChanged(_ document: Document)
     func onSimulationFinished(_ document: Document)
     
@@ -68,6 +71,7 @@ extension InspectorSection {
     func shouldDisplay(overview: SelectionOverview) -> Bool { true }
     func update(_ timeDelta: Double) { /* Do nothing */ }
     func onSimulationFinished(_ document: Document) { /* Do nothing */ }
+    func bind(_ document: Document)  { /* Do nothing */ }
 }
 
 class InspectorPanel: Panel {
@@ -114,6 +118,12 @@ class InspectorPanel: Panel {
     
     func bind(_ document: Document) {
         self.document = document
+        for section in allSections {
+            section.bind(document)
+        }
+        for section in designSections {
+            section.bind(document)
+        }
     }
     
     func onSelectionChanged(_ document: Document) {

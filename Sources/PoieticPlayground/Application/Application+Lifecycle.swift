@@ -91,13 +91,15 @@ extension Application {
     }
     
     func update(_ timeDelta: Double) {
-        if let document {
-            // Run the Command Queue
-            while !document.commandQueue.isEmpty {
-                let command = document.commandQueue.removeFirst()
-                self.runCommand(command, document: document)
-            }
-            
+        // Run the Command Queue.
+        // When a command replaces the document, we continue with the new one.
+        // The rest of the commands in the replaced document queue is dropped.
+        while let document = self.document, !document.commandQueue.isEmpty {
+            let command = document.commandQueue.removeFirst()
+            self.runCommand(command, document: document)
+        }
+        
+        if let document = self.document {
             do {
                 try document.consumeAndAcceptTransaction()
             }
@@ -124,7 +126,6 @@ extension Application {
             panel.update(timeDelta)
         }
         
-        // TODO: Is this the right place to call this?
         document?.run(schedule: DocumentCleanupSchedule.self)
     }
     

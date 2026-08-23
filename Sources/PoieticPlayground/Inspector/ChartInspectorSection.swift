@@ -44,6 +44,10 @@ class ChartInspectorSection: InspectorSection {
         self.chartView = ChartView()
         self.chartEntity = nil
     }
+    func bind(_ document: Document)  {
+        chartEntity = nil
+        chartView.chartEntity = nil
+    }
  
     func onSelectionChanged(_ document: Document) {
         let selection = document.selection
