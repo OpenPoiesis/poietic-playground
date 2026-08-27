@@ -7,6 +7,7 @@
 
 import CIimgui
 import Cimguifd
+import Foundation
 
 class FilePickerPanel {
     enum Mode {
@@ -26,9 +27,10 @@ class FilePickerPanel {
     var isOpen: Bool = false
     var mode: Mode = .save
     var callback: ((String) -> Void)? = nil
+    var lastPath = "."
 
     func open(mode: Mode, filter: String? = nil, _ callback: @escaping ((String) -> Void)) {
-        let path = "."
+        let path = lastPath
         
         self.callback = callback
         ImGuiFD.OpenDialog("Choose Dir",
@@ -56,6 +58,22 @@ class FilePickerPanel {
             }
 
             ImGuiFD.EndDialog()
+        }
+        
+        if let path {
+            var isDir: ObjCBool = false
+            let fm = FileManager()
+            
+            if fm.fileExists(atPath: path, isDirectory: &isDir) && isDir.boolValue {
+                lastPath = path
+            }
+            else {
+                let url = URL(fileURLWithPath: path)
+                let trimmed = url.deletingLastPathComponent().path
+                if fm.fileExists(atPath: trimmed, isDirectory: &isDir) && isDir.boolValue {
+                    lastPath = trimmed
+                }
+            }
         }
         
         if let path, let callback {
