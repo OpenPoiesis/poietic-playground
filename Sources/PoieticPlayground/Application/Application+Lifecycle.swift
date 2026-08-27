@@ -47,11 +47,13 @@ extension Application {
                 timeout = Self.DefaultEventPollTimeout
             }
 
+            // FIXME: [IMPORTANT] Too crowded, clean-it up.
             switch backend.pollEvent(timeout: timeout) {
             case .quit: break loop
             case .skip: continue
             case .none: break
             case .gesture(let gesture):
+                guard canvas.isMouseInViewport else { break }
                 let event = ToolEvent(gesture, io: ImGui.GetIO().pointee)
                 self.pendingToolEvents.append(event)
             case .dropFile(path: let path):

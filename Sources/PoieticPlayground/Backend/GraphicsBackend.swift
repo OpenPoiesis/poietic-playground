@@ -67,14 +67,14 @@ enum BackendEvent {
     case dropFile(path: String)
 }
 
-enum EventPhase {
-    case begin
-    case update
-    case end
-}
-
 enum GestureEvent {
-    case pinch(EventPhase, scale: Float)
+    enum Phase {
+        case start
+        case update
+        case end
+    }
+
+    case pinch(Phase, scale: Float)
 }
 
 enum TextureBlendMode {

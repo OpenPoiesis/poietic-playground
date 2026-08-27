@@ -88,7 +88,7 @@ final class SDL3GPUBackend: GraphicsBackendProtocol {
                     where event.window.windowID == SDL_GetWindowID(window):
                 return .quit
             case SDL_EVENT_PINCH_BEGIN.rawValue:
-                return .gesture(.pinch(.begin, scale: event.pinch.scale))
+                return .gesture(.pinch(.start, scale: event.pinch.scale))
             case SDL_EVENT_PINCH_UPDATE.rawValue:
                 return .gesture(.pinch(.update, scale: event.pinch.scale))
             case SDL_EVENT_PINCH_END.rawValue:

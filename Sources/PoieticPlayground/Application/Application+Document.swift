@@ -20,6 +20,9 @@ extension Application {
         document.needsWorldPlaneUpdate = true
 
         self.document = document
+        
+        // TODO: Retrieve from the document
+        self.canvas.setView(offset: .zero, zoom: 1.0)
         bindToDocument(document)
     }
     

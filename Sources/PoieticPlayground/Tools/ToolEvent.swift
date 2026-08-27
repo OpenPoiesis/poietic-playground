@@ -257,7 +257,7 @@ struct ToolEvent: CustomDebugStringConvertible {
         switch gesture {
         case .pinch(let phase, scale: let scale):
             self.type = switch phase {
-            case .begin: .pinchStart
+            case .start: .pinchStart
             case .update: .pinchUpdate
             case .end: .pinchEnd
             }
