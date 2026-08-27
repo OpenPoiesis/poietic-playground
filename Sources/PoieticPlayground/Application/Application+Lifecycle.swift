@@ -6,6 +6,7 @@
 //
 
 import CIimgui
+import Foundation
 
 extension Application {
     static let DefaultEventPollTimeout: Int32 = 16
@@ -50,6 +51,17 @@ extension Application {
             case .quit: break loop
             case .skip: continue
             case .none: break
+            case .gesture(let gesture):
+                let event = ToolEvent(gesture, io: ImGui.GetIO().pointee)
+                self.pendingToolEvents.append(event)
+            case .dropFile(path: let path):
+                do {
+                    try self.openDesign(url: URL(fileURLWithPath: path))
+                }
+                catch {
+                    self.alert(title: "Error",
+                               message: "Unable to open dropped file '\(path)'. Reason: \(error)")
+                }
             }
             
             backend.newFrame()
@@ -146,7 +158,8 @@ extension Application {
     func processUnhandledInput() {
         let io = ImGui.GetIO().pointee
        
-        let events = canvas.recognizeEvents(io)
+        let events = canvas.recognizeEvents(io) + pendingToolEvents
+        pendingToolEvents.removeAll()
 
         for event in events {
             var result: CanvasTool.EngagementResult = .pass

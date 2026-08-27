@@ -87,6 +87,19 @@ final class SDL3GPUBackend: GraphicsBackendProtocol {
             case SDL_EVENT_WINDOW_CLOSE_REQUESTED.rawValue
                     where event.window.windowID == SDL_GetWindowID(window):
                 return .quit
+            case SDL_EVENT_PINCH_BEGIN.rawValue:
+                return .gesture(.pinch(.begin, scale: event.pinch.scale))
+            case SDL_EVENT_PINCH_UPDATE.rawValue:
+                return .gesture(.pinch(.update, scale: event.pinch.scale))
+            case SDL_EVENT_PINCH_END.rawValue:
+                return .gesture(.pinch(.end, scale: event.pinch.scale))
+
+            case SDL_EVENT_DROP_FILE.rawValue:
+                if let data = event.drop.data {
+                    let string = String(cString: data)
+                    return .dropFile(path: string)
+                }
+            // TODO: Case SDL_EVENT_DROP_TEXT + use event.x, y
             default:
                 break
             }

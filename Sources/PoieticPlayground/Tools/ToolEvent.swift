@@ -178,8 +178,13 @@ enum ToolEventType {
 //    case contextMenu
     
     case scroll
+    
+    case pinchStart
+    case pinchUpdate
+    case pinchEnd
 }
 
+// TODO: Make ToolEvent imgui-free
 /// Structure encapsulating information about a canvas tool event.
 struct ToolEvent: CustomDebugStringConvertible {
     let type: ToolEventType
@@ -194,6 +199,7 @@ struct ToolEvent: CustomDebugStringConvertible {
     /// Which button(s) triggered this event
     let triggerButton: MouseButton?
     let scrollDelta: ImVec2
+    let scale: Float
 
     var debugDescription: String {
         var desc = "\(type) P:\(screenPos) ∆:\(delta) B:\(buttonsDown) M:\(modifiers) T:\(triggerButton, default:"-")"
@@ -213,7 +219,8 @@ struct ToolEvent: CustomDebugStringConvertible {
          buttonsDown: MouseButtonMask = .none,
          modifiers: KeyModifiers = .none,
          triggerButton: MouseButton? = nil,
-         scrollDelta: ImVec2 = ImVec2())
+         scrollDelta: ImVec2 = ImVec2(),
+         scale: Float = 1.0)
     {
         self.type = type
         self.screenPos = screenPos
@@ -222,12 +229,14 @@ struct ToolEvent: CustomDebugStringConvertible {
         self.modifiers = modifiers
         self.triggerButton = triggerButton
         self.scrollDelta = scrollDelta
+        self.scale = scale
     }
     
     init(_ type: ToolEventType,
          body: Body,
          triggerButton: MouseButton? = nil,
-         scrollDelta: ImVec2 = ImVec2())
+         scrollDelta: ImVec2 = ImVec2(),
+         scale: Float = 1.0)
     {
         self.type = type
         self.screenPos = body.screenPos
@@ -236,5 +245,25 @@ struct ToolEvent: CustomDebugStringConvertible {
         self.modifiers = body.modifiers
         self.triggerButton = triggerButton
         self.scrollDelta = scrollDelta
+        self.scale = scale
     }
+    init(_ gesture: GestureEvent, io: ImGuiIO) {
+        self.screenPos = io.MousePos
+        self.delta = io.MouseDelta
+        self.buttonsDown = .none
+        self.modifiers = KeyModifiers(io.KeyMods)
+        self.triggerButton = nil
+        
+        switch gesture {
+        case .pinch(let phase, scale: let scale):
+            self.type = switch phase {
+            case .begin: .pinchStart
+            case .update: .pinchUpdate
+            case .end: .pinchEnd
+            }
+            self.scrollDelta = ImVec2()
+            self.scale = scale
+        }
+    }
+
 }

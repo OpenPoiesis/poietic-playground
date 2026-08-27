@@ -6,6 +6,7 @@
 //
 
 import CIimgui
+import Foundation
 
 struct GraphicsBackendError: Error, CustomStringConvertible {
     let message: String
@@ -61,6 +62,19 @@ enum BackendEvent {
     case quit
     /// Skip this plane
     case skip
+    
+    case gesture(GestureEvent)
+    case dropFile(path: String)
+}
+
+enum EventPhase {
+    case begin
+    case update
+    case end
+}
+
+enum GestureEvent {
+    case pinch(EventPhase, scale: Float)
 }
 
 enum TextureBlendMode {

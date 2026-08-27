@@ -43,6 +43,8 @@ class Application {
     var debugCanvasRendering = false
     var quitRequested: Bool = false
     
+    var pendingToolEvents: [ToolEvent] = []
+    
     // -- Document --
     var canvas: DiagramCanvas
     var player: ResultPlayer
