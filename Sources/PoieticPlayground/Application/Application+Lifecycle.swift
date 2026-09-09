@@ -26,7 +26,7 @@ extension Application {
             try self.openDesign(url: templateURL)
         }
         catch {
-            self.alert(title: "Error",
+            self.queueAlert(title: "Error",
                        message: "Unable to open template design '\(templateURL)'. Reason: \(error)")
             self.newDesign()
         }
@@ -61,7 +61,7 @@ extension Application {
                     try self.openDesign(url: URL(fileURLWithPath: path))
                 }
                 catch {
-                    self.alert(title: "Error",
+                    self.queueAlert(title: "Error",
                                message: "Unable to open dropped file '\(path)'. Reason: \(error)")
                 }
             }
@@ -105,6 +105,8 @@ extension Application {
     }
     
     func update(_ timeDelta: Double) {
+        updateDialogs()
+        
         // Run the Command Queue.
         // When a command replaces the document, we continue with the new one.
         // The rest of the commands in the replaced document queue is dropped.
@@ -120,7 +122,7 @@ extension Application {
             catch {
                 // This is not user's fault and never should be.
                 // The application failed to make sure structural integrity is assured
-                Application.shared.alert(title: "Plane validation error (report to developers)",
+                Application.shared.queueAlert(title: "Plane validation error (report to developers)",
                                          message: String(describing: error))
                 return
             }
@@ -134,7 +136,6 @@ extension Application {
         // Update UI components
         canvas.update(timeDelta)
         toolBar.update(timeDelta)
-        alertPanel.update(timeDelta)
 
         for panel in panels {
             panel.update(timeDelta)
@@ -148,13 +149,14 @@ extension Application {
         canvas.draw()
         
         toolBar.draw()
-        alertPanel.draw()
         filePicker.draw()
 
         for panel in panels {
             guard panel.isVisible else { continue }
             panel.draw()
         }
+        
+        self.activeModal?.draw()
     }
     
     func processUnhandledInput() {

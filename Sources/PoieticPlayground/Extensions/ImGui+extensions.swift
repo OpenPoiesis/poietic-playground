@@ -22,6 +22,10 @@ extension ImGui {
         let color = ImGui.GetStyleColorVec4(Int32(index.rawValue))
         return Color(color.pointee)
     }
+    
+    static func PushStyleColor(_ index: ImGuiCol_, color: Color)  {
+        ImGui.PushStyleColor(ImGuiCol(index.rawValue), color.imVecValue)
+    }
 }
 
 extension Vector2D {

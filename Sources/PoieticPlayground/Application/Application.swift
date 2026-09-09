@@ -49,10 +49,16 @@ class Application {
     var canvas: DiagramCanvas
     var player: ResultPlayer
 
+    // -- Modal Dialog --
+    var inputBlocked: Bool = false
+    var modalQueue: [any ModalDialog] = []
+    var activeModal: (any ModalDialog)? {
+        modalQueue.first { $0.status == .active}
+    }
+    
     // -- Views and Controller-likes --
     let filePicker: FilePickerPanel
     let inspector: InspectorPanel
-    var alertPanel: AlertPanel
     let aboutPanel: AboutPanel
     let settingsPanel: SettingsPanel
     // Document Content Panels
@@ -94,7 +100,6 @@ class Application {
 
         // Special panels
         self.toolBar = ToolBar()
-        self.alertPanel = AlertPanel()
         self.filePicker = FilePickerPanel()
 
         // Regualr Panels
@@ -161,17 +166,19 @@ class Application {
         }
         ImGui.End()
     }
-    
-    func alert(title: String, message: String) {
-        self.alertPanel.title = title
-        self.alertPanel.message = message
-        self.alertPanel.isVisible = true
+
+    func queueAlert(title: String, message: String) {
+        let alert = ConfirmationDialog(
+            title: title,
+            message: message,
+            options: [
+                ConfirmationDialog.Option(label: "Dismiss")
+            ]
+        )
+        
+        queueDialog(alert)
     }
     
-    // FIXME: Make a proper alert mechanism. This is a quick hack to silence the compiler after refactoring. (see callers of this)
-    func queueAlert(title: String, message: String) async {
-        alert(title: title, message: message)
-    }
 
     func log(_ message: String) {
         print("INFO: ", message)

@@ -28,7 +28,7 @@ extension Application {
             case .fatal: title = "Error"
             }
             
-            self.alert(title: title, message: error.message)
+            self.queueAlert(title: title, message: error.message)
         }
     }
 
