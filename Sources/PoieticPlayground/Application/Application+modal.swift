@@ -11,7 +11,7 @@ extension Application {
     func openFilePicker(title: String,
                         mode: FilePickerMode = .open,
                         filter: String? = nil,
-                        callback: @escaping ((String) -> Void))
+                        callback: @escaping ((String?) -> Void))
     {
         // TODO: Instantiate new file picker here. We need a mechanism of preserving last picker directory.
         let filePicker = FilePickerPanel(
@@ -21,7 +21,9 @@ extension Application {
         ) { [weak self] selectedPath in
             guard let self else { return }
             
-            if let path = FilePickerPanel.directoryIfExists(from: selectedPath) {
+            if let selectedPath,
+               let path = FilePickerPanel.directoryIfExists(from: selectedPath)
+            {
                 self.lastFilePickerDirectory = path
             }
             callback(selectedPath)

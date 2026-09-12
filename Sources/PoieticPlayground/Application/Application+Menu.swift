@@ -74,6 +74,7 @@ extension Application {
                                    mode: .save,
                                    filter: "*.svg")
                     { path in
+                        guard let path else { return }
                         let url = URL(fileURLWithPath: path)
                         let command = ExportSVGCommand(url: url, appendExtensionIfNeeded: true)
                         self.document?.queueCommand(command)

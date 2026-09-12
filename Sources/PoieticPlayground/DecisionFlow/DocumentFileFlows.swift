@@ -209,7 +209,6 @@ final class OpenDocumentWithFileSelectionFlow: DecisionFlow {
             
             let url = URL(fileURLWithPath: selectedPath)
             self?.open(from: url)
-            self?.finish(.success)
         }
 
     }
@@ -252,13 +251,13 @@ final class QuitApplicationFlow: DecisionFlow {
                 
             do {
                 try context.execute(QuitApplicationCommand())
+                self?.finish(.success)
             }
             catch {
                 // FIXME: Why `error` is not CommandError here but it is `any Error`?
                 context.presentMessage(title: "Quit", message: error.localizedDescription, style: .error)
                 self?.finish(.failure)
             }
-            self?.finish(.success)
         }
         context.presentSubFlow(subflow)
 

@@ -41,17 +41,28 @@ class FilePickerPanel: ModalDialog {
     var mode: ImGuiFDMode
     var filter: String?
     var path: String
-    var callback: ((String) -> Void)? = nil
+    var callback: ((String?) -> Void)? = nil
     var isOpen: Bool = false
     
     /// Path selected by the user, or `nil` if user cancelled or when the panel is not active.
     var selectedPath: String?
     
+    
+    /// Create a new file-picker
+    ///
+    /// - Parameters:
+    ///     - title: Title of the file picker, for example `"Save Document"`
+    ///     - mode: Mode of selection - opening a file or saving a file (can have a new name)
+    ///     - filter: Patter for selectable files.
+    ///     - path: Path where the file picker should be opened.
+    ///     - callback: Closure to call when file picker is finished. The argument is `nil` if
+    ///       the user cancels the selection or dismisses the panel.
+    ///
     init(title: String = "Select File",
          mode: FilePickerMode = .open,
          filter: String = "*",
          path: String = ".",
-         callback: ((String) -> Void)? = nil)
+         callback: ((String?) -> Void)? = nil)
     {
         self.title = title
         self.filter = filter
@@ -102,10 +113,7 @@ class FilePickerPanel: ModalDialog {
     func resolve() {
         guard self.status == .answered else { return }
         self.status = .resolved
-        
-        if let selectedPath {
-            callback?(selectedPath)
-        }
+        callback?(selectedPath)
     }
 }
 
