@@ -17,6 +17,12 @@ extension DecisionFlow {
     }
 }
 
+/// Final result of a flow.
+///
+/// Use for flows whose parents-presenters only need to know whether the flow succeeded,
+/// failed or was cancelled. Flows that need to communicate more information define their
+/// custom outcome enum or structure.
+///
 public enum DecisionFlowOutcome {
     /// The flow succeeded
     case success
@@ -44,20 +50,41 @@ struct DecisionOption {
     }
 }
 
+/// A choice in a decision dialog that couples label, emphasis style and action.
+/// Represented by a button in a decision dialog.
+///
+/// ## Example
+///
+/// ```swift
+/// let context: any DecisionFlowContext // Assume this exists, typically in a decision flow
+///
+/// context.presentDecision(
+///     title: "Unsaved Changes",
+///     message: "Design contains unsaved changes. Do you want to save or discard them?",
+///     choices: [
+///         DecisionFlowChoice("Cancel") {
+///             // Cancel the flow
+///         },
+///         DecisionFlowChoice("Save") {
+///             // Save the document
+///         },
+///         DecisionFlowChoice("Discard Changes", emphasis: .destructive) {
+///             // Communicate to the parent flow that we succeeded
+///         }
+///     ]
+/// )
+/// ```
+///
 struct DecisionFlowChoice {
+    /// Description of the choice: label and emphasis style.
     let option: DecisionOption
+    /// Action to be called when the choice is chosen by the user.
     let action: () -> Void
+    
     init(_ label: String, emphasis: DecisionOption.Emphasis = .neutral, action: @escaping ()-> Void) {
         self.option = DecisionOption(label, emphasis: emphasis)
         self.action = action
     }
-}
-
-enum FilePickerMode {
-// TODO: The cases map the ImGui file picker for now, we would prefer: {open|save} x {file|dir|any}
-    case open
-    case save
-    case openDirectory
 }
 
 @MainActor
@@ -70,14 +97,14 @@ protocol DecisionFlowContext: AnyObject {
                          message: String,
                          choices: [DecisionFlowChoice])
     func presentFilePicker(title: String,
-                           mode: FilePickerMode,
+                           mode: FileSelectionMode,
                            filter: String?,
                            completion: @escaping (String?) -> Void)
 
     // Execute command immediately
     func execute(_ command: any Command) throws (CommandError)
     func queue(_ command: any Command)
-    func presentSubFlow(_ flow: any DecisionFlow)
+    func presentSubflow(_ flow: any DecisionFlow)
     @discardableResult
     func finish(_ flow: any DecisionFlow) -> Bool
 }

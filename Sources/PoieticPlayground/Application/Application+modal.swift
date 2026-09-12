@@ -9,12 +9,12 @@ import CIimgui
 
 extension Application {
     func openFilePicker(title: String,
-                        mode: FilePickerMode = .open,
+                        mode: FileSelectionMode = .open,
                         filter: String? = nil,
                         callback: @escaping ((String?) -> Void))
     {
         // TODO: Instantiate new file picker here. We need a mechanism of preserving last picker directory.
-        let filePicker = FilePickerPanel(
+        let filePicker = FileSelectionDialog(
             title: title,
             mode: mode,
             filter: filter ?? "*"
@@ -22,7 +22,7 @@ extension Application {
             guard let self else { return }
             
             if let selectedPath,
-               let path = FilePickerPanel.directoryIfExists(from: selectedPath)
+               let path = FileSelectionDialog.directoryIfExists(from: selectedPath)
             {
                 self.lastFilePickerDirectory = path
             }

@@ -1,5 +1,5 @@
 //
-//  FilePickerPanel.swift
+//  FileSelectionDialog.swift
 //  PoieticPlayground
 //
 //  Created by Stefan Urbanek on 23/03/2026.
@@ -9,7 +9,14 @@ import CIimgui
 import Cimguifd
 import Foundation
 
-class FilePickerPanel: ModalDialog {
+
+enum FileSelectionMode {
+    case open
+    case save
+    case directory
+}
+
+class FileSelectionDialog: ModalDialog {
     /// Returns a directory path that exists in the filesystem given a file path.
     ///
     /// If the path is a directory, then the directory is tested for existence. If the path
@@ -48,7 +55,7 @@ class FilePickerPanel: ModalDialog {
     var selectedPath: String?
     
     
-    /// Create a new file-picker
+    /// Create a new file selection modal dialog.
     ///
     /// - Parameters:
     ///     - title: Title of the file picker, for example `"Save Document"`
@@ -59,7 +66,7 @@ class FilePickerPanel: ModalDialog {
     ///       the user cancels the selection or dismisses the panel.
     ///
     init(title: String = "Select File",
-         mode: FilePickerMode = .open,
+         mode: FileSelectionMode = .open,
          filter: String = "*",
          path: String = ".",
          callback: ((String?) -> Void)? = nil)
@@ -73,14 +80,14 @@ class FilePickerPanel: ModalDialog {
         switch mode {
         case .open: self.mode = ImGuiFDMode(ImGuiFDMode_LoadFile)
         case .save: self.mode = ImGuiFDMode(ImGuiFDMode_SaveFile)
-        case .openDirectory: self.mode = ImGuiFDMode(ImGuiFDMode_OpenDir)
+        case .directory: self.mode = ImGuiFDMode(ImGuiFDMode_OpenDir)
         }
     }
     
     func draw() {
         guard status == .active else { return }
 
-        let id = "\(title)###file_picker_panel"
+        let id = "\(title)###file_selection_dialog"
         
         if !isOpen {
             ImGuiFD.OpenDialog(id,

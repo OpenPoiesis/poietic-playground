@@ -98,7 +98,7 @@ final class SaveDocumentFlow: DecisionFlow {
         else {
             let subflow = SaveDocumentWithFileSelectionFlow(context: context)
             { outcome in self.finish(outcome) }
-            context.presentSubFlow(subflow)
+            context.presentSubflow(subflow)
         }
     }
     
@@ -161,7 +161,7 @@ final class SaveDocumentIfNeededFlow: DecisionFlow {
     func saveDocument() {
         guard let context else { return }
         
-        context.presentSubFlow(SaveDocumentFlow(context: context, completion: self.finish))
+        context.presentSubflow(SaveDocumentFlow(context: context, completion: self.finish))
     }
     
     func finish(_ outcome: DecisionFlowOutcome) {
@@ -192,7 +192,7 @@ final class OpenDocumentWithFileSelectionFlow: DecisionFlow {
                 self?.finish(.cancelled)
             }
         }
-        context.presentSubFlow(subflow)
+        context.presentSubflow(subflow)
     }
     
     func selectDocumentFile() {
@@ -252,7 +252,7 @@ final class OpenDocumentFromURLFlow: DecisionFlow {
                 self?.finish(.cancelled)
             }
         }
-        context.presentSubFlow(subflow)
+        context.presentSubflow(subflow)
     }
     
     func open(from url: URL) {
@@ -301,7 +301,7 @@ final class QuitApplicationFlow: DecisionFlow {
                 self?.finish(.failure)
             }
         }
-        context.presentSubFlow(subflow)
+        context.presentSubflow(subflow)
 
         // TODO: Implement
         // 1. Sub-flow: SaveDocumentIfNeededFlow
