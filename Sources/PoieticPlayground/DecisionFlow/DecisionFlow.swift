@@ -103,7 +103,7 @@ protocol DecisionFlowContext: AnyObject {
 
     /// Present another flow as a sub-flow.
     ///
-    /// - Important: The `complention` must call ``DecisionFlowContext/finish(_:outcome:)``.
+    /// - Important: The `completion` must call ``DecisionFlowContext/finish(_:outcome:)``.
     ///
     func presentSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void))
 

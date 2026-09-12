@@ -35,11 +35,6 @@ final class QuitApplicationFlow: DecisionFlow {
                 context.finish(self, outcome: .failure)
             }
         }
-
-        // TODO: Implement
-        // 1. Sub-flow: SaveDocumentIfNeededFlow
-        // 2. Flag application as "quit requested"
-        
     }
 }
 

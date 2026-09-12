@@ -39,10 +39,7 @@ extension Application: DecisionFlowContext {
                            filter: String?,
                            completion: @escaping (String?) -> Void)
     {
-        self.openFileSelector(title: title,
-                            mode: mode,
-                            filter: filter,
-                            callback: completion)
+        self.openFileSelector(title: title, mode: mode, filter: filter, callback: completion)
     }
 
     // Execute command immediately

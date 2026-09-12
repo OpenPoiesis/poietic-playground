@@ -27,8 +27,6 @@ class DecisionFlowManager {
     }
     
     func start(_ flow: any DecisionFlow, completion: ((DecisionFlowOutcome)->Void)? = nil) {
-        print(">>> FLOW QUEUED: \(type(of: flow))")
-        print("--- Stack: \(stack.count) Pending: \(pending.count)")
         let item = Item(flow: flow, completion: completion)
         self.pending.append(item)
     }
@@ -60,7 +58,6 @@ class DecisionFlowManager {
         }
         while let top = stack.last, startRequested {
             startRequested = false
-            print("Starting \(type(of: top.flow))")
             top.flow.start()
             // `start()` may:
             //  - present a dialog: loop ends (interaction blocked)
