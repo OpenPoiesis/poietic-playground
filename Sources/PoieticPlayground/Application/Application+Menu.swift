@@ -69,16 +69,8 @@ extension Application {
                 
                 ImGui.Separator()
 
-                if ImGui.MenuItem("Export SVG...", "Cmd+Shift+S") {
-                    openFileSelector(title: "Export SVG",
-                                   mode: .save,
-                                   filter: "*.svg")
-                    { path in
-                        guard let path else { return }
-                        let url = URL(fileURLWithPath: path)
-                        let command = ExportSVGCommand(url: url, appendExtensionIfNeeded: true)
-                        self.document?.queueCommand(command)
-                    }
+                if ImGui.MenuItem("Export SVG...", "Cmd+Shift+E") {
+                    handleAction("export_svg")
                 }
 
                 

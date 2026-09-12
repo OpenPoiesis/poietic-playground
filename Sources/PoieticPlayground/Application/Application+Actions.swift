@@ -134,6 +134,8 @@ extension Application {
             self.run(SaveDocumentFlow(context: self))
         case "save_as":
             self.run(SaveDocumentWithFileSelectionFlow(context: self))
+        case "export_svg":
+            self.run(ExportSVGFlow(context: self))
 
         // -- Edit --
         case "undo": document?.queueCommand(UndoCommand())

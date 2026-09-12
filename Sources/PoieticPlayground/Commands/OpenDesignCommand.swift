@@ -75,6 +75,7 @@ class ExportSVGCommand: Command {
             self.url = url
         }
     }
+    
     func run(_ context: CommandContext) throws (CommandError) {
         guard let diagram = context.document.mainDiagram else {
             throw CommandError("No main diagram found", severity: .fatal)
