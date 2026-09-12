@@ -232,6 +232,48 @@ final class OpenDocumentWithFileSelectionFlow: DecisionFlow {
     }
 }
 
+final class OpenDocumentFromURLFlow: DecisionFlow {
+    weak let context: (any DecisionFlowContext)?
+    let url: URL
+
+    init(context: any DecisionFlowContext, url: URL) {
+        self.context = context
+        self.url = url
+    }
+
+    func start() {
+        guard let context else { return }
+        
+        let subflow = SaveDocumentIfNeededFlow(context: context) { [weak self] completion in
+            if completion == .success, let self {
+                self.open(from: self.url)
+            }
+            else {
+                self?.finish(.cancelled)
+            }
+        }
+        context.presentSubFlow(subflow)
+    }
+    
+    func open(from url: URL) {
+        guard let context else { return }
+        let command = OpenDesignCommand(url: url)
+        do {
+            try context.execute(command)
+            finish(.success)
+        }
+        catch {
+            context.presentMessage(title: "Open Failed", message: error.message, style: .error)
+            finish(.failure)
+        }
+    }
+    
+    func finish(_ outcome: DecisionFlowOutcome) {
+        guard let context else { return }
+        context.finish(self)
+    }
+}
+
 final class QuitApplicationFlow: DecisionFlow {
     weak let context: (any DecisionFlowContext)?
 

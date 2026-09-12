@@ -49,7 +49,8 @@ extension Application {
 
             // FIXME: [IMPORTANT] Too crowded, clean-it up.
             switch backend.pollEvent(timeout: timeout) {
-            case .quit: break loop
+            case .quit:
+                self.handleAction("quit") // Handle quit with confirmation
             case .skip: continue
             case .none: break
             case .gesture(let gesture):
@@ -57,13 +58,8 @@ extension Application {
                 let event = ToolEvent(gesture, io: ImGui.GetIO().pointee)
                 self.pendingToolEvents.append(event)
             case .dropFile(path: let path):
-                do {
-                    try self.openDesign(url: URL(fileURLWithPath: path))
-                }
-                catch {
-                    self.queueAlert(title: "Error",
-                               message: "Unable to open dropped file '\(path)'. Reason: \(error)")
-                }
+                let url = URL(fileURLWithPath: path)
+                self.run(OpenDocumentFromURLFlow(context: self, url: url))
             }
             
             backend.newFrame()
