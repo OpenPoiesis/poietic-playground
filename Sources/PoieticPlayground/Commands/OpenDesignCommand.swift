@@ -51,14 +51,12 @@ class SaveDesignCommand: Command {
         }
     }
     func run(_ context: CommandContext) throws (CommandError) {
-        var targetURL = url ?? context.document.designURL
-        if targetURL == nil {
-            // TODO: Open save panel
-                        targetURL = URL(fileURLWithPath: DefaultDesignPath)
+        guard let targetURL = url ?? context.document.designURL else {
+            throw CommandError("Save design: No URL provided", severity: .error)
         }
         
         do {
-            try context.app.saveDesign(url: targetURL!)
+            try context.app.saveDesign(url: targetURL)
         }
         catch {
             throw CommandError(String(describing: error), underlyingError: error)

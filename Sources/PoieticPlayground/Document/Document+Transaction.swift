@@ -55,5 +55,6 @@ extension Document {
         self.log("Transaction accepted. Current plane: \(transaction.id), plane count: \(design.planes.count)")
 
         self.needsWorldPlaneUpdate = true
+        self.hadTransactionSinceSave = true
     }
 }

@@ -7,6 +7,9 @@
 
 import PoieticCore
 
+// NOTE: Command patter in this application serves as incubator for scriptability and potential
+//       infrastructure within either PoieticCore or maybe PoieticApp (CLI & app-support classes)
+
 struct CommandError: Error {
     enum Severity {
         case error

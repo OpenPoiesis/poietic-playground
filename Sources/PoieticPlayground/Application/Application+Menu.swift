@@ -55,42 +55,25 @@ extension Application {
                     handleAction("new")
                 }
                 if ImGui.MenuItem("Open", "Cmd+O") {
-                    filePicker.open(mode: .open, filter: "*." + Document.FileExtension) { path in
-                        let url = URL(fileURLWithPath: path)
-                        let command = OpenDesignCommand(url: url)
-                        self.document?.queueCommand(command)
-                    }
+                    handleAction("open")
                 }
                 
                 ImGui.Separator()
                 
                 if ImGui.MenuItem("Save", "Cmd+S") {
-                    // TODO: Move to Application.save(...)
-                    if let url = document?.designURL {
-                        let command = SaveDesignCommand(url: url, appendExtensionIfNeeded: true)
-                        self.document?.queueCommand(command)
-                    }
-                    else {
-                        filePicker.open(mode: .save, filter: "*." + Document.FileExtension) { path in
-                            let url = URL(fileURLWithPath: path)
-                            let command = SaveDesignCommand(url: url, appendExtensionIfNeeded: true)
-                            self.document?.queueCommand(command)
-                        }
-                    }
+                    handleAction("save")
                 }
-                
                 if ImGui.MenuItem("Save As...", "Cmd+Shift+S") {
-                    filePicker.open(mode: .save, filter: "*." + Document.FileExtension) { path in
-                        let url = URL(fileURLWithPath: path)
-                        let command = SaveDesignCommand(url: url, appendExtensionIfNeeded: true)
-                        self.document?.queueCommand(command)
-                    }
+                    handleAction("save_as")
                 }
                 
                 ImGui.Separator()
 
                 if ImGui.MenuItem("Export SVG...", "Cmd+Shift+S") {
-                    filePicker.open(mode: .save, filter: "*.svg") { path in
+                    openFilePicker(title: "Export SVG",
+                                   mode: .save,
+                                   filter: "*.svg")
+                    { path in
                         let url = URL(fileURLWithPath: path)
                         let command = ExportSVGCommand(url: url, appendExtensionIfNeeded: true)
                         self.document?.queueCommand(command)
@@ -182,6 +165,23 @@ extension Application {
             }
 
             if ImGui.BeginMenu("Debug") {
+                // TODO: REMOVE THIS ONCE TUNED AND HAPPY
+                if ImGui.MenuItem("MODAL DIALOG TEST") {
+                    let alert = ConfirmationDialog(
+                        title: "Decision Needed",
+                        message: "Pick one of the options below. This is a long text. Pick one of the options below. This is a long text. Pick one of the options below. This is a long text. Pick one of the options below. This is a long text.",
+                        options: [
+                            DecisionOption("Cancel"),
+                            DecisionOption("Primary", emphasis: .primary),
+                            DecisionOption("Destructive", emphasis: .destructive),
+                        ]
+                    ) {
+                        print("ANSWER: \($0)")
+                    }
+                    
+                    queueDialog(alert)
+                }
+
                 if ImGui.MenuItem("Objects Panel") {
                     self.debugDesignPanel.isVisible = true
                 }

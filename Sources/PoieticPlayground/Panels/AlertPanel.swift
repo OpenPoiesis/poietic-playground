@@ -7,6 +7,17 @@
 
 import CIimgui
 
+// TODO: Add message style: info, error, warning, question
+
+enum MessageStyle {
+    /// Message is just a regular information, usually about action that finished successfully
+    /// and required a notification or details about the result.
+    case info
+    case error
+    case warning
+    case question
+}
+
 class ConfirmationDialog: ModalDialog {
     static let DestructiveButtonColor = Color(red:0.8, green: 0.2, blue: 0.2)
     static let DestructiveButtonHoveredColor = Color(red: 1.0, green: 0.3, blue: 0.3)
@@ -14,43 +25,30 @@ class ConfirmationDialog: ModalDialog {
     var status: ModalDialogStatus = .queued
     private var selectedOption: Int? = nil
     
-    enum Emphasis {
-        case neutral
-        case primary
-        case destructive
-    }
-    
-    struct Option {
-        let label: String
-        let emphasis: Emphasis
-        
-        init(label: String, emphasis: Emphasis = .neutral) {
-            self.label = label
-            self.emphasis = emphasis
-        }
-    }
-
     let title: String
     let message: String
-    let options: [Option]
+    let style: MessageStyle
+    let options: [DecisionOption]
     let completion: ((Int) -> Void)?
     
-    init(title: String, message: String, options: [Option], completion: ((Int) -> Void)? = nil) {
+    init(title: String, message: String, style: MessageStyle = .info, options: [DecisionOption], completion: ((Int) -> Void)? = nil) {
         self.title = title
         self.message = message
+        self.style = style
         self.completion = completion
         self.options = options
     }
     
     func draw() {
+        // TODO: Style according to `style`, might add an icon (once we have icons) or some other visual annotation we can do without icons.
 //        ImGui.SetNextWindowSize(ImVec2(400, 0), ImGuiCond(ImGuiCond_Appearing.rawValue))
         ImGui.OpenPopup("##dialog_panel")
-        if ImGui.BeginPopupModal("##dialog_panel"){
+        if ImGui.BeginPopupModal("##dialog_panel") {
             ImGui.TextUnformatted(title)
             ImGui.Separator()
             ImGui.PushTextWrapPos(ImGui.GetCursorPosX() + 400)
-               ImGui.TextUnformatted(message)
-               ImGui.PopTextWrapPos()
+            ImGui.TextUnformatted(message)
+            ImGui.PopTextWrapPos()
             
 //            ImGui.TextWrappedUnformatted(message)
             ImGui.Spacing()
@@ -80,7 +78,7 @@ class ConfirmationDialog: ModalDialog {
         self.selectedOption = nil
     }
     
-    func drawOptionButton(_ option: Option) -> Bool {
+    func drawOptionButton(_ option: DecisionOption) -> Bool {
         switch option.emphasis {
         case .destructive:
             ImGui.PushStyleColor(ImGuiCol_Button, color: Self.DestructiveButtonColor)
@@ -92,8 +90,7 @@ class ConfirmationDialog: ModalDialog {
         let clicked = ImGui.Button(option.label, ImVec2(120, 0))
         
         switch option.emphasis {
-        case .destructive:
-            ImGui.PopStyleColor(2)
+        case .destructive: ImGui.PopStyleColor(2)
         case .neutral: break
         case .primary: break
         }

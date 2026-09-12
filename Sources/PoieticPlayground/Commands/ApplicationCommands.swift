@@ -40,6 +40,7 @@ struct OpenIssuesCommand: Command {
 }
 
 struct CenterCanvasOnObjectCommand: Command {
+    // TODO: Seems to be centring incorrectly, needs verification
     // TODO: Make it work with other objects, Works only with blocks for now
     var name: String { "center-canvas-on-object" }
 

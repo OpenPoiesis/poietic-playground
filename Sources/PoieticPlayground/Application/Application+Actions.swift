@@ -120,34 +120,17 @@ extension Application {
         
         // -- Application --
         case "settings": self.openSettings()
-        case "quit": self.quitRequested = true
+        case "quit":
+            self.run(QuitApplicationFlow(context: self))
+//            self.quitRequested = true
         // -- File --
         case "new": document?.queueCommand(NewDesignCommand())
         case "open":
-            filePicker.open(mode: .open, filter: "*." + Document.FileExtension) { path in
-                let url = URL(fileURLWithPath: path)
-                let command = OpenDesignCommand(url: url)
-                self.document?.queueCommand(command)
-            }
-
+            self.run(OpenDocumentWithFileSelectionFlow(context: self))
         case "save":
-            if let url = document?.designURL {
-                let command = SaveDesignCommand(url: url, appendExtensionIfNeeded: true)
-                self.document?.queueCommand(command)
-            }
-            else {
-                filePicker.open(mode: .save, filter: "*." + Document.FileExtension) { path in
-                    let url = URL(fileURLWithPath: path)
-                    let command = SaveDesignCommand(url: url, appendExtensionIfNeeded: true)
-                    self.document?.queueCommand(command)
-                }
-            }
+            self.run(SaveDocumentFlow(context: self))
         case "save_as":
-            filePicker.open(mode: .save, filter: "*." + Document.FileExtension) { path in
-                let url = URL(fileURLWithPath: path)
-                let command = SaveDesignCommand(url: url, appendExtensionIfNeeded: true)
-                self.document?.queueCommand(command)
-            }
+            self.run(SaveDocumentWithFileSelectionFlow(context: self))
 
         // -- Edit --
         case "undo": document?.queueCommand(UndoCommand())

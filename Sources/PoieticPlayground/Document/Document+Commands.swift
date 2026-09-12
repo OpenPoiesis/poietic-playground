@@ -7,6 +7,7 @@
 
 import PoieticFlows
 import PoieticCore
+import Foundation
 
 public enum AutoCorrectParametersSchedule: ScheduleLabel {}
 
@@ -43,6 +44,14 @@ extension Document {
         self.queueAlert(title: "Auto-Connect Parameters",
                         message: "Removed \(proposal.toRemove.count), created \(proposal.toAdd.count) connections.")
 
+    }
+    
+    func save(to url: URL) throws (DesignStoreError) {
+        self.log("Saving design to: \(url.standardizedFileURL)")
+        let store = DesignStore(url: url)
+        try store.save(design: design)
+        self.designURL = url
+        self.hadTransactionSinceSave = false
     }
 
 }

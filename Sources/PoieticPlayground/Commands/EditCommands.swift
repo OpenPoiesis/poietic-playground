@@ -11,6 +11,7 @@ import Foundation
 import CIimgui
 
 extension Command {
+    // TODO: Move to application
     func copySelectionAsText(ids: [ObjectID], plane: DesignPlane) throws (CommandError) -> String {
         let design = plane.design
         let ids = plane.contained(ids)
@@ -28,6 +29,7 @@ extension Command {
         return text
     }
     
+    // TODO: Move to application
     func setPasteboardText(_ text: String) throws (CommandError) {
         let platformIO = ImGui.GetPlatformIO().pointee
         guard let setPasteboardFn = platformIO.Platform_SetClipboardTextFn,
@@ -38,6 +40,7 @@ extension Command {
         
         setPasteboardFn(imguiContext, text)
     }
+    // TODO: Move to application
     func getPasteboardText() throws (CommandError) -> String? {
         let platformIO = ImGui.GetPlatformIO().pointee
         guard let getPasteboardFn = platformIO.Platform_GetClipboardTextFn,

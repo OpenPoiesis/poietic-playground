@@ -49,15 +49,16 @@ class Application {
     var canvas: DiagramCanvas
     var player: ResultPlayer
 
-    // -- Modal Dialog --
+    // -- Modals and Decisions --
     var inputBlocked: Bool = false
     var modalQueue: [any ModalDialog] = []
     var activeModal: (any ModalDialog)? {
         modalQueue.first { $0.status == .active}
     }
+    var lastFilePickerDirectory = "."
+    var decisionManager: DecisionFlowManager = DecisionFlowManager()
     
     // -- Views and Controller-likes --
-    let filePicker: FilePickerPanel
     let inspector: InspectorPanel
     let aboutPanel: AboutPanel
     let settingsPanel: SettingsPanel
@@ -100,7 +101,6 @@ class Application {
 
         // Special panels
         self.toolBar = ToolBar()
-        self.filePicker = FilePickerPanel()
 
         // Regualr Panels
         panels = []
@@ -172,7 +172,7 @@ class Application {
             title: title,
             message: message,
             options: [
-                ConfirmationDialog.Option(label: "Dismiss")
+                DecisionOption("Dismiss")
             ]
         )
         

@@ -68,6 +68,15 @@ class Document {
     
     let design: Design
     var designURL: URL? = nil
+
+    // TODO: Use design hash
+    var hadTransactionSinceSave: Bool = false
+    // NOTE: Unlike typical applications, here the undo/redo is part of the design (and it is persisted),
+    //       Undo/redo is not session-only, so undo/redo IS a timeline change.
+    var hasUnsavedChanges: Bool {
+        // FIXME: [IMPORTANT] Implement this with design hash
+        hadTransactionSinceSave
+    }
     
     var transaction: TransientPlane?
     var hasTransaction: Bool { transaction != nil }

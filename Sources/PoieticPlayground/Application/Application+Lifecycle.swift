@@ -106,6 +106,7 @@ extension Application {
     
     func update(_ timeDelta: Double) {
         updateDialogs()
+        decisionManager.update()
         
         // Run the Command Queue.
         // When a command replaces the document, we continue with the new one.
@@ -149,7 +150,7 @@ extension Application {
         canvas.draw()
         
         toolBar.draw()
-        filePicker.draw()
+//        filePicker.draw()
 
         for panel in panels {
             guard panel.isVisible else { continue }

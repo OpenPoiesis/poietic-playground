@@ -55,19 +55,15 @@ extension Application {
         self.newDocument(design)
     }
     // TODO: Move to Session (document)
+    
     func openDesign(url: URL) throws (DesignStoreError) {
         let store = DesignStore(url: url)
         let design = try store.load(metamodel: StockFlowDomain.StockFlowMetamodel)
         self.newDocument(design, designURL: url)
     }
     
-    // TODO: Move to Session (document)
     func saveDesign(url: URL) throws (DesignStoreError) {
-        guard let document else { return }
-        self.log("Saving design to: \(url.standardizedFileURL)")
-        let store = DesignStore(url: url)
-        try store.save(design: document.design)
-        document.designURL = url
+        try document?.save(to: url)
     }
 
     func selectAll() {
