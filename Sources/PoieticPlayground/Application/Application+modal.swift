@@ -8,13 +8,13 @@
 import CIimgui
 
 extension Application {
-    func openFilePicker(title: String,
-                        mode: FileSelectionMode = .open,
-                        filter: String? = nil,
-                        callback: @escaping ((String?) -> Void))
+    func openFileSelector(title: String,
+                          mode: FileSelectionMode = .open,
+                          filter: String? = nil,
+                          callback: @escaping ((String?) -> Void))
     {
         // TODO: Instantiate new file picker here. We need a mechanism of preserving last picker directory.
-        let filePicker = FileSelectionDialog(
+        let dialog = FileSelectionDialog(
             title: title,
             mode: mode,
             filter: filter ?? "*"
@@ -28,7 +28,7 @@ extension Application {
             }
             callback(selectedPath)
         }
-        queueDialog(filePicker)
+        queueDialog(dialog)
     }
     
     func queueDialog(_ dialog: any ModalDialog) {

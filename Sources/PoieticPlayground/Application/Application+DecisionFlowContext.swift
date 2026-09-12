@@ -34,12 +34,12 @@ extension Application: DecisionFlowContext {
                                         
     }
     
-    func presentFilePicker(title: String,
+    func presentFileSelector(title: String,
                            mode: FileSelectionMode,
                            filter: String?,
                            completion: @escaping (String?) -> Void)
     {
-        self.openFilePicker(title: title,
+        self.openFileSelector(title: title,
                             mode: mode,
                             filter: filter,
                             callback: completion)
@@ -57,11 +57,11 @@ extension Application: DecisionFlowContext {
     func queue(_ command: any Command) {
         self.document?.queueCommand(command)
     }
-    func presentSubflow(_ flow: any DecisionFlow) {
-        decisionManager.presentSubflow(flow)
+    func presentSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void)) {
+        decisionManager.presentSubflow(flow, completion: completion)
     }
-    func finish(_ flow: any DecisionFlow) -> Bool {
-        decisionManager.finish(flow)
+    func finish(_ flow: any DecisionFlow, outcome: DecisionFlowOutcome) {
+        decisionManager.finish(flow, outcome: outcome)
     }
 
 }

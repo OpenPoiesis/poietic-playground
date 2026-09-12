@@ -12,6 +12,10 @@ extension Application {
     /// Set a new design document and propagate the change through the application.
     ///
     func newDocument(_ design: Design, designURL: URL? = nil) {
+        // TODO: Once we have per-app vs per-document flows, discard just this document flows (for both decision manager and modal queue)
+        self.decisionManager.discardAll()
+        self.modalQueue.removeAll()
+        
         if let designURL {
             self.log("Design URL: \(designURL.standardizedFileURL)")
         }

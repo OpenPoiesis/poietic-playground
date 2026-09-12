@@ -23,7 +23,7 @@ extension DecisionFlow {
 /// failed or was cancelled. Flows that need to communicate more information define their
 /// custom outcome enum or structure.
 ///
-public enum DecisionFlowOutcome {
+enum DecisionFlowOutcome {
     /// The flow succeeded
     case success
     /// The flow failed, the caller might cancel, fail, consider resuming or taking alternative
@@ -96,15 +96,19 @@ protocol DecisionFlowContext: AnyObject {
     func presentDecision(title: String,
                          message: String,
                          choices: [DecisionFlowChoice])
-    func presentFilePicker(title: String,
-                           mode: FileSelectionMode,
-                           filter: String?,
-                           completion: @escaping (String?) -> Void)
+    func presentFileSelector(title: String,
+                             mode: FileSelectionMode,
+                             filter: String?,
+                            completion: @escaping (String?) -> Void)
+
+    /// Present another flow as a sub-flow.
+    ///
+    /// - Important: The `complention` must call ``DecisionFlowContext/finish(_:outcome:)``.
+    ///
+    func presentSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void))
 
     // Execute command immediately
     func execute(_ command: any Command) throws (CommandError)
     func queue(_ command: any Command)
-    func presentSubflow(_ flow: any DecisionFlow)
-    @discardableResult
-    func finish(_ flow: any DecisionFlow) -> Bool
+    func finish(_ flow: any DecisionFlow, outcome: DecisionFlowOutcome)
 }

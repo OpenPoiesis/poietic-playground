@@ -70,7 +70,7 @@ extension Application {
                 ImGui.Separator()
 
                 if ImGui.MenuItem("Export SVG...", "Cmd+Shift+S") {
-                    openFilePicker(title: "Export SVG",
+                    openFileSelector(title: "Export SVG",
                                    mode: .save,
                                    filter: "*.svg")
                     { path in

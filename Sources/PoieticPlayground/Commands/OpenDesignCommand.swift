@@ -40,11 +40,8 @@ class SaveDesignCommand: Command {
     var name: String { "save-design" }
     let url: URL?
     init(url: URL? = nil, appendExtensionIfNeeded: Bool = false) {
-        if appendExtensionIfNeeded,
-           let url,
-           url.pathExtension.isEmpty || url.pathExtension != Document.FileExtension
-        {
-            self.url = url.appendingPathExtension(Document.FileExtension)
+        if appendExtensionIfNeeded, let url {
+            self.url = Document.normalisePathExtension(url)
         }
         else {
             self.url = url

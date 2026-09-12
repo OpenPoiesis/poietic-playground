@@ -101,7 +101,24 @@ class Document {
     /// Interactive preview in progress.
     var isPreviewing: Bool
     
-    // MARK: - Schedules
+    // MARK: - Static
+    
+//    static func fileURL(fromPath path: String) -> URL {
+//        let url = URL(fileURLWithPath: path)
+//        return Self.normalisePathExtension(url)
+//    }
+    
+    /// Append document path extension if needed.
+    static func normalisePathExtension(_ url: URL) -> URL {
+        let result: URL
+        if url.pathExtension.isEmpty || url.pathExtension != Document.FileExtension {
+            result = url.appendingPathExtension(Document.FileExtension)
+        }
+        else {
+            result = url
+        }
+        return result
+    }
     
     
     // MARK: - Initialisation

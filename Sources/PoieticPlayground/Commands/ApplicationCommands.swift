@@ -71,3 +71,11 @@ struct ResetZoomCommand: Command {
         context.app.canvas.centerView(at: center, zoom: 1.0)
     }
 }
+
+class QuitApplicationCommand: Command {
+    var name: String { "quit" }
+
+    func run(_ context: CommandContext) throws (CommandError) {
+        context.app.quitRequested = true
+    }
+}

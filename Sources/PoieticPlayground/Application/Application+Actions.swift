@@ -12,9 +12,11 @@ struct ShortcutAction {
     let name: String
     let key: ImGuiKeyChord
     let flags: ImGuiInputFlags
+
     init(_ name: String, key: ImGuiKey, flags: ImGuiInputFlags = 0) {
         self.init(name, key: ImGuiKeyChord(key.rawValue), flags: flags)
     }
+    
     init(_ name: String, key: ImGuiKeyChord, flags: ImGuiInputFlags = 0) {
         self.name = name
         self.key = key
@@ -122,9 +124,10 @@ extension Application {
         case "settings": self.openSettings()
         case "quit":
             self.run(QuitApplicationFlow(context: self))
-//            self.quitRequested = true
-        // -- File --
-        case "new": document?.queueCommand(NewDesignCommand())
+
+            // -- File --
+        case "new":
+            self.run(NewDesignFlow(context: self))
         case "open":
             self.run(OpenDocumentWithFileSelectionFlow(context: self))
         case "save":

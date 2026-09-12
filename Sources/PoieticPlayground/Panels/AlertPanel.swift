@@ -15,7 +15,6 @@ enum MessageStyle {
     case info
     case error
     case warning
-    case question
 }
 
 class ConfirmationDialog: ModalDialog {
