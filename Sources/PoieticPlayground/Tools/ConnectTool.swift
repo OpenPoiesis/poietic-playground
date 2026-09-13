@@ -14,7 +14,7 @@ import PoieticFlows
 
 class ConnectTool: CanvasTool {
     // TODO: Implement the tool (empty stub for now)
-    override var name: String { "connect"}
+    override var type: CanvasToolType { .connect }
     override var iconKey: IconKey { .connect }
     override var hasObjectPalette: Bool { true }
 
@@ -212,13 +212,6 @@ class ConnectTool: CanvasTool {
         return .engaged
     }
 
-    func updateIntent() {
-        guard let intendedConnector,
-              let intent: ConnectorIntent = intendedConnector.component()
-        else { return }
-        
-    }
-    
     func dragEnd(_ event: ToolEvent) -> EngagementResult {
         defer {
             self.state = .idle
@@ -238,7 +231,6 @@ class ConnectTool: CanvasTool {
             createConnection(type: intent.type, from: origin.runtimeID, to: targetID)
         }
 
-        print("Drag concluded.")
         return .consumed
     }
     

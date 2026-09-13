@@ -1,5 +1,5 @@
 //
-//  Session.swift
+//  Document.swift
 //  PoieticPlayground
 //
 //  Created by Stefan Urbanek on 05/02/2026.
@@ -72,7 +72,7 @@ class Document {
     // TODO: Use design hash
     var hadTransactionSinceSave: Bool = false
     // NOTE: Unlike typical applications, here the undo/redo is part of the design (and it is persisted),
-    //       Undo/redo is not session-only, so undo/redo IS a timeline change.
+    //       Undo/redo is not application session-only, so undo/redo IS a timeline change.
     var hasUnsavedChanges: Bool {
         // FIXME: [IMPORTANT] Implement this with design hash
         hadTransactionSinceSave
@@ -239,7 +239,7 @@ extension Document {
 extension Document {
     func queueAlert(title: String, message: String) {
         Task { @MainActor in
-            await Application.shared.queueAlert(title: title, message: message)
+            Application.shared.queueAlert(title: title, message: message)
         }
     }
 }

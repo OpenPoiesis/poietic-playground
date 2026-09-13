@@ -13,7 +13,8 @@ struct UndoCommand: Command {
     var name: String { "undo" }
     
     func run(_ context: CommandContext) throws (CommandError) {
-        context.design.undo() // The plane change will be detected and handled through Session
+        context.document.hadTransactionSinceSave = true
+        context.design.undo() // The plane change will be detected and handled through Document
     }
 }
 
@@ -21,6 +22,7 @@ struct RedoCommand: Command {
     var name: String { "redo" }
     
     func run(_ context: CommandContext) throws (CommandError) {
-        context.design.redo() // The plane change will be detected and handled through Session 
+        context.document.hadTransactionSinceSave = true
+        context.design.redo() // The plane change will be detected and handled through Document
     }
 }

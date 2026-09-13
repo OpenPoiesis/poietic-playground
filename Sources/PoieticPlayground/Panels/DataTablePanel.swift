@@ -60,7 +60,7 @@ class DataTablePanel: Panel {
         guard let result: SimulationResult = world.singleton(),
               let plan: SimulationPlan = world.singleton()
         else {
-            ImGui.Begin("Data Table")
+            ImGui.Begin("Data Table", &self.isVisible)
             ImGui.TextUnformatted("No simulation result.")
             ImGui.End()
             return

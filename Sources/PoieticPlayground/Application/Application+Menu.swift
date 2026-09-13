@@ -158,23 +158,6 @@ extension Application {
             }
 
             if ImGui.BeginMenu("Debug") {
-                // TODO: REMOVE THIS ONCE TUNED AND HAPPY
-                if ImGui.MenuItem("MODAL DIALOG TEST") {
-                    let alert = ConfirmationDialog(
-                        title: "Decision Needed",
-                        message: "Pick one of the options below. This is a long text. Pick one of the options below. This is a long text. Pick one of the options below. This is a long text. Pick one of the options below. This is a long text.",
-                        options: [
-                            DecisionOption("Cancel"),
-                            DecisionOption("Primary", emphasis: .primary),
-                            DecisionOption("Destructive", emphasis: .destructive),
-                        ]
-                    ) {
-                        print("ANSWER: \($0)")
-                    }
-                    
-                    queueDialog(alert)
-                }
-
                 if ImGui.MenuItem("Objects Panel") {
                     self.debugDesignPanel.isVisible = true
                 }

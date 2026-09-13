@@ -29,7 +29,6 @@ class InlineEditorManager {
     
     func openEditor(_ editorName: String,
                     for entity: RuntimeEntity) {
-        print("--- Open inline editor '\(editorName)' for \(entity) requested")
         close()
         
         guard let editor = editors[editorName],
@@ -90,11 +89,3 @@ extension InlineEditor {
         return Rect2D(origin: position, size: .zero)
     }
 }
-
-//class FormulaInlineEditor: InlineEditor {
-//    func bind(_ document: Session) {}
-//    func open(for objectID: ObjectID) -> Bool { false }
-//    func close() {}
-//    func draw() -> Bool { false }
-//}
-//

@@ -25,7 +25,6 @@ class Dashboard: Panel {
     func onDesignPlaneChanged(_ document: Document) {
         // TODO: Reload all charts
         let world = document.world
-        print("Dashboard here")
         
         chartViews.removeAll()
         for (chartEntity, _) in world.query(Chart.self) {

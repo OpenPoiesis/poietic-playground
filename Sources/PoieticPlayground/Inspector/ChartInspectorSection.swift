@@ -9,24 +9,6 @@ import PoieticCore
 import PoieticFlows
 import CIimgui
 
-func unionBounds(entities: [RuntimeEntity]) -> ValueBounds? {
-    guard !entities.isEmpty else { return ValueBounds(min:0, max:0, baseline: 0) }
-    var result: ValueBounds? = nil
-    var entities = entities
-    while !entities.isEmpty {
-        let current = entities.removeFirst()
-        guard let series: RegularTimeSeries = current.component() else { continue }
-        let seriesBounds = ValueBounds(min: series.dataMin, max: series.dataMax, baseline: 0.0)
-        if let currentBounds = result {
-            result = currentBounds.union(seriesBounds)
-        }
-        else {
-            result = seriesBounds
-        }
-    }
-    return result
-}
-
 class ChartInspectorSection: InspectorSection {
     var trait: Trait { SimulationDomain.Traits.NumericValue }
     var category: InspectorPanel.Category { .overview }

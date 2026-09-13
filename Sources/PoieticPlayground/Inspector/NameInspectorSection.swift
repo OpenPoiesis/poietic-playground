@@ -52,7 +52,6 @@ class NameInspectorSection: InspectorSection {
         ImGui.InputText("Name", buffer: nameBuffer)
         if ImGui.IsItemDeactivatedAfterEdit() {
             acceptChange(document)
-            print("Entered: string: '\(nameBuffer.string)' buffer: \(nameBuffer.bufferPointer)")
         }
     }
     

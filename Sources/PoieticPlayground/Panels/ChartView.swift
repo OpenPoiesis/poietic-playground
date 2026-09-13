@@ -17,7 +17,10 @@ struct _TimeSeriesWrapper {
 
 func chartValueGetter(data: UnsafeMutableRawPointer?, index: Int32) -> Float {
     guard let data else { return 0 }
+    
     let series = data.assumingMemoryBound(to: _TimeSeriesWrapper.self).pointee.series
+    guard index >= 0 && index < series.data.count else { return 0 }
+
     return Float(series.data[Int(index)])
 }
 
@@ -48,7 +51,8 @@ class ChartView {
     
     func draw() {
         guard let chartEntity else { return }
-        // 1. Get series
+        
+        // FIXME: Series are overlapping here intentionally, until we have proper plotting
         let cursor = ImGui.GetCursorPos()
         for child in chartEntity.children {
             ImGui.SetCursorPos(cursor)

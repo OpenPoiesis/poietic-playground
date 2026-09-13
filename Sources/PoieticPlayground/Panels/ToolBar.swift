@@ -27,16 +27,16 @@ class ToolBar: @MainActor Panel {
     func bind(_ application: Application) {
         self.app = application
         // TODO: Makeshift tool chaining. Use current/engaged
-        self.secondaryTool = application.canvasTools.first { $0.name == "pan" }
+        self.secondaryTool = application.canvasTools.first { $0.type == .pan }
     }
     
-    func tool(name: String) -> CanvasTool? {
-        tools.first { $0.name == name }
+    func tool(type: CanvasToolType) -> CanvasTool? {
+        tools.first { $0.type == type }
     }
     
     @discardableResult
-    func setTool(_ name: String) -> Bool {
-        guard let tool = self.tool(name: name) else { return false }
+    func setTool(_ type: CanvasToolType) -> Bool {
+        guard let tool = self.tool(type: type) else { return false }
         self.setTool(tool)
         return true
     }
@@ -52,12 +52,10 @@ class ToolBar: @MainActor Panel {
                 
         switch tool {
         case is PanTool: secondaryTool = nil
-        default: secondaryTool = self.tool(name: "pan")
+        default: secondaryTool = self.tool(type: .pan)
         }
         
         tool.activate()
-
-        print("Tool: \(tool.name)")
     }
     
     func update(_ timeDelta: Double) {
@@ -86,7 +84,7 @@ class ToolBar: @MainActor Panel {
 
             let texture = style.texture(forIcon: tool.iconKey)
             let ref = ImTextureRef(texture.textureID)
-            if ImGui.ImageButton("##\(tool.name)", ref, buttonSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 0), ImVec4(1, 1, 1, 1)) {
+            if ImGui.ImageButton("##\(tool.type.name)", ref, buttonSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 0), ImVec4(1, 1, 1, 1)) {
                 if currentTool !== tool {
                     setTool(tool)
                 }
@@ -95,7 +93,7 @@ class ToolBar: @MainActor Panel {
             
             if ImGui.IsItemHovered(ImGuiHoveredFlags(ImGuiHoveredFlags_DelayShort.rawValue)) {
                 ImGui.BeginTooltip()
-                ImGui.TextUnformatted(tool.name)
+                ImGui.TextUnformatted(tool.type.name)
                 ImGui.EndTooltip()
             }
             
@@ -132,19 +130,4 @@ class ToolBar: @MainActor Panel {
         tool.drawPalette()
         ImGui.End()
     }
-    
-    /// Placeholder method for getting tool icons
-    /// - Parameter tool: Name of the tool
-    /// - Returns: Placeholder image data (will be implemented later)
-    private func getToolIcon(_ tool: String) -> UnsafeMutableRawPointer? {
-        // TODO: Implement actual icon loading
-        // For now, return nil or placeholder
-        return nil
-        
-        // When implementing, you might use something like:
-        // - Load image from resources
-        // - Convert to ImTextureID
-        // - Return as UnsafeMutableRawPointer
-    }
-
 }

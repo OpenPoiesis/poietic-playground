@@ -8,7 +8,24 @@ import CIimgui
 import Diagramming
 import PoieticCore
 
-
+enum CanvasToolType {
+    /// No tool
+    case empty
+    case selection
+    case placement
+    case connect
+    case pan
+    
+    var name: String {
+        switch self {
+        case .empty: "empty"
+        case .selection: "selection"
+        case .placement: "placement"
+        case .connect: "connect"
+        case .pan: "pan"
+        }
+    }
+}
 
 /// Abstract class for canvas tools.
 ///
@@ -20,13 +37,13 @@ import PoieticCore
 ///
 /// Tools are authority for interactions and interaction state. They can:
 ///
-/// - Change selection with ``Session/changeSelection(_:)``
-/// - Create transactions with ``Session/createOrReuseTransaction()``
+/// - Change selection with ``Document/changeSelection(_:)``
+/// - Create transactions with ``Document/createOrReuseTransaction()``
 /// - Queue commands.
 /// - Open and close inline editors.
 ///
-/// Tools can create interactive preview components in the world (``Session/world``) which
-/// will be drawn by setting ``Session/requiresInteractivePreviewUpdate`` to ``true``.
+/// Tools can create interactive preview components in the world (``Document/world``) which
+/// will be drawn by setting ``Document/requiresInteractivePreviewUpdate`` to ``true``.
 ///
 @MainActor
 class CanvasTool {
@@ -51,15 +68,15 @@ class CanvasTool {
     ///
     weak var canvas: DiagramCanvas?
 
-    /// Session the tool is bound to.
+    /// Document the tool is bound to.
     ///
     /// Tool is bound to a document together with a canvas using ``bind(canvas:document:)``.
     ///
-    /// Session properties and functions typically used by a tool:
+    /// Document properties and functions typically used by a tool:
     ///
-    /// - ``Session/selection`` and ``Session/changeSelection(_:)``
-    /// - ``Session/createOrReuseTransaction()``
-    /// - ``Session/requiresInteractivePreviewUpdate``
+    /// - ``Document/selection`` and ``Session/changeSelection(_:)``
+    /// - ``Document/createOrReuseTransaction()``
+    /// - ``Document/requiresInteractivePreviewUpdate``
     ///
     weak var document: Document?
 
@@ -69,7 +86,7 @@ class CanvasTool {
     }
     
     var hasObjectPalette: Bool { false }
-    var name: String { "default"}
+    var type: CanvasToolType { .empty }
     var iconKey: IconKey { .empty }
     
     /// Called before tool activation.

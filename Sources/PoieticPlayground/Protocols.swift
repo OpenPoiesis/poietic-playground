@@ -15,13 +15,6 @@ protocol View: ApplicationObject {
     func draw()
 }
 
-protocol Controller: ApplicationObject {
-    func processInput(_ io: ImGuiIO)
-}
-extension Controller {
-    func processInput(_ io: ImGuiIO) {}
-}
-
 protocol Panel: View {
     /// Flag whether the panel is visible.
     ///

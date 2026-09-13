@@ -12,7 +12,7 @@ import Diagramming
 class PlacementTool: CanvasTool {
     static let IconSize: ImVec2 = ImVec2(60, 40)
     static let PaletteCellSize: ImVec2 = ImVec2(60, 60)
-    override var name: String { "placement"}
+    override var type: CanvasToolType { .placement }
     override var hasObjectPalette: Bool { true }
     override var iconKey: IconKey { .place }
     
@@ -57,21 +57,6 @@ class PlacementTool: CanvasTool {
         }
         return types
     }
-    
-//    func OLDcreateBlockIntent(position: Vector2D, typeName: String) {
-//        guard let document,
-//              let notation: Notation = world.singleton(),
-//              let type = document.design.metamodel.objectType(name: typeName)
-//        else { return }
-//        let world = document.world
-//        let pictogram = notation.pictogram(type.name)
-//
-//        if blockIntent != nil {
-//            removeIntentShadow()
-//        }
-//        let component = BlockIntent(type: type, position: position, pictogram: pictogram)
-//        self.intentShadow = world.spawn(component)
-//    }
     
     func createBlockIntent(position: Vector2D, typeName: String) {
         guard let document,
@@ -167,9 +152,8 @@ class PlacementTool: CanvasTool {
         else { return .pass }
         let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
 
-        print("Placing \(intent.type.name) at \(worldPos)")
         if let objectID = placeObject(type: intent.type, at: worldPos) {
-            document.queueCommand(SwitchToolCommand("selection"))
+            document.queueCommand(SwitchToolCommand(.selection))
             document.changeSelection(.replaceAllWithOne(objectID))
         }
         document.queueInteractivePreviewUpdate()
@@ -183,6 +167,7 @@ class PlacementTool: CanvasTool {
         let trans = document.createOrReuseTransaction()
         
         let count = trans.filter(type: type).count
+        // TODO: Have a better auto-naming mechanism. Right now the new name might collide, which is somewhat fine - users will get node error (indicated), but easy to spot and fix.
         let name = type.name.toSnakeCase() + String(count)
 
         let node = trans.createNode(type)

@@ -94,6 +94,7 @@ class Overlay {
                 GraphicsBackend.shared.destroyTexture(texture)
                 self.texture = nil
             }
+            destroy()
             create(width: width, height: height)
             self.state = .needsRender
         }

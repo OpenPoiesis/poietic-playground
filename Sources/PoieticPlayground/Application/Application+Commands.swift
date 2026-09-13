@@ -24,8 +24,8 @@ extension Application {
             }
             let title: String
             switch error.severity {
-            case .error: title = "Fatal Error"
-            case .fatal: title = "Error"
+            case .fatal: title = "Fatal Error"
+            case .error: title = "Error"
             }
             
             self.queueAlert(title: title, message: error.message)
@@ -54,7 +54,7 @@ extension Application {
         try! design.accept(plane) // We can force, because empty plane must be always valid.
         self.newDocument(design)
     }
-    // TODO: Move to Session (document)
+    // TODO: Move to Document
     
     func openDesign(url: URL) throws (DesignStoreError) {
         let store = DesignStore(url: url)

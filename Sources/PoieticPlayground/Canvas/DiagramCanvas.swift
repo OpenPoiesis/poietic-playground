@@ -270,7 +270,12 @@ class DiagramCanvas: View {
         overlays.ensureSize(width: Int32(canvasSize.x), height: Int32(canvasSize.y))
 
         drawOverlays()
-        try! overlays.uploadIfNeeded()
+        do {
+            try overlays.uploadIfNeeded()
+        }
+        catch {
+            print("ERROR: Unable to upload overlays: \(error)")
+        }
         drawOverlayTextures()
        
         editorManager?.draw()

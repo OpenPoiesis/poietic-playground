@@ -41,10 +41,10 @@ struct CommandContext {
 /// Commands are representations of user actions.
 ///
 /// For typical command execution the commands queued in the application
-/// document ``Application/document`` through ``Session/queueCommand(_:)``.  They are run
+/// document ``Application/document`` through ``Document/queueCommand(_:)``.  They are run
 /// at the end of the application main loop after all updates using the ``Application/runCommand(_:)`.
 ///
-/// Commands can use and append a transaction ``Session/transaction``. The transaction,
+/// Commands can use and append a transaction ``Document/transaction``. The transaction,
 /// if contains changes, is committed in the application plane update after the command queue is
 /// run.
 ///

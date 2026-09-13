@@ -7,5 +7,9 @@ DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
+imgui.ini
 /Sandbox
+# Distribution build output (Distribution/package-macos.sh)
+/dist/
+# Generated app icon; commit the .icns, ignore intermediate artwork only if desired
 

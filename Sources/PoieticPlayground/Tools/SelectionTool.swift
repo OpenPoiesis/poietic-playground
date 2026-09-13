@@ -14,7 +14,7 @@ import Diagramming
 class SelectionTool: CanvasTool {
     // TODO: Implement the tool (empty stub for now)
 
-    override var name: String { "selection"}
+    override var type: CanvasToolType { .selection }
     override var iconKey: IconKey { .select }
 
     enum State {
@@ -70,7 +70,6 @@ class SelectionTool: CanvasTool {
         
         // TODO: Close inline popup
         let target = canvas.hitTarget(screenPosition: event.screenPos)
-        print("---     got target: \(target)")
         let selection = document.selection
 
         switch target?.kind {
@@ -79,6 +78,7 @@ class SelectionTool: CanvasTool {
             state = .objectSelect
             removeHandles()
             return .consumed
+
         case .object(let runtimeID, .body):
             // TODO: Defer opening of context menu on inputEnded or move context menu out of the tool
             guard let objectID = world.entity(runtimeID)?.objectID
@@ -100,14 +100,17 @@ class SelectionTool: CanvasTool {
             self.createHandles()
 
             state = .objectHit
+
         case .object(let runtimeID, .issueIndicator):
             self.removeHandles()
             state = .idle
             guard let objectID = world.entity(runtimeID)?.objectID else { break }
             self.document?.queueCommand(OpenIssuesCommand(objectID))
+
         case .object(let runtimeID, let part):
             self.removeHandles()
             state = .objectPartHit(runtimeID, part)
+
         case .handle(let runtimeID):
             state = .handleEngaged(runtimeID)
         }
@@ -124,36 +127,29 @@ class SelectionTool: CanvasTool {
         case .idle, .objectSelect:
             return .pass
         case .objectHit, .objectMove, .objectPartHit:
-//            Input.setDefaultCursorShape(.drag)
             document?.beginInteractivePreview()
             previewSelectionMove(screenDelta: event.delta)
             state = .objectMove
             
         case .handleEngaged(let handleID), .handleMove(let handleID):
-//            Input.setDefaultCursorShape(.drag)
-//            dragHandle(byCanvasDelta: delta)
             document?.beginInteractivePreview()
             dragHandle(handleID, screenDelta: event.delta)
             state = .handleMove(handleID)
         }
-//        print("▶️🖐️ Drag Start: \(state)")
         return .engaged
     }
     func dragMove(_ event: ToolEvent) -> EngagementResult {
-//        print("🖐️ Drag Move: \(state)")
 
 //        TODO: popupManager?.closeInlinePopup()
         switch state {
         case .idle: break
         case .objectSelect: break
         case .objectHit, .objectMove, .objectPartHit:
-//            Input.setDefaultCursorShape(.drag)
             previewSelectionMove(screenDelta: event.delta)
             syncHandlesToPreview()
             state = .objectMove
             
         case .handleEngaged(let handleID), .handleMove(let handleID):
-//            Input.setDefaultCursorShape(.drag)
             dragHandle(handleID, screenDelta: event.delta)
             state = .handleMove(handleID)
         }
@@ -170,7 +166,6 @@ class SelectionTool: CanvasTool {
               let document
         else { return .pass }
 
-//        Input.setDefaultCursorShape(.arrow)
         let screenDelta = event.screenPos - self.dragStartScreenPos
         let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
 
@@ -187,29 +182,8 @@ class SelectionTool: CanvasTool {
         case .idle, .objectHit, .objectSelect, .handleEngaged: break
 
         case .objectPartHit:
+            // TODO: Open editor for the part hit: primary/secondary label, error indicator
             break
-//            guard let hitTarget,
-//                  let block = hitTarget.object as? DiagramCanvasBlock,
-//                  let entityID = block.runtimeID,
-//                  let objectID = world?.entityToObject(entityID)
-//            else {
-//                break
-//            }
-//            let selectionManager = designController.selectionManager
-//
-//            switch hitTarget.type {
-//            case .primaryLabel:
-//                selectionManager.replaceAll([objectID])
-//                popupManager?.openInlineEditor("name", rawEntityID: objectID.asGodotValue(), attribute: "name")
-//            case .secondaryLabel:
-//                selectionManager.replaceAll([objectID])
-//                popupManager?.openInlineEditor("formula", rawEntityID: objectID.asGodotValue(), attribute: "formula")
-//            case .errorIndicator:
-//                selectionManager.replaceAll([objectID])
-//                popupManager?.openIssuesPopup(objectID.asGodotValue())
-//            case .object: break
-//            case .handle: break
-//            }
         }
         document.endInteractivePreview()
         return .consumed

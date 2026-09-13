@@ -32,7 +32,6 @@ extension Application {
     }
     
     func queueDialog(_ dialog: any ModalDialog) {
-        print("QUEUED DIALOG: \(dialog)")
         modalQueue.append(dialog)
     }
     

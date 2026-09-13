@@ -7,11 +7,6 @@
 
 
 extension String {
-    /// Returns `true` if the string is empty or contains only whitespaces.
-    public var isVisuallyEmpty: Bool {
-        self.isEmpty || self.allSatisfy { $0.isWhitespace }
-    }
-    
     public func toSnakeCase(splitCharacter: Character = "_") -> String {
         guard !self.isEmpty else { return self }
         

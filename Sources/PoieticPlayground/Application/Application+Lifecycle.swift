@@ -153,7 +153,6 @@ extension Application {
         canvas.draw()
         
         toolBar.draw()
-//        filePicker.draw()
 
         for panel in panels {
             guard panel.isVisible else { continue }

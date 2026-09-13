@@ -47,7 +47,7 @@ struct Color {
     }
     
     func darkened(_ factor: Float) -> Color {
-        let clamped = max(1.0, min(0.0, factor))
+        let clamped = max(0.0, min(1.0, factor))
         return Color(value * clamped)
     }
     

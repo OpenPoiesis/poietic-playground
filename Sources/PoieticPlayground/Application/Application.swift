@@ -156,7 +156,7 @@ class Application {
     
     func applicationSessionDebugWindow() {
         ImGui.Begin("Application Session")
-        ImGui.TextUnformatted("Current tool: \(toolBar.currentTool?.name, default: "no tool")")
+        ImGui.TextUnformatted("Current tool: \(toolBar.currentTool?.type.name, default: "no tool")")
         if let document {
             let plane = document.world.plane
             let wPlaneLabel: String = plane.map { String(describing: $0.id) } ?? "(no plane)"

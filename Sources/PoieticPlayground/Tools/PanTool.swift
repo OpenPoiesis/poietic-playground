@@ -20,7 +20,7 @@ class PanTool: CanvasTool {
         case pinching
     }
     
-    override var name: String { "pan"}
+    override var type: CanvasToolType { .pan }
     override var iconKey: IconKey { .hand }
     
     var cursor: ImGuiMouseCursor_ = ImGuiMouseCursor_Arrow

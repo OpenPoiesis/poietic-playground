@@ -107,7 +107,7 @@ extension Document {
     ///
     func update(_ timeDelta: Double) {
         if needsWorldPlaneUpdate || design.currentPlane !== world.plane {
-                        changeWorldPlane()
+            changeWorldPlaneAndSimulate()
         }
         
         self.run(schedule: DocumentUpdateSchedule.self)
@@ -118,8 +118,8 @@ extension Document {
             trigger(.previewChanged)
         }
     }
-    // TODO: Maybe we need a better name?
-    func             changeWorldPlane() {
+
+    func changeWorldPlaneAndSimulate() {
         if let plane = design.currentPlane {
             world.setPlane(plane)
         }

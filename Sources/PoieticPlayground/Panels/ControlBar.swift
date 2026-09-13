@@ -76,7 +76,6 @@ class ControlBar: @MainActor Panel {
 
         ImGui.PushItemWidth(ImGui.GetContentRegionAvail().x)
 
-//        let flags: ImGuiInputTextFlags = 0
         let previousStep = currentStep
         ImGui.SliderInt("##current_step_slider", &currentStep, 0, Int32(settings.steps), "")
         if currentStep != previousStep {
@@ -99,8 +98,6 @@ class ControlBar: @MainActor Panel {
             self.app?.player.stop()
         }
         ImGui.SameLine(0, Self.ButtonGroupOffset)
-//        ImGui.Separator()
-//        ImGui.SameLine()
 
         if controlButton("Beginning", iconKey: .restart, isEnabled: &flag) {
             self.app?.player.toFirstStep()
@@ -119,8 +116,6 @@ class ControlBar: @MainActor Panel {
         }
         ImGui.SameLine()
         ImGui.SameLine(0, Self.ButtonGroupOffset)
-//        ImGui.Separator()
-//        ImGui.SameLine()
         if controlButton("Loop", iconKey: .loop, isEnabled: &flag) {
             
         }

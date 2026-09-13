@@ -179,34 +179,3 @@ final class CanvasStyle: Sendable {
         return metrics[metric] ?? defaultValue
     }
 }
-
-#if false
-class _OLDCanvasStyle {
-//    var errorIndicatorBackground: Color = Color.white.withTransparency(0.5)
-//    var errorIndicatorColor: Color = Color(red: 0.7, green: 0.2, blue: 0.2)
-
-    // Indicator
-    /// Style used to draw the indicator background, before the actual indicator content.
-    /// Style used to draw the indicator bar when the value is within bounds and when the negative
-    /// style is not set.
-    var indicatorNormalStyle: ShapeStyle = ShapeStyle(outline: nil, fill: Color(red:0.22, green:0.62, blue:0.48))
-    /// If set, then the style is used to draw the value when the value is less than origin.
-    var indicatorNegativeStyle: ShapeStyle = ShapeStyle(outline: nil, fill: Color(red: 0.85, green: 0.55, blue: 0.10))
-    /// Value used to draw the indicator when the value is greater than max value.
-    var indicatorOverflowStyle: ShapeStyle = ShapeStyle(outline: nil, fill: Color(red: 0.80, green: 0.22, blue: 0.10))
-    /// Value used to draw the indicator when the value is less than min value.
-    var indicatorUnderflowStyle: ShapeStyle = ShapeStyle(outline: nil, fill: Color(red:0.25, green:0.48, blue:0.72))
-    /// Style of the indicator when the value is not set.
-    var indicatorEmptyStyle: ShapeStyle = ShapeStyle(outline: nil, fill: Color(red: 0.72, green: 0.70, blue: 0.67))
-
-    init() { /* Empty init */ }
-    
-    func adaptableColor(_ key: AdaptableColorKey, default defaultColor: Color) -> Color {
-        return adaptableColors[key, default: defaultColor]
-    }
-    func lineWidth(_ name: String, defaultWidth: Float = 1.0) -> Float {
-        return lineWidths[name, default: defaultWidth]
-    }
-    
-}
-#endif

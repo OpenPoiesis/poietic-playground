@@ -12,15 +12,16 @@ import Foundation
 import CIimgui
 
 struct SwitchToolCommand: Command {
-    let toolName: String
-    var name: String { "delete" } // TODO: Use CanvasTool.Type
-    
-    init(_ toolName: String) {
-        self.toolName = toolName
+    var name: String { "switch-tools" } // TODO: Use CanvasTool.Type
+
+    let toolType: CanvasToolType
+
+    init(_ toolType: CanvasToolType) {
+        self.toolType = toolType
     }
     
     func run(_ context: CommandContext) throws (CommandError) {
-        context.app.toolBar.setTool(name)
+        context.app.toolBar.setTool(toolType)
     }
 }
 

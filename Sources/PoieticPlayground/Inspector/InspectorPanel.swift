@@ -131,7 +131,7 @@ class InspectorPanel: Panel {
             inspectDesign(document)
             return
         }
-        print("Inspector: Selection changed")
+        
         let overview = document.selectionOverview
         var attributes: Set<String> = []
         

@@ -8,13 +8,6 @@
 import PoieticCore
 import Diagramming
 
-struct ScreenPosition: Component {
-    let position: Vector2D
-}
-struct ScreenSize: Component {
-    let size: Vector2D
-}
-
 struct BlockIntent: Component {
     let type: ObjectType
 }
