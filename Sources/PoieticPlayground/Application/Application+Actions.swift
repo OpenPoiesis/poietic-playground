@@ -8,17 +8,17 @@ import CIimgui
 import Foundation
 import PoieticCore
 
-struct ShortcutAction {
-    let name: String
+struct ActionShortcut {
+    let action: Action
     let key: ImGuiKeyChord
     let flags: ImGuiInputFlags
 
-    init(_ name: String, key: ImGuiKey, flags: ImGuiInputFlags = 0) {
-        self.init(name, key: ImGuiKeyChord(key.rawValue), flags: flags)
+    init(_ action: Action, key: ImGuiKey, flags: ImGuiInputFlags = 0) {
+        self.init(action, key: ImGuiKeyChord(key.rawValue), flags: flags)
     }
     
-    init(_ name: String, key: ImGuiKeyChord, flags: ImGuiInputFlags = 0) {
-        self.name = name
+    init(_ action: Action, key: ImGuiKeyChord, flags: ImGuiInputFlags = 0) {
+        self.action = action
         self.key = key
         self.flags = ImGuiInputFlags(flags | Int32(ImGuiInputFlags_RouteGlobal.rawValue))
     }
@@ -52,65 +52,65 @@ struct ShortcutAction {
     }
 }
 
-let GlobalShortcuts: [ShortcutAction] = [
+let GlobalShortcuts: [ActionShortcut] = [
     // Application
-    ShortcutAction("settings", key: ImGuiMod_Ctrl | ImGuiKey_Comma),
+    ActionShortcut(.settings, key: ImGuiMod_Ctrl | ImGuiKey_Comma),
 
     // Edit
-    ShortcutAction("undo", key: ImGuiMod_Ctrl | ImGuiKey_Z),
-    ShortcutAction("redo", key: ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_Z),
+    ActionShortcut(.undo, key: ImGuiMod_Ctrl | ImGuiKey_Z),
+    ActionShortcut(.redo, key: ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_Z),
 
-    ShortcutAction("cut", key: ImGuiMod_Ctrl | ImGuiKey_X),
-    ShortcutAction("copy", key: ImGuiMod_Ctrl | ImGuiKey_C),
-    ShortcutAction("paste", key: ImGuiMod_Ctrl | ImGuiKey_V),
-    ShortcutAction("delete", key: ImGuiKey_Backspace),
+    ActionShortcut(.cut, key: ImGuiMod_Ctrl | ImGuiKey_X),
+    ActionShortcut(.copy, key: ImGuiMod_Ctrl | ImGuiKey_C),
+    ActionShortcut(.paste, key: ImGuiMod_Ctrl | ImGuiKey_V),
+    ActionShortcut(.delete, key: ImGuiKey_Backspace),
 
-    ShortcutAction("select_all", key: ImGuiMod_Ctrl | ImGuiKey_A),
+    ActionShortcut(.selectAll, key: ImGuiMod_Ctrl | ImGuiKey_A),
 
     // File
-    ShortcutAction("new", key: ImGuiMod_Ctrl | ImGuiKey_N),
-    ShortcutAction("open", key: ImGuiMod_Ctrl | ImGuiKey_O),
-    ShortcutAction("save", key: ImGuiMod_Ctrl | ImGuiKey_S),
-    ShortcutAction("save_as", key: ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_S),
+    ActionShortcut(.new, key: ImGuiMod_Ctrl | ImGuiKey_N),
+    ActionShortcut(.open, key: ImGuiMod_Ctrl | ImGuiKey_O),
+    ActionShortcut(.save, key: ImGuiMod_Ctrl | ImGuiKey_S),
+    ActionShortcut(.saveAs, key: ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_S),
     
     // View
-    ShortcutAction("toggle_inspector", key: ImGuiMod_Ctrl | ImGuiKey_I),
-    ShortcutAction("toggle_issues_panel", key: ImGuiMod_Ctrl | ImGuiKey_5),
-    ShortcutAction("reset_zoom", key: ImGuiMod_Ctrl | ImGuiKey_0),
+    ActionShortcut(.toggleInspector, key: ImGuiMod_Ctrl | ImGuiKey_I),
+    ActionShortcut(.toggleIssuesPanel, key: ImGuiMod_Ctrl | ImGuiKey_5),
+    ActionShortcut(.resetZoom, key: ImGuiMod_Ctrl | ImGuiKey_0),
 
     // Tools
-    ShortcutAction("switch_selection_tool", key: ImGuiKey_1),
-    ShortcutAction("switch_placement_tool", key: ImGuiKey_2),
-    ShortcutAction("switch_connect_tool", key: ImGuiKey_3),
-    ShortcutAction("switch_pan_tool", key: ImGuiKey_Space),
+    ActionShortcut(.switchSelectionTool, key: ImGuiKey_1),
+    ActionShortcut(.switchPlacementTool, key: ImGuiKey_2),
+    ActionShortcut(.switchConnectTool, key: ImGuiKey_3),
+    ActionShortcut(.switchPanTool, key: ImGuiKey_Space),
     
     // Inspector
-    ShortcutAction("overview_inspector", key: ImGuiMod_Ctrl | ImGuiKey_1),
-    ShortcutAction("properties_inspector", key: ImGuiMod_Ctrl | ImGuiKey_2),
+    ActionShortcut(.overviewInspector, key: ImGuiMod_Ctrl | ImGuiKey_1),
+    ActionShortcut(.propertiesInspector, key: ImGuiMod_Ctrl | ImGuiKey_2),
 
     // Inline Editors
-    ShortcutAction("name_inline_editor", key: ImGuiKey_Enter),
-    ShortcutAction("secondary_inline_editor", key: ImGuiKey_Equal),
+    ActionShortcut(.nameInlineEditor, key: ImGuiKey_Enter),
+    ActionShortcut(.secondaryInlineEditor, key: ImGuiKey_Equal),
 ]
 
 
 extension Application {
-    func globalShortcutAction() -> String? {
+    func globalShortcutAction() -> Action? {
         for shortcut in GlobalShortcuts {
             if ImGui.Shortcut(shortcut.key, shortcut.flags) {
-                return shortcut.name
+                return shortcut.action
             }
         }
         return nil
     }
     
-    func handleAction(_ actionName: String) {
-        switch actionName {
+    func handleAction(_ action: Action) {
+        switch action {
         // -- Tools --
-        case "switch_selection_tool": toolBar.setTool("selection")
-        case "switch_placement_tool": toolBar.setTool("placement")
-        case "switch_connect_tool": toolBar.setTool("connect")
-        case "switch_pan_tool":
+        case .switchSelectionTool: toolBar.setTool("selection")
+        case .switchPlacementTool: toolBar.setTool("placement")
+        case .switchConnectTool: toolBar.setTool("connect")
+        case .switchPanTool:
             if let previousTool = toolBar.previousTool,
                toolBar.currentTool is PanTool
             {
@@ -119,75 +119,55 @@ extension Application {
             else {
                 toolBar.setTool("pan")
             }
-        
+            
         // -- Application --
-        case "settings": self.openSettings()
-        case "quit":
+        case .settings: self.openSettings()
+        case .quit:
             self.run(QuitApplicationFlow(context: self))
-
-            // -- File --
-        case "new":
-            self.run(NewDesignFlow(context: self))
-        case "open":
-            self.run(OpenDocumentWithFileSelectionFlow(context: self))
-        case "save":
-            self.run(SaveDocumentFlow(context: self))
-        case "save_as":
-            self.run(SaveDocumentWithFileSelectionFlow(context: self))
-        case "export_svg":
-            self.run(ExportSVGFlow(context: self))
-
+            
+        // -- File --
+        case .new:       self.run(NewDesignFlow(context: self))
+        case .open:      self.run(OpenDocumentWithFileSelectionFlow(context: self))
+        case .save:      self.run(SaveDocumentFlow(context: self))
+        case .saveAs:    self.run(SaveDocumentWithFileSelectionFlow(context: self))
+        case .exportSVG: self.run(ExportSVGFlow(context: self))
+            
         // -- Edit --
-        case "undo": document?.queueCommand(UndoCommand())
-        case "redo": document?.queueCommand(RedoCommand())
-//        case "select_all": ???
-        case "paste":
+        case .cut:
+            guard let document else { break }
+            let ids: [ObjectID] = Array(document.selection.ids)
+            document.queueCommand(CutToPasteboardCommand(ids))
+        case .copy:
+            guard let document else { break }
+            let ids: [ObjectID] = Array(document.selection.ids)
+            document.queueCommand(CopyToPasteboardCommand(ids))
+        case .delete:
+            guard let document else { break }
+            let ids: [ObjectID] = Array(document.selection.ids)
+            document.queueCommand(DeleteObjectsCommand(ids))
+        case .paste:
             document?.queueCommand(PasteFromPasteboardCommand())
-        case "select_all":
+            
+        case .undo: document?.queueCommand(UndoCommand())
+        case .redo: document?.queueCommand(RedoCommand())
+        case .selectAll:
             self.selectAll()
-
+            
         // -- View ---
-        case "toggle_inspector":
-            self.inspector.isVisible = !self.inspector.isVisible
-        case "toggle_issues_panel":
-            self.issuesPanel.isVisible = !self.issuesPanel.isVisible
-        case "reset_zoom":
-            document?.queueCommand(ResetZoomCommand())
-
+        case .toggleInspector:   self.inspector.isVisible = !self.inspector.isVisible
+        case .toggleIssuesPanel: self.issuesPanel.isVisible = !self.issuesPanel.isVisible
+        case .resetZoom:         document?.queueCommand(ResetZoomCommand())
+            
         // -- Inspector --
-        case "overview_inspector":
+        case .overviewInspector:
             self.inspector.selectTab(.overview)
             self.inspector.isVisible = true
-        case "properties_inspector":
+        case .propertiesInspector:
             self.inspector.selectTab(.properties)
             self.inspector.isVisible = true
-
-        case "name_inline_editor":
-            self.canvas.openInlineEditorForSelection("name")
-        case "secondary_inline_editor":
-            self.canvas.openSecondaryInlineEditorForSelection()
-
-        default:
-            guard let document else { return }
-            if !handleSelectionAction(actionName, document: document) {
-                self.logError("Unhandled application action: " + actionName)
-            }
+            
+        case .nameInlineEditor:      self.canvas.openInlineEditorForSelection("name")
+        case .secondaryInlineEditor: self.canvas.openSecondaryInlineEditorForSelection()
         }
-    }
-    
-    func handleSelectionAction(_ actionName: String, document: Document) -> Bool {
-        let ids: [ObjectID] = Array(document.selection.ids)
-        switch actionName {
-        case "cut":
-            document.queueCommand(CutToPasteboardCommand(ids))
-        case "copy":
-            document.queueCommand(CopyToPasteboardCommand(ids))
-        case "delete":
-            document.queueCommand(DeleteObjectsCommand(ids))
-
-        default:
-            return false
-        }
-        return true
     }
 }

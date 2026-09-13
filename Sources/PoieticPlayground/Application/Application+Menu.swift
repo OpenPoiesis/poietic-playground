@@ -45,32 +45,32 @@ extension Application {
                 }
                 ImGui.Separator()
                 if ImGui.MenuItem("Quit", "Cmd+Q") {
-                    handleAction("quit")
+                    handleAction(.quit)
                 }
                 ImGui.EndMenu()
             }
             // File menu
             if ImGui.BeginMenu("Design") {
                 if ImGui.MenuItem("New", "Cmd+N") {
-                    handleAction("new")
+                    handleAction(.new)
                 }
                 if ImGui.MenuItem("Open", "Cmd+O") {
-                    handleAction("open")
+                    handleAction(.open)
                 }
                 
                 ImGui.Separator()
                 
                 if ImGui.MenuItem("Save", "Cmd+S") {
-                    handleAction("save")
+                    handleAction(.save)
                 }
                 if ImGui.MenuItem("Save As...", "Cmd+Shift+S") {
-                    handleAction("save_as")
+                    handleAction(.saveAs)
                 }
                 
                 ImGui.Separator()
 
                 if ImGui.MenuItem("Export SVG...", "Cmd+Shift+E") {
-                    handleAction("export_svg")
+                    handleAction(.exportSVG)
                 }
 
                 
@@ -80,29 +80,29 @@ extension Application {
             // Edit menu
             if ImGui.BeginMenu("Edit") {
                 if ImGui.MenuItem("Undo", "Cmd+Z", false, canUndo()) {
-                    handleAction("undo")
+                    handleAction(.undo)
                 }
                 if ImGui.MenuItem("Redo", "Cmd+Y", false, canRedo()) {
-                    handleAction("redo")
+                    handleAction(.redo)
                 }
                 
                 ImGui.Separator()
                 
                 if ImGui.MenuItem("Cut", "Cmd+X", false, hasSelection()) {
-                    handleAction("cut")
+                    handleAction(.cut)
                 }
                 if ImGui.MenuItem("Copy", "Cmd+C", false, hasSelection()) {
-                    handleAction("copy")
+                    handleAction(.copy)
                 }
                 if ImGui.MenuItem("Paste", "Cmd+V") {
-                    handleAction("paste")
+                    handleAction(.paste)
                 }
                 if ImGui.MenuItem("Delete", "Delete") {
-                    handleAction("delete")
+                    handleAction(.delete)
                 }
                 ImGui.Separator()
                 if ImGui.MenuItem("Select All", "Cmd+A") {
-                    handleAction("select_all")
+                    handleAction(.selectAll)
                 }
 
                ImGui.EndMenu()

@@ -33,11 +33,11 @@ protocol Panel: View {
     /// Default implementation returns `false.`
     ///
     /// - Returns: `true` if the action was handled, otherwise `false`.
-    func handleAction(_ actionName: String) -> Bool
+    func handleAction(_ action: Action) -> Bool
 }
 
 extension Panel {
-    func handleAction(_ actionName: String) -> Bool {
+    func handleAction(_ action: Action) -> Bool {
         return false
     }
 }

@@ -106,10 +106,10 @@ class GraphicalFunctionPanel: Panel {
         syncInterpolationRadio()
     }
     
-    func handleAction(_ actionName: String) -> Bool {
+    func handleAction(_ action: Action) -> Bool {
         guard isVisible && isFocused else { return false }
-        switch actionName {
-        case "delete":
+        switch action {
+        case .delete:
             if let pointIndex = curveView.selectedPointIndex {
                 curveView.removePoint(at: pointIndex)
             }

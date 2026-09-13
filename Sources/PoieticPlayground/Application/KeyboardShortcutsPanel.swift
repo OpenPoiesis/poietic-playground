@@ -32,7 +32,7 @@ class KeyboardShortcutsPanel: Panel {
                 ImGui.TableNextColumn()
                 ImGui.TextUnformatted(shortcut.keyLabel)
                 ImGui.TableNextColumn()
-                ImGui.TextUnformatted(shortcut.name)
+                ImGui.TextUnformatted(shortcut.action.name)
             }
 
             ImGui.EndTable()

@@ -50,7 +50,7 @@ extension Application {
             // FIXME: [IMPORTANT] Too crowded, clean-it up.
             switch backend.pollEvent(timeout: timeout) {
             case .quit:
-                self.handleAction("quit") // Handle quit with confirmation
+                self.handleAction(.quit) // Handle quit with confirmation
             case .skip: continue
             case .none: break
             case .gesture(let gesture):
@@ -86,15 +86,15 @@ extension Application {
         }
     }
     func processInput() {
-        if let actionName = globalShortcutAction() {
+        if let action = globalShortcutAction() {
             var actionHandled = false
             for panel in panels {
-                if panel.isVisible && panel.handleAction(actionName) {
+                if panel.isVisible && panel.handleAction(action) {
                     actionHandled = true
                 }
             }
             if !actionHandled {
-                self.handleAction(actionName)
+                self.handleAction(action)
             }
         }
         
