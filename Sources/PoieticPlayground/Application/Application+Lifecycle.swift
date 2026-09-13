@@ -59,7 +59,7 @@ extension Application {
                 self.pendingToolEvents.append(event)
             case .dropFile(path: let path):
                 let url = URL(fileURLWithPath: path)
-                self.run(OpenDocumentFromURLFlow(context: self, url: url))
+                self.startFlow(OpenDocumentFromURLFlow(context: self, url: url))
             }
             
             backend.newFrame()
@@ -207,5 +207,5 @@ extension Application {
                 toolBar.engagedTool = nil
             }
         }
-    }    
+    }
 }

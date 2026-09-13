@@ -109,7 +109,7 @@ class Document {
 //    }
     
     /// Append document path extension if needed.
-    static func normalisePathExtension(_ url: URL,
+    static func normalizePathExtension(_ url: URL,
                                        extension pathExtension: String = Document.FileExtension) -> URL {
         let result: URL
         if url.pathExtension.isEmpty || url.pathExtension != pathExtension {

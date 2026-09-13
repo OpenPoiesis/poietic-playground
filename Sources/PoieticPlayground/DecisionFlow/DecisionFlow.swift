@@ -105,7 +105,7 @@ protocol DecisionFlowContext: AnyObject {
     ///
     /// - Important: The `completion` must call ``DecisionFlowContext/finish(_:outcome:)``.
     ///
-    func presentSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void))
+    func startSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void))
 
     // Execute command immediately
     func execute(_ command: any Command) throws (CommandError)

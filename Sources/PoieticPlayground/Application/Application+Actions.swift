@@ -123,14 +123,14 @@ extension Application {
         // -- Application --
         case .settings: self.openSettings()
         case .quit:
-            self.run(QuitApplicationFlow(context: self))
+            self.startFlow(QuitApplicationFlow(context: self))
             
         // -- File --
-        case .new:       self.run(NewDesignFlow(context: self))
-        case .open:      self.run(OpenDocumentWithFileSelectionFlow(context: self))
-        case .save:      self.run(SaveDocumentFlow(context: self))
-        case .saveAs:    self.run(SaveDocumentWithFileSelectionFlow(context: self))
-        case .exportSVG: self.run(ExportSVGFlow(context: self))
+        case .new:       self.startFlow(NewDesignFlow(context: self))
+        case .open:      self.startFlow(OpenDocumentWithFileSelectionFlow(context: self))
+        case .save:      self.startFlow(SaveDocumentFlow(context: self))
+        case .saveAs:    self.startFlow(SaveDocumentWithFileSelectionFlow(context: self))
+        case .exportSVG: self.startFlow(ExportSVGFlow(context: self))
             
         // -- Edit --
         case .cut:

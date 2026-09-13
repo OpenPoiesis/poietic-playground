@@ -35,7 +35,7 @@ final class ChoosePathForWritingFlow: DecisionFlow {
             return
         }
         
-        let url = Document.normalisePathExtension(URL(fileURLWithPath: selectedPath),
+        let url = Document.normalizePathExtension(URL(fileURLWithPath: selectedPath),
                                                   extension: fileExtension)
         
         guard FileManager.default.fileExists(atPath: url.path) else {
@@ -75,7 +75,7 @@ final class ExportSVGFlow: DecisionFlow {
         guard let context else { return }
         
         let choosePath = ChoosePathForWritingFlow(context: context, title: "Export SVG", fileExtension: "svg")
-        context.presentSubflow(choosePath) { [weak self] outcome in
+        context.startSubflow(choosePath) { [weak self] outcome in
             guard let self else { return }
 
             switch outcome {

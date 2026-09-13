@@ -18,7 +18,7 @@ final class QuitApplicationFlow: DecisionFlow {
 
         let subflow = SaveDocumentIfNeededFlow(context: context)
 
-        context.presentSubflow(subflow) { [weak self] completion in
+        context.startSubflow(subflow) { [weak self] completion in
             guard let self else { return }
             
             guard completion == .success else {
@@ -50,7 +50,7 @@ final class NewDesignFlow: DecisionFlow {
         
         let subflow = SaveDocumentIfNeededFlow(context: context)
 
-        context.presentSubflow(subflow) { [weak self] outcome in
+        context.startSubflow(subflow) { [weak self] outcome in
             guard let self else { return }
             switch outcome {
             case .success:

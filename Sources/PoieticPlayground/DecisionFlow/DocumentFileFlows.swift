@@ -45,7 +45,7 @@ final class SaveDocumentWithFileSelectionFlow: DecisionFlow {
             return
         }
         
-        let url = Document.normalisePathExtension(URL(fileURLWithPath: selectedPath))
+        let url = Document.normalizePathExtension(URL(fileURLWithPath: selectedPath))
         
         if FileManager.default.fileExists(atPath: url.path) {
             self.confirmOverwrite(url: url)
@@ -92,7 +92,7 @@ final class SaveDocumentFlow: DecisionFlow {
         else {
             let subflow = SaveDocumentWithFileSelectionFlow(context: context)
 
-            context.presentSubflow(subflow) { outcome in
+            context.startSubflow(subflow) { outcome in
                 context.finish(self, outcome: outcome)
             }
         }
@@ -138,7 +138,7 @@ final class SaveDocumentIfNeededFlow: DecisionFlow {
     func saveDocument() {
         guard let context else { return }
         
-        context.presentSubflow(SaveDocumentFlow(context: context)) { outcome in
+        context.startSubflow(SaveDocumentFlow(context: context)) { outcome in
             context.finish(self, outcome: outcome)
         }
     }
@@ -158,7 +158,7 @@ final class OpenDocumentWithFileSelectionFlow: DecisionFlow {
         
         let subflow = SaveDocumentIfNeededFlow(context: context)
         
-        context.presentSubflow(subflow) { [weak self] outcome in
+        context.startSubflow(subflow) { [weak self] outcome in
             guard let self else { return }
             switch outcome {
             case .success:
@@ -216,7 +216,7 @@ final class OpenDocumentFromURLFlow: DecisionFlow {
         
         let subflow = SaveDocumentIfNeededFlow(context: context)
 
-        context.presentSubflow(subflow) { [weak self] outcome in
+        context.startSubflow(subflow) { [weak self] outcome in
             guard let self else { return }
             switch outcome {
             case .success:

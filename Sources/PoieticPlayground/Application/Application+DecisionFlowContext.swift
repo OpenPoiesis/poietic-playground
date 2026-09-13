@@ -54,7 +54,7 @@ extension Application: DecisionFlowContext {
     func queue(_ command: any Command) {
         self.document?.queueCommand(command)
     }
-    func presentSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void)) {
+    func startSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void)) {
         decisionManager.presentSubflow(flow, completion: completion)
     }
     func finish(_ flow: any DecisionFlow, outcome: DecisionFlowOutcome) {
@@ -64,7 +64,7 @@ extension Application: DecisionFlowContext {
 }
 
 extension Application {
-    func run(_ flow: DecisionFlow) {
+    func startFlow(_ flow: DecisionFlow) {
         self.decisionManager.start(flow)
     }
 }
