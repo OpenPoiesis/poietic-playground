@@ -86,6 +86,8 @@ extension Application {
         }
     }
     func processInput() {
+        guard !isInteractionBlocked else { return }
+        
         if let action = globalShortcutAction() {
             var actionHandled = false
             for panel in panels {
@@ -103,7 +105,26 @@ extension Application {
     func update(_ timeDelta: Double) {
         updateDialogs()
         decisionManager.update()
+
+        updateDocument(timeDelta)
         
+        if player.isRunning {
+            player.update(timeDelta)
+        }
+
+        // Update UI components
+        canvas.update(timeDelta)
+        toolBar.update(timeDelta)
+
+        for panel in panels {
+            panel.update(timeDelta)
+        }
+        
+        document?.run(schedule: DocumentCleanupSchedule.self)
+    }
+    
+    func updateDocument(_ timeDelta: Double) {
+        guard !isInteractionBlocked else { return }
         // Run the Command Queue.
         // When a command replaces the document, we continue with the new one.
         // The rest of the commands in the replaced document queue is dropped.
@@ -125,20 +146,6 @@ extension Application {
             }
             document.update(timeDelta)
         }
-        
-        if player.isRunning {
-            player.update(timeDelta)
-        }
-
-        // Update UI components
-        canvas.update(timeDelta)
-        toolBar.update(timeDelta)
-
-        for panel in panels {
-            panel.update(timeDelta)
-        }
-        
-        document?.run(schedule: DocumentCleanupSchedule.self)
     }
     
     func draw() {
@@ -157,6 +164,11 @@ extension Application {
     }
     
     func processUnhandledInput() {
+        guard !isInteractionBlocked else {
+            pendingToolEvents.removeAll()
+            return
+        }
+
         let io = ImGui.GetIO().pointee
        
         let events = canvas.recognizeEvents(io) + pendingToolEvents
@@ -195,6 +207,5 @@ extension Application {
                 toolBar.engagedTool = nil
             }
         }
-    }
-    
+    }    
 }

@@ -50,7 +50,9 @@ class Application {
     var player: ResultPlayer
 
     // -- Modals and Decisions --
-    var inputBlocked: Bool = false
+    var isInteractionBlocked: Bool {
+        modalQueue.contains { $0.status != .resolved } || decisionManager.isActive
+    }
     var modalQueue: [any ModalDialog] = []
     var activeModal: (any ModalDialog)? {
         modalQueue.first { $0.status == .active}
