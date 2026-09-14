@@ -1,5 +1,5 @@
 //
-//  OpenDesignCommand.swift
+//  DocumentFileCommands.swift
 //  PoieticPlayground
 //
 //  Created by Stefan Urbanek on 04/02/2026.
@@ -12,23 +12,23 @@ import Diagramming
 
 let DefaultDesignPath = "Unnamed.poietic"
 
-class NewDesignCommand: Command {
+class NewDesignCommand: WorkspaceCommand {
     var name: String { "new-design" }
 
-    func run(_ context: CommandContext) throws (CommandError) {
+    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
         context.app.newDesign()
     }
 }
 
-class OpenDesignCommand: Command {
+class OpenDesignCommand: WorkspaceCommand {
     var name: String { "open-design" }
     let url: URL
     init(url: URL) {
         self.url = url
     }
-    func run(_ context: CommandContext) throws (CommandError) {
+    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
         do {
-            try context.app.openDesign(url: url)
+            try context.workspace?.openDesign(url: url)
         }
         catch {
             throw CommandError(String(describing: error), underlyingError: error)
@@ -36,7 +36,7 @@ class OpenDesignCommand: Command {
     }
 }
 
-class SaveDesignCommand: Command {
+class SaveDesignCommand: WorkspaceCommand {
     var name: String { "save-design" }
     let url: URL?
     init(url: URL? = nil, appendExtensionIfNeeded: Bool = false) {
@@ -47,13 +47,13 @@ class SaveDesignCommand: Command {
             self.url = url
         }
     }
-    func run(_ context: CommandContext) throws (CommandError) {
-        guard let targetURL = url ?? context.document.designURL else {
+    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
+        guard let targetURL = url ?? context.document?.designURL else {
             throw CommandError("Save design: No URL provided", severity: .error)
         }
         
         do {
-            try context.app.saveDesign(url: targetURL)
+            try context.document?.save(to: targetURL)
         }
         catch {
             throw CommandError(String(describing: error), underlyingError: error)
@@ -61,7 +61,7 @@ class SaveDesignCommand: Command {
     }
 }
 
-class ExportSVGCommand: Command {
+class ExportSVGCommand: WorkspaceCommand {
     static let FileExtension = "svg"
     var name: String { "export-svg" }
     let url: URL
@@ -76,7 +76,7 @@ class ExportSVGCommand: Command {
         }
     }
     
-    func run(_ context: CommandContext) throws (CommandError) {
+    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
         guard let diagram = context.document.mainDiagram else {
             throw CommandError("No main diagram found", severity: .fatal)
         }

@@ -6,6 +6,8 @@
 //
 
 extension Application: DecisionFlowContext {
+//    var document: Document? { workspace?.currentDocument }
+    
     func presentMessage(title: String, message: String, style: MessageStyle) {
         let alert = ConfirmationDialog(
             title: title,
@@ -52,7 +54,7 @@ extension Application: DecisionFlowContext {
         try command.run(context)
     }
     func queue(_ command: any Command) {
-        self.document?.queueCommand(command)
+        self.workspace?.queueCommand(command)
     }
     func startSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void)) {
         decisionManager.presentSubflow(flow, completion: completion)

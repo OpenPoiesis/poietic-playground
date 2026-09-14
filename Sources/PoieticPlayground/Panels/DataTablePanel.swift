@@ -26,7 +26,7 @@ import PoieticFlows
 /// Designed to be extended: the name `DataTablePanel` is deliberately generic
 /// so that future result-like data sources can reuse this panel.
 @MainActor
-class DataTablePanel: Panel {
+class DataTablePanel: Panel, DocumentBound {
 
     var isVisible: Bool = false
     
@@ -42,6 +42,9 @@ class DataTablePanel: Panel {
 
     func bind(_ document: Document) {
         self.document = document
+    }
+    func unbind() {
+        self.document = nil
     }
 
     func update(_ timeDelta: Double) {}

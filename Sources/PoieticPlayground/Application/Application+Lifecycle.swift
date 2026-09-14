@@ -7,6 +7,7 @@
 
 import CIimgui
 import Foundation
+import Diagramming // #TODO: Remove this once we unite Vector2D + Point
 
 extension Application {
     static let DefaultEventPollTimeout: Int32 = 16
@@ -16,9 +17,6 @@ extension Application {
         loadResources()
         
         self.settingsPanel.bind(self)
-        self.controlBar.bind(self)
-        self.toolBar.bind(self)
-        self.toolBar.currentTool = canvasTools[0]
 
         // New template design
         let templateURL = ResourceManager.shared.resourceURL(Self.NewDesignTemplatePath)
@@ -55,8 +53,7 @@ extension Application {
             case .none: break
             case .gesture(let gesture):
                 guard canvas.isMouseInViewport else { break }
-                let event = ToolEvent(gesture, io: ImGui.GetIO().pointee)
-                self.pendingToolEvents.append(event)
+                pendingBackendGestures.append(gesture)
             case .dropFile(path: let path):
                 let url = URL(fileURLWithPath: path)
                 self.startFlow(OpenDocumentFromURLFlow(context: self, url: url))
@@ -106,54 +103,21 @@ extension Application {
         updateDialogs()
         decisionManager.update()
 
-        updateDocument(timeDelta)
-        
-        if player.isRunning {
-            player.update(timeDelta)
-        }
-
-        // Update UI components
-        canvas.update(timeDelta)
-        toolBar.update(timeDelta)
+       
+        workspace?.update(timeDelta)
 
         for panel in panels {
             panel.update(timeDelta)
         }
         
-        document?.run(schedule: DocumentCleanupSchedule.self)
     }
     
-    func updateDocument(_ timeDelta: Double) {
-        guard !isInteractionBlocked else { return }
-        // Run the Command Queue.
-        // When a command replaces the document, we continue with the new one.
-        // The rest of the commands in the replaced document queue is dropped.
-        while let document = self.document, !document.commandQueue.isEmpty {
-            let command = document.commandQueue.removeFirst()
-            self.runCommand(command, document: document)
-        }
-        
-        if let document = self.document {
-            do {
-                try document.consumeAndAcceptTransaction()
-            }
-            catch {
-                // This is not user's fault and never should be.
-                // The application failed to make sure structural integrity is assured
-                Application.shared.queueAlert(title: "Plane validation error (report to developers)",
-                                         message: String(describing: error))
-                return
-            }
-            document.update(timeDelta)
-        }
-    }
     
     func draw() {
         mainMenu()
-        canvas.draw()
-        
-        toolBar.draw()
 
+        workspace?.draw()
+        
         for panel in panels {
             guard panel.isVisible else { continue }
             panel.draw()
@@ -161,50 +125,48 @@ extension Application {
         
         self.activeModal?.draw()
     }
+   
+    // TODO: MARK ---- INPUT REFACTORING BELOW ---
+    
+    func makeInputFrame() -> InputFrame {
+        let io = ImGui.GetIO().pointee
+        let clicks = io.MouseClickedCount
+        let dragDistance = io.MouseDragMaxDistanceSqr
+
+        let frame = InputFrame(
+            pointer: Vector2D(io.MousePos),
+            pointerDelta: Vector2D(io.MouseDelta),
+            buttonsDown: MouseButtonMask(io.MouseDown),
+            buttonsClicked: MouseButtonMask(io.MouseClicked),
+            buttonsReleased: MouseButtonMask(io.MouseReleased),
+            clickCounts: MouseButtonValues([
+                .left: Int(clicks.0),
+                .right: Int(clicks.1),
+                .middle: Int(clicks.2),
+                .other1: Int(clicks.3),
+                .other2: Int(clicks.4)
+            ], default: 0),
+            dragMaxDistance: MouseButtonValues([
+                .left: Double(dragDistance.0.squareRoot()),
+                .right: Double(dragDistance.1.squareRoot()),
+                .middle: Double(dragDistance.2.squareRoot()),
+                .other1: Double(dragDistance.3.squareRoot()),
+                .other2: Double(dragDistance.4.squareRoot())
+            ], default: 0),
+            modifiers: KeyModifiers(io.KeyMods),
+            scroll: Vector2D(Double(io.MouseWheelH), Double(io.MouseWheel))
+        )
+        return frame
+    }
     
     func processUnhandledInput() {
         guard !isInteractionBlocked else {
-            pendingToolEvents.removeAll()
+            workspace?.dropToolEvents()
             return
         }
 
-        let io = ImGui.GetIO().pointee
-       
-        let events = canvas.recognizeEvents(io) + pendingToolEvents
-        pendingToolEvents.removeAll()
-
-        for event in events {
-            var result: CanvasTool.EngagementResult = .pass
-            var toolUsed: CanvasTool? = nil
-            
-            // 1. Determine which tool handles the event
-            if let engagedTool = toolBar.engagedTool {
-                // Engaged tool has priority - it gets ALL events
-                result = engagedTool.handleEvent(event)
-                toolUsed = engagedTool
-            }
-            else if let currentTool = toolBar.currentTool {
-                // No engaged tool - try current tool first
-                result = currentTool.handleEvent(event)
-                toolUsed = currentTool
-                
-                // If current tool passed and we have a fallback, try fallback
-                if result == .pass,
-                   let fallbackTool = toolBar.secondaryTool
-                {
-                    result = fallbackTool.handleEvent(event)
-                    toolUsed = fallbackTool
-                }
-            }
-            
-            // 2. Update engagement state based on result
-            switch result {
-            case .engaged:
-                toolBar.engagedTool = toolUsed
-                
-            case .consumed, .pass:
-                toolBar.engagedTool = nil
-            }
-        }
+        let frame = makeInputFrame()
+        workspace?.processInput(frame, gestures: pendingBackendGestures)
+        pendingBackendGestures.removeAll()
     }
 }

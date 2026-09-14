@@ -8,10 +8,10 @@
 import CIimgui
 
 @MainActor
-class ToolBar: @MainActor Panel {
+class ToolBar: @MainActor Panel, DocumentBound {
     var isVisible: Bool = true
     
-    internal weak var app: Application? = nil
+    internal weak var document: Document? = nil
     var previousTool: CanvasTool? = nil
     var currentTool: CanvasTool? = nil
     /// Tool that is currently engaged, for example in a dragging operation.
@@ -19,15 +19,26 @@ class ToolBar: @MainActor Panel {
     ///
     var engagedTool: CanvasTool? = nil
     var secondaryTool: CanvasTool? = nil
-    var tools: [CanvasTool] { app?.canvasTools ?? [] }
+    var tools: [CanvasTool]
     
     init() {
-        self.currentTool = nil
-    }
-    func bind(_ application: Application) {
-        self.app = application
+        let selectionTool = SelectionTool()
+        let panTool = PanTool()
+        self.tools = [
+            selectionTool,
+            PlacementTool(),
+            ConnectTool(),
+            panTool,
+        ]
+        self.currentTool = selectionTool
         // TODO: Makeshift tool chaining. Use current/engaged
-        self.secondaryTool = application.canvasTools.first { $0.type == .pan }
+        self.secondaryTool = panTool
+    }
+    func bind(_ document: Document) {
+        self.document = document
+    }
+    func unbind() {
+        self.document = nil
     }
     
     func tool(type: CanvasToolType) -> CanvasTool? {

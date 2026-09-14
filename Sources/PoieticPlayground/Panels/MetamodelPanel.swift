@@ -23,7 +23,7 @@ import Diagramming
 /// Traits and object types are cross-linked — clicking a trait in an object
 /// type's details navigates to that trait, and vice versa.
 @MainActor
-class MetamodelPanel: Panel {
+class MetamodelPanel: Panel, DocumentBound {
 
     var isVisible: Bool = false {
         didSet { if !isVisible { selectedItem = nil } }
@@ -86,6 +86,9 @@ class MetamodelPanel: Panel {
 
     func bind(_ document: Document) {
         self.document = document
+    }
+    func unbind() {
+        self.document = nil
     }
 
     func update(_ timeDelta: Double) {}

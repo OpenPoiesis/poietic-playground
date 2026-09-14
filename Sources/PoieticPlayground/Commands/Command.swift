@@ -28,13 +28,13 @@ struct CommandError: Error {
     }
 }
 
-struct CommandContext {
-    let app: Application
-    let document: Document
-    
-    var design: Design { document.design }
-    var world: World { document.world }
-}
+//struct CommandContext {
+//    let app: Application
+//    let document: Document
+//    
+//    var design: Design { document.design }
+//    var world: World { document.world }
+//}
 
 /// Protocol for application commands.
 ///
@@ -54,6 +54,25 @@ struct CommandContext {
 ///
 @MainActor
 protocol Command {
+    associatedtype Context: CommandContext
     var name: String { get }
-    func run(_ context: CommandContext) throws (CommandError)
+    func run(_ context: Context) throws (CommandError)
+}
+
+protocol CommandContext {
+    
+}
+
+protocol WorkspaceCommand: Command where Context == WorkspaceCommandContext {
+    // Empty
+}
+
+struct WorkspaceCommandContext: CommandContext {
+    weak private let app: Application?
+    weak let workspace: Workspace?
+    weak let document: Document?
+    weak let canvas: DiagramCanvas?
+    
+    var design: Design? { document?.design }
+    var world: World? { document?.world }
 }

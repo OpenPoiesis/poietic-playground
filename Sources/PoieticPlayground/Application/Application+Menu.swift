@@ -110,23 +110,32 @@ extension Application {
             
             // View menu
             if ImGui.BeginMenu("View") {
-                if ImGui.MenuItem("Show Value Indicators", nil, &canvas.showValueIndicators) {
+                // TODO: Implement value indicators toggle
+//                if ImGui.MenuItem("Show Value Indicators", nil, &canvas.showValueIndicators) {
+//                }
+
+                var inspectorVisible = workspace?.inspector.isVisible ?? false
+                if ImGui.MenuItem("Show Inspector", "Cmd+I", &inspectorVisible) {
+                    handleAction(.toggleInspector)
                 }
-                if ImGui.MenuItem("Show Inspector", "Cmd+I", &inspector.isVisible) {
-                    // Nothing
+
+                var issuesPanelVisible = workspace?.issuesPanel.isVisible ?? false
+                if ImGui.MenuItem("Show Issues", nil, &issuesPanelVisible) {
+                    handleAction(.toggleInspector)
                 }
-                if ImGui.MenuItem("Show Issues", nil, &issuesPanel.isVisible) {
-                    // Nothing
+                
+                var dataTablePanelVisible = workspace?.dataTablePanel.isVisible ?? false
+                if ImGui.MenuItem("Show Data Table", nil, &dataTablePanelVisible) {
+                    handleAction(.toggleDataTablePanel)
                 }
-                if ImGui.MenuItem("Show Data Table", nil, &dataTablePanel.isVisible) {
-                    // Nothing
+                var gfPanelVisible = workspace?.graphicFunctionPanel.isVisible ?? false
+                if ImGui.MenuItem("Show Graphical Function Panel", nil, &gfPanelVisible) {
+                    handleAction(.toggleGraphicalFunctionPanel)
                 }
-                if ImGui.MenuItem("Show Graphical Function Panel", nil, &graphicFunctionPanel.isVisible) {
-                    // Nothing
-                }
+                var toolBarVisible = workspace?.toolBar.isVisible ?? false
                 ImGui.Separator()
-                if ImGui.MenuItem("Show Toolbar", nil, &toolBar.isVisible) {
-                    // Nothing
+                if ImGui.MenuItem("Show Toolbar", nil, &toolBarVisible) {
+                    handleAction(.toggleToolBar)
                 }
                 ImGui.Separator()
                 if ImGui.MenuItem("Show Metrics", nil, &showMetrics) {
@@ -144,26 +153,24 @@ extension Application {
             }
             // Window menu (for window management)
             if ImGui.BeginMenu("Simulation") {
-                let runLabel: String = self.player.isRunning ? "Stop" : "Play"
-
-                if ImGui.MenuItem(runLabel) {
-                    if self.player.isRunning {
-                        self.player.stop()
-                    }
-                    else {
-                        self.player.run()
+                if let player = workspace?.player {
+                    if ImGui.MenuItem(player.isRunning ? "Stop" : "Play") {
+                        if player.isRunning { handleAction(.stopPlayer) }
+                        else                { handleAction(.runPlayer) }
                     }
                 }
+
                 ImGui.EndMenu()
             }
 
             if ImGui.BeginMenu("Debug") {
-                if ImGui.MenuItem("Objects Panel") {
-                    self.debugDesignPanel.isVisible = true
+                var ddPanelVisible = workspace?.debugDesignPanel.isVisible ?? false
+                if ImGui.MenuItem("Objects Panel", nil, &ddPanelVisible) {
+                    handleAction(.toggleDebugDesignPanel)
                 }
                 if ImGui.MenuItem("Debug Diagram Canvas Rendering", nil, &debugCanvasRendering) {
-                    self.canvas.debugRendering = self.debugCanvasRendering
-                    self.canvas.overlays.setAllNeedsRender()
+                    self.workspace?.canvas.debugRendering = self.debugCanvasRendering
+                    self.workspace?.canvas.overlays.setAllNeedsRender()
                 }
                 ImGui.EndMenu()
             }

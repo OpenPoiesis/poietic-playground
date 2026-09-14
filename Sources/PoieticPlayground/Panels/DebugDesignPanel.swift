@@ -19,7 +19,7 @@ import Diagramming
 ///
 /// Corresponds to `DevelopmentDebuggingWindow` in the Godot prototype.
 @MainActor
-class DebugDesignPanel: Panel {
+class DebugDesignPanel: Panel, DocumentBound {
 
     var isVisible: Bool = false
 
@@ -35,7 +35,11 @@ class DebugDesignPanel: Panel {
         self.document = document
         refreshFromSelection()
     }
-
+    func unbind() {
+        self.document = nil
+        objectIDs.removeAll()
+        selectedIndex = nil
+    }
     func update(_ timeDelta: Double) {}
 
     func onSelectionChanged(_ document: Document) {

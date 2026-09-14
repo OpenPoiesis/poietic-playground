@@ -26,6 +26,10 @@ class InlineEditorManager {
         self.document = document
         self.canvas = canvas
     }
+    func unbind() {
+        self.document = nil
+        self.canvas = nil
+    }
     
     func openEditor(_ editorName: String,
                     for entity: RuntimeEntity) {

@@ -10,9 +10,8 @@ import PoieticFlows
 import Foundation
 import CIimgui
 
-extension Command {
-    // TODO: Move to application
-    func copySelectionAsText(ids: [ObjectID], plane: DesignPlane) throws (CommandError) -> String {
+extension Document {
+    static func copySelectionAsText(ids: [ObjectID], plane: DesignPlane) throws (CommandError) -> String {
         let design = plane.design
         let ids = plane.contained(ids)
         
@@ -28,39 +27,9 @@ extension Command {
         }
         return text
     }
-    
-    // TODO: Move to application
-    func setPasteboardText(_ text: String) throws (CommandError) {
-        let platformIO = ImGui.GetPlatformIO().pointee
-        guard let setPasteboardFn = platformIO.Platform_SetClipboardTextFn,
-              let imguiContext = ImGui.GetCurrentContext()
-        else {
-            throw CommandError("Backend pasteboard configuration error", severity: .fatal)
-        }
-        
-        setPasteboardFn(imguiContext, text)
-    }
-    // TODO: Move to application
-    func getPasteboardText() throws (CommandError) -> String? {
-        let platformIO = ImGui.GetPlatformIO().pointee
-        guard let getPasteboardFn = platformIO.Platform_GetClipboardTextFn,
-              let imguiContext = ImGui.GetCurrentContext()
-        else {
-            throw CommandError("Backend pasteboard configuration error", severity: .fatal)
-        }
-        
-        guard let result = getPasteboardFn(imguiContext) else {
-            return nil
-        }
-        guard let string = String(cString: result, encoding: .utf8) else {
-            return nil
-        }
-        return string
-    }
-
 }
 
-struct DeleteObjectsCommand: Command {
+struct DeleteObjectsCommand: WorkspaceCommand {
     let ids: [ObjectID]
     var name: String { "delete" }
     
@@ -68,8 +37,10 @@ struct DeleteObjectsCommand: Command {
         self.ids = ids
     }
     
+    @MainActor
     func run(_ context: CommandContext) throws (CommandError) {
-        let trans = context.document.createOrReuseTransaction()
+        guard let document = context.document else { return }
+        let trans = document.createOrReuseTransaction()
         for objectID in ids {
             guard trans.contains(objectID) else { continue }
             trans.removeCascading(objectID)
@@ -77,33 +48,40 @@ struct DeleteObjectsCommand: Command {
     }
 }
 
-struct CopyToPasteboardCommand: Command {
+struct CopyToPasteboardCommand: WorkspaceCommand {
     let ids: [ObjectID]
     var name: String { "copy" }
     init(_ ids: [ObjectID]) {
         self.ids = ids
     }
+    @MainActor
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let plane = context.world.plane else { return }
-        let text = try copySelectionAsText(ids: ids, plane: plane)
-        try setPasteboardText(text)
+        guard let plane = context.world?.plane else { return }
+        let text = try Document.copySelectionAsText(ids: ids, plane: plane)
+        try Application.setPasteboardText(text)
         
     }
     
 }
 
-struct CutToPasteboardCommand: Command {
+struct CutToPasteboardCommand: WorkspaceCommand {
     let ids: [ObjectID]
     var name: String { "cut" }
+
     init(_ ids: [ObjectID]) {
         self.ids = ids
     }
+    
+    @MainActor
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let plane = context.world.plane else { return }
-        let text = try copySelectionAsText(ids: ids, plane: plane)
-        try setPasteboardText(text)
+        guard let plane = context.world?.plane,
+              let document = context.document
+        else { return }
+        
+        let text = try Document.copySelectionAsText(ids: ids, plane: plane)
+        try Application.setPasteboardText(text)
 
-        let trans = context.document.createOrReuseTransaction()
+        let trans = document.createOrReuseTransaction()
         for objectID in ids {
             guard trans.contains(objectID) else { continue }
             trans.removeCascading(objectID)
@@ -111,17 +89,18 @@ struct CutToPasteboardCommand: Command {
     }
 }
 
-struct PasteFromPasteboardCommand: Command {
+struct PasteFromPasteboardCommand: WorkspaceCommand {
     var name: String { "paste" }
 
     init() { /* Nothing */ }
     
+    @MainActor
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let text = try getPasteboardText() else {
-            return
-        }
+        guard let text = try Application.getPasteboardText(),
+              let document = context.document
+        else { return }
 
-        let trans = context.document.createOrReuseTransaction()
+        let trans = document.createOrReuseTransaction()
 
         guard let data = text.data(using: .utf8) else {
             throw CommandError("Can not get data from text")
@@ -146,11 +125,11 @@ struct PasteFromPasteboardCommand: Command {
                                   identityStrategy: .preserveOrCreate)
         }
         catch {
-            context.document.discardTransaction()
+            document.discardTransaction()
             throw CommandError("Failed to paste content", underlyingError: error)
         }
 
-        context.document.changeSelection(.replaceAll(ids))
+        document.changeSelection(.replaceAll(ids))
     }
 
 }

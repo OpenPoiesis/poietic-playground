@@ -12,10 +12,6 @@ import Foundation
 public enum AutoCorrectParametersSchedule: ScheduleLabel {}
 
 extension Document {
-    func queueCommand(_ command: any Command) {
-        self.commandQueue.append(command)
-    }
-    
     func autoConnectParameters() {
         
         // We can just run it, as this method is called when the world is populated. If it is not,

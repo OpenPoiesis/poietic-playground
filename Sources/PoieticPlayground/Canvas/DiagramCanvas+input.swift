@@ -7,27 +7,6 @@
 import CIimgui
 import Diagramming
 
-struct InputState {
-    enum PointerState: Equatable {
-        /// Pointer or mouse is up – idle.
-        case idle
-        /// Pointer or mouse is pressed, not yet moved.
-        ///
-        /// The associated value is the first button that triggered the state.
-        case pressed(MouseButton)
-        /// Pointer or mouse has been moved.
-        ///
-        /// The associated value is the first button that triggered the state.
-        case dragging(MouseButton)
-    }
-
-    var pointerState: PointerState = .idle
-
-    var mousePos: ImVec2? = nil
-    var previousModifiers: KeyModifiers = .none
-    var wasMouseInViewport: Bool = false
-}
-
 // TODO: Create CanvasInputRecognizer:
 
 //class CanvasInputRecognizer {
@@ -39,21 +18,18 @@ struct InputState {
 
 // TODO: Consider moving this outside of canvas. We need inputState and isMouseInViewport
 extension DiagramCanvas {
+    static let PointerDragThreshold:Double = 3.0 // TODO: Check whether this is a good value
+    
     // MARK: - Input Handling
-    func recognizeEvents(_ io: ImGuiIO) -> [ToolEvent] {
+    func recognizeInput(_ input: InputFrame) -> [ToolEvent] {
         var events: [ToolEvent] = []
        
         // Current state
-        let mousePos = io.MousePos
-        let mouseDelta = io.MouseDelta
-        let buttonsDown = MouseButtonMask(io.MouseDown)
-        let currentModifiers = KeyModifiers(io.KeyMods)
-        
         let eventBody = ToolEvent.Body(
-            screenPos: mousePos,
-            delta: mouseDelta,
+            screenPos: input.pointer,
+            delta: input.pointerDelta,
             buttonsDown: .none,
-            modifiers: currentModifiers
+            modifiers: input.modifiers
         )
 
         // Viewport check and Hover Events
@@ -82,21 +58,19 @@ extension DiagramCanvas {
         }
         
         // Pointer Events
-        let buttonsClicked = MouseButtonMask(io.MouseClicked)
-        for button in buttonsClicked.buttons {
+        for button in input.buttonsClicked.buttons {
             let event = ToolEvent(.pointerDown,
                                   body: eventBody,
                                   triggerButton: button)
             events.append(event)
         }
         
-        if mouseDelta.lengthSquared() > 0.0 {
+        if input.pointerDelta.lengthSquared() > 0.0 {
             let event = ToolEvent(.pointerMove, body: eventBody)
             events.append(event)
         }
         
-        let buttonsReleased = MouseButtonMask(io.MouseReleased)
-        for button in buttonsReleased.buttons {
+        for button in input.buttonsReleased.buttons {
             let event = ToolEvent(.pointerUp,
                                   body: eventBody,
                                   triggerButton: button)
@@ -104,17 +78,15 @@ extension DiagramCanvas {
         }
         
         // Modifier Change
-        if currentModifiers != inputState.previousModifiers {
+        if input.modifiers != inputState.previousModifiers {
             let event = ToolEvent(.modifierChange, body: eventBody)
             events.append(event)
+            inputState.previousModifiers = input.modifiers
         }
-        inputState.previousModifiers = currentModifiers
         
         // === SCROLL EVENT ===
-        if io.MouseWheel != 0.0 || io.MouseWheelH != 0.0 {
-            let event = ToolEvent(.scroll,
-                                  body: eventBody,
-                                  scrollDelta: ImVec2(io.MouseWheelH, io.MouseWheel))
+        if input.scroll.lengthSquared() > 0.0 {
+            let event = ToolEvent(.scroll, body: eventBody, scrollDelta: input.scroll)
             events.append(event)
         }
         
@@ -124,17 +96,17 @@ extension DiagramCanvas {
         // Input State Machine and Gesture Recognition
         switch inputState.pointerState {
         case .idle:
-            for button in buttonsClicked.buttons {
+            for button in input.buttonsClicked.buttons {
                 inputState.pointerState = .pressed(button)
                 break // Track first button only
             }
             
         case .pressed(let dragButton):
-            let distance = dragButton.unpackItem(io.MouseDragMaxDistanceSqr)
+            let distance = input.dragMaxDistance[dragButton]
 
-            if buttonsReleased.contains(dragButton.mask) {
+            if input.buttonsReleased.contains(dragButton.mask) {
                 // TODO: The click count handling does not seem to work
-                let clickCount = dragButton.unpackItem(io.MouseClickedCount)
+                let clickCount = input.clickCounts[dragButton]
                 let eventType: ToolEventType?
                 if clickCount == 1 {
                     eventType = .click
@@ -155,7 +127,7 @@ extension DiagramCanvas {
                 inputState.pointerState = .idle
             }
                 // Check if drag threshold exceeded
-            else if distance > io.MouseDragThreshold {
+            else if distance >= Self.PointerDragThreshold {
                 inputState.pointerState = .dragging(dragButton)
                 
                 let event = ToolEvent(.dragStart, body: eventBody, triggerButton: dragButton)
@@ -168,14 +140,14 @@ extension DiagramCanvas {
 
         case .dragging(let dragButton):
             // Continue dragging
-            if buttonsDown.contains(dragButton.mask) {
-                if mouseDelta.lengthSquared() > 0.0 {
+            if input.buttonsDown.contains(dragButton.mask) {
+                if input.pointerDelta.lengthSquared() > 0.0 {
                     let event = ToolEvent(.dragMove, body: eventBody, triggerButton: dragButton)
                     events.append(event)
                 }
             }
             // Drag ended
-            else if buttonsReleased.contains(dragButton.mask) {
+            else if input.buttonsReleased.contains(dragButton.mask) {
                 let event = ToolEvent(.dragEnd, body: eventBody, triggerButton: dragButton)
                 events.append(event)
                 inputState.pointerState = .idle

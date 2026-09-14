@@ -13,7 +13,7 @@ struct SimulationReplayTime: Component {
     let time: Double
 }
 
-class ResultPlayer {
+class ResultPlayer: DocumentBound {
     var isRunning: Bool = false
     var isLooping: Bool = true
 
@@ -38,6 +38,11 @@ class ResultPlayer {
 
     func bind(_ document: Document) {
         self.document = document
+    }
+    func unbind() {
+        self.document = nil
+        self.isRunning = false
+        self.lastSampleIndex = 0
     }
     
     func update(_ delta: Double) {

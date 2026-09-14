@@ -18,7 +18,7 @@ import PoieticFlows
 ///
 /// The canvas draws a scene rooted in ``/Diagramming/DiagramCanvas``.
 ///
-class DiagramCanvas: View {
+class DiagramCanvas: View, DocumentBound {
     static let DefaultHitRadius: Double = 5.0
 
     var debugRendering: Bool = false
@@ -115,6 +115,12 @@ class DiagramCanvas: View {
         self.diagram = nil
         self.document = document
         self.editorManager?.bind(document: document, canvas: self)
+    }
+    func unbind() {
+        self.scene = nil
+        self.diagram = nil
+        self.document = nil
+        self.editorManager?.unbind()
     }
     
     /// Convert screen coordinates to world coordinates

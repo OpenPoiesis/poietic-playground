@@ -72,9 +72,11 @@ extension InspectorSection {
     func update(_ timeDelta: Double) { /* Do nothing */ }
     func onSimulationFinished(_ document: Document) { /* Do nothing */ }
     func bind(_ document: Document)  { /* Do nothing */ }
+    func unbind()  { /* Do nothing */ }
 }
 
-class InspectorPanel: Panel {
+@MainActor
+class InspectorPanel: Panel, DocumentBound {
     enum Category {
         case overview
         case properties
@@ -123,6 +125,16 @@ class InspectorPanel: Panel {
         }
         for section in designSections {
             section.bind(document)
+        }
+    }
+    
+    func unbind() {
+        self.document = nil
+        for section in allSections {
+            section.unbind()
+        }
+        for section in designSections {
+            section.unbind()
         }
     }
     

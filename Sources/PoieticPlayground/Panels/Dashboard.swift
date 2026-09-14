@@ -11,7 +11,7 @@ import PoieticFlows
 
 /// Makeshift dashboard.
 @MainActor
-class Dashboard: Panel {
+class Dashboard: Panel, DocumentBound {
     var document: Document?
     static let ChartSize = ImVec2(100, 80)
     var isVisible: Bool = true
@@ -20,6 +20,10 @@ class Dashboard: Panel {
     func bind(_ document: Document) {
         chartViews.removeAll()
         self.document = document
+    }
+    func unbind() {
+        self.document = nil
+        self.chartViews.removeAll()
     }
     
     func onDesignPlaneChanged(_ document: Document) {

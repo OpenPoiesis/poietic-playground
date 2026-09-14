@@ -9,6 +9,7 @@ import PoieticCore
 import Foundation
 import Diagramming
 
+// Design + world, url, trans, selection, observes, change state
 /// Represents and controls the design document.
 ///
 /// Responsibilities:
@@ -139,6 +140,9 @@ class Document {
         // Flags
         self.requiresInteractivePreviewUpdate = false
         self.isPreviewing = false
+        
+        // TODO: Validate necessity of this (moved here during refactoring)
+        self.needsWorldPlaneUpdate = true
         
         setupWorld(notation: notation)
     }

@@ -105,25 +105,15 @@ extension Application {
     }
     
     func handleAction(_ action: Action) {
+        if let workspace, workspace.handleAction(action) {
+            return
+        }
+        
+        // NOTE: List all actions here, so we know
         switch action {
-        // -- Tools --
-        case .switchSelectionTool: toolBar.setTool("selection")
-        case .switchPlacementTool: toolBar.setTool("placement")
-        case .switchConnectTool: toolBar.setTool("connect")
-        case .switchPanTool:
-            if let previousTool = toolBar.previousTool,
-               toolBar.currentTool is PanTool
-            {
-                toolBar.setTool(previousTool)
-            }
-            else {
-                toolBar.setTool("pan")
-            }
-            
         // -- Application --
         case .settings: self.openSettings()
-        case .quit:
-            self.startFlow(QuitApplicationFlow(context: self))
+        case .quit: self.startFlow(QuitApplicationFlow(context: self))
             
         // -- File --
         case .new:       self.startFlow(NewDesignFlow(context: self))
@@ -131,43 +121,8 @@ extension Application {
         case .save:      self.startFlow(SaveDocumentFlow(context: self))
         case .saveAs:    self.startFlow(SaveDocumentWithFileSelectionFlow(context: self))
         case .exportSVG: self.startFlow(ExportSVGFlow(context: self))
-            
-        // -- Edit --
-        case .cut:
-            guard let document else { break }
-            let ids: [ObjectID] = Array(document.selection.ids)
-            document.queueCommand(CutToPasteboardCommand(ids))
-        case .copy:
-            guard let document else { break }
-            let ids: [ObjectID] = Array(document.selection.ids)
-            document.queueCommand(CopyToPasteboardCommand(ids))
-        case .delete:
-            guard let document else { break }
-            let ids: [ObjectID] = Array(document.selection.ids)
-            document.queueCommand(DeleteObjectsCommand(ids))
-        case .paste:
-            document?.queueCommand(PasteFromPasteboardCommand())
-            
-        case .undo: document?.queueCommand(UndoCommand())
-        case .redo: document?.queueCommand(RedoCommand())
-        case .selectAll:
-            self.selectAll()
-            
-        // -- View ---
-        case .toggleInspector:   self.inspector.isVisible = !self.inspector.isVisible
-        case .toggleIssuesPanel: self.issuesPanel.isVisible = !self.issuesPanel.isVisible
-        case .resetZoom:         document?.queueCommand(ResetZoomCommand())
-            
-        // -- Inspector --
-        case .overviewInspector:
-            self.inspector.selectTab(.overview)
-            self.inspector.isVisible = true
-        case .propertiesInspector:
-            self.inspector.selectTab(.properties)
-            self.inspector.isVisible = true
-            
-        case .nameInlineEditor:      self.canvas.openInlineEditorForSelection("name")
-        case .secondaryInlineEditor: self.canvas.openSecondaryInlineEditorForSelection()
+
+        default: self.log("Unhandled action: \(action.name)")
         }
     }
 }

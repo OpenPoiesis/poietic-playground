@@ -8,7 +8,7 @@
 import CIimgui
 import PoieticCore
 
-class IssuesPanel: Panel {
+class IssuesPanel: Panel, DocumentBound {
     var isVisible: Bool = true
     var document: Document?
 //    var expandedObjects: Set<ObjectID> = []
@@ -19,7 +19,12 @@ class IssuesPanel: Panel {
     func bind(_ document: Document) {
         self.document = document
     }
-
+    func unbind() {
+        self.document = nil
+        self.selectedObject = nil
+        self.selectedIssueIndex = nil
+    }
+    
     func update(_ timeDelta: Double) {
         // Nothing for now
     }
