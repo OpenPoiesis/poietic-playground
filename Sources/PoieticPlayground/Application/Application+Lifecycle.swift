@@ -148,12 +148,12 @@ extension Application {
                 .other1: Int(clicks.3),
                 .other2: Int(clicks.4)
             ], default: 0),
-            dragMaxDistance: MouseButtonValues([
-                .left: Double(dragDistance.0.squareRoot()),
-                .right: Double(dragDistance.1.squareRoot()),
-                .middle: Double(dragDistance.2.squareRoot()),
-                .other1: Double(dragDistance.3.squareRoot()),
-                .other2: Double(dragDistance.4.squareRoot())
+            dragMaxDistanceSqr: MouseButtonValues([
+                .left: Double(dragDistance.0),
+                .right: Double(dragDistance.1),
+                .middle: Double(dragDistance.2),
+                .other1: Double(dragDistance.3),
+                .other2: Double(dragDistance.4)
             ], default: 0),
             modifiers: KeyModifiers(io.KeyMods),
             scroll: Vector2D(Double(io.MouseWheelH), Double(io.MouseWheel)),
@@ -163,13 +163,10 @@ extension Application {
     }
     
     func processUnhandledInput() {
-        guard !isInteractionBlocked else {
-            workspace?.dropToolEvents()
-            return
-        }
+        guard !isInteractionBlocked else { return }
 
         let frame = makeInputFrame()
-        workspace?.processInput(frame, gestures: pendingBackendGestures)
+        workspace?.dispatchInput(frame, gestures: pendingBackendGestures)
         pendingBackendGestures.removeAll()
     }
 }

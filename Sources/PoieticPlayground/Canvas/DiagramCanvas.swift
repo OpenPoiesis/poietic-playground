@@ -59,7 +59,7 @@ class DiagramCanvas: View, DocumentBound {
     var indicatorOverlay: Overlay
     var highlightOverlay: Overlay
 
-    var isMouseInViewport: Bool = false
+    var isPointerOver: Bool = false
     var inputState: InputState = InputState()
     
     var canvasPos = ImVec2(0.0, 0.0)          // Screen position of canvas
@@ -266,7 +266,7 @@ class DiagramCanvas: View, DocumentBound {
 
         // Note: We need to do it here for processUnhandledInput(...) to correctly capture
         // the mouse events for canvas. If there is a better solution, I am open.
-        isMouseInViewport = ImGui.IsWindowHovered(
+        isPointerOver = ImGui.IsWindowHovered(
             ImGuiHoveredFlags_ChildWindows |
             ImGuiHoveredFlags_AllowWhenBlockedByPopup
         )

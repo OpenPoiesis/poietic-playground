@@ -10,14 +10,14 @@ import Diagramming
 
 //class CanvasInputRecognizer {
 //    let state: InputState = InputState()
-//    func recognizeEvents(_ io: ImGuiIO, isMouseInViewport: Bool) -> [ToolEvent] {
+//    func recognizeEvents(_ io: ImGuiIO, isPointerOver: Bool) -> [ToolEvent] {
 //        return []
 //    }
 //}
 
-// TODO: Consider moving this outside of canvas. We need inputState and isMouseInViewport
+// TODO: Consider moving this outside of canvas. We need inputState and isPointerOver
 extension DiagramCanvas {
-    static let PointerDragThreshold:Double = 3.0 // TODO: Check whether this is a good value
+    static let PointerDragThreshold:Double = 6.0 // TODO: Check whether this is a good value
     
     // MARK: - Input Handling
     func recognizeInput(_ input: InputFrame) -> [ToolEvent] {
@@ -34,7 +34,7 @@ extension DiagramCanvas {
         // Viewport check and Hover Events
         //
         // Mouse left viewport while idle - bail completely
-        if !isMouseInViewport && (inputState.pointerState == .idle) {
+        if !isPointerOver && (inputState.pointerState == .idle) {
             if inputState.wasMouseInViewport {
                 let event = ToolEvent(.hoverEnd, body: eventBody)
                 events.append(event)
@@ -44,13 +44,13 @@ extension DiagramCanvas {
         }
 
         // Mouse left viewport during operation - continue but emit HoverEnd
-        if !isMouseInViewport && inputState.wasMouseInViewport {
+        if !isPointerOver && inputState.wasMouseInViewport {
             let event = ToolEvent(.hoverEnd, body: eventBody)
             events.append(event)
             inputState.wasMouseInViewport = false
         }
         // Mouse returned to viewport - emit HoverStart
-        if isMouseInViewport && !inputState.wasMouseInViewport {
+        if isPointerOver && !inputState.wasMouseInViewport {
             let event = ToolEvent(.hoverStart, body: eventBody)
             events.append(event)
             inputState.wasMouseInViewport = true
@@ -98,7 +98,7 @@ extension DiagramCanvas {
             }
             
         case .pressed(let dragButton):
-            let distance = input.dragMaxDistance[dragButton]
+            let distance = input.dragMaxDistanceSqr[dragButton]
 
             if input.buttonsReleased.contains(dragButton.mask) {
                 // TODO: The click count handling does not seem to work

@@ -40,7 +40,6 @@ class Workspace {
     var canvas: DiagramCanvas
     var player: ResultPlayer
 
-    var pendingToolEvents: [ToolEvent] = []
     let toolBar: ToolBar
     
     var panels: [any Panel] = []
@@ -142,22 +141,17 @@ class Workspace {
         }
     }
 
-    func dropToolEvents() {
-        pendingToolEvents.removeAll()
-    }
-   
-    func processInput(_ input: InputFrame, gestures: [GestureEvent]) {
+    func dispatchInput(_ input: InputFrame, gestures: [GestureEvent]) {
         let gestureEvents = gestures.map { ToolEvent($0, input: input) }
 
         let events = canvas.recognizeInput(input) + gestureEvents
-        pendingToolEvents.removeAll()
 
         for event in events {
-            processToolEvent(event)
+            dispatchToolEvent(event)
         }
     }
 
-    func processToolEvent(_ event: ToolEvent) {
+    func dispatchToolEvent(_ event: ToolEvent) {
         var result: CanvasTool.EngagementResult = .pass
         var toolUsed: CanvasTool? = nil
         

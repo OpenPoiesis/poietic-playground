@@ -5,7 +5,6 @@
 //  Created by Stefan Urbanek on 14/09/2026.
 //
 
-import CIimgui
 import Diagramming // TODO: Remove this import once we unite Vector2D and Point (not needed here)
 
 extension Vector2D {
@@ -33,26 +32,6 @@ struct KeyModifiers: OptionSet, CustomStringConvertible {
         if self.contains(.shift) { desc += "⇧"}
         if self.contains(.alt) { desc += "⎇"}
         return desc
-    }
-}
-
-extension KeyModifiers {
-    /// Create a key modifiers structure from ImGui keyboard chord.
-    ///
-    init(_ chord: ImGuiKeyChord) {
-        var value: KeyModifiers = .none
-        
-        if chord & ImGuiMod_Ctrl.rawValue != 0 {
-            value.formUnion(.command)
-        }
-        if chord & ImGuiMod_Shift.rawValue != 0 {
-            value.formUnion(.shift)
-        }
-        if chord & ImGuiMod_Alt.rawValue != 0 {
-            value.formUnion(.alt)
-        }
-
-        self = value
     }
 }
 
@@ -165,16 +144,6 @@ struct MouseButtonMask: OptionSet, CustomStringConvertible {
 
     }
     
-    init(_ imGuiButtons: (Bool, Bool, Bool, Bool, Bool)) {
-        var value: Self = .none
-        if imGuiButtons.0 { value.insert(.left) }
-        if imGuiButtons.1 { value.insert(.right) }
-        if imGuiButtons.2 { value.insert(.middle) }
-        if imGuiButtons.3 { value.insert(.other1) }
-        if imGuiButtons.4 { value.insert(.other2) }
-
-        self = value
-    }
     // Make a Sequence by providing an iterator
     var buttons: some Sequence<MouseButton> {
         return sequence(state: UInt8(0)) { currentBit in
@@ -206,7 +175,7 @@ struct InputFrame {
     var buttonsClicked: MouseButtonMask
     var buttonsReleased: MouseButtonMask
     var clickCounts: MouseButtonValues<Int>
-    var dragMaxDistance: MouseButtonValues<Double>
+    var dragMaxDistanceSqr: MouseButtonValues<Double>
     var modifiers: KeyModifiers
     var scroll: Vector2D
     // Used to cancel tool events
