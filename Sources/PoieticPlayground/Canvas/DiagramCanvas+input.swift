@@ -4,7 +4,6 @@
 //
 //  Created by Stefan Urbanek on 04/02/2026.
 //
-import CIimgui
 import Diagramming
 
 // TODO: Create CanvasInputRecognizer:
@@ -90,9 +89,6 @@ extension DiagramCanvas {
             events.append(event)
         }
         
-        // Escape Key
-        let escapePressed = ImGui.IsKeyPressed(ImGuiKey_Escape)
-        
         // Input State Machine and Gesture Recognition
         switch inputState.pointerState {
         case .idle:
@@ -134,7 +130,7 @@ extension DiagramCanvas {
                 events.append(event)
             }
             // Escape cancels the press
-            else if escapePressed {
+            else if input.escapePressed {
                 inputState.pointerState = .idle
             }
 
@@ -153,7 +149,7 @@ extension DiagramCanvas {
                 inputState.pointerState = .idle
             }
             // Escape cancels drag
-            if escapePressed {
+            if input.escapePressed {
                 let event = ToolEvent(.dragCancel, body: eventBody, triggerButton: dragButton)
                 events.append(event)
                 inputState.pointerState = .idle

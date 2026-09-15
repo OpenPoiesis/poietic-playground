@@ -209,7 +209,8 @@ struct InputFrame {
     var dragMaxDistance: MouseButtonValues<Double>
     var modifiers: KeyModifiers
     var scroll: Vector2D
-///    var escapePressed: Bool
+    // Used to cancel tool events
+    var escapePressed: Bool
 }
 
 struct InputState {

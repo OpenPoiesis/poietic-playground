@@ -132,6 +132,8 @@ extension Application {
         let io = ImGui.GetIO().pointee
         let clicks = io.MouseClickedCount
         let dragDistance = io.MouseDragMaxDistanceSqr
+        
+        let escapePressed = ImGui.IsKeyPressed(ImGuiKey_Escape)
 
         let frame = InputFrame(
             pointer: Vector2D(io.MousePos),
@@ -154,7 +156,8 @@ extension Application {
                 .other2: Double(dragDistance.4.squareRoot())
             ], default: 0),
             modifiers: KeyModifiers(io.KeyMods),
-            scroll: Vector2D(Double(io.MouseWheelH), Double(io.MouseWheel))
+            scroll: Vector2D(Double(io.MouseWheelH), Double(io.MouseWheel)),
+            escapePressed: escapePressed
         )
         return frame
     }
