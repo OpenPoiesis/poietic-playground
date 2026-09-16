@@ -8,7 +8,6 @@
 import PoieticCore
 import PoieticFlows
 import Foundation
-import CIimgui
 
 extension Document {
     static func copySelectionAsText(ids: [ObjectID], plane: DesignPlane) throws (CommandError) -> String {
@@ -29,7 +28,7 @@ extension Document {
     }
 }
 
-struct DeleteObjectsCommand: WorkspaceCommand {
+struct DeleteObjectsCommand: Command {
     let ids: [ObjectID]
     var name: String { "delete" }
     
@@ -48,7 +47,7 @@ struct DeleteObjectsCommand: WorkspaceCommand {
     }
 }
 
-struct CopyToPasteboardCommand: WorkspaceCommand {
+struct CopyToPasteboardCommand: Command {
     let ids: [ObjectID]
     var name: String { "copy" }
     init(_ ids: [ObjectID]) {
@@ -64,7 +63,7 @@ struct CopyToPasteboardCommand: WorkspaceCommand {
     
 }
 
-struct CutToPasteboardCommand: WorkspaceCommand {
+struct CutToPasteboardCommand: Command {
     let ids: [ObjectID]
     var name: String { "cut" }
 
@@ -89,7 +88,7 @@ struct CutToPasteboardCommand: WorkspaceCommand {
     }
 }
 
-struct PasteFromPasteboardCommand: WorkspaceCommand {
+struct PasteFromPasteboardCommand: Command {
     var name: String { "paste" }
 
     init() { /* Nothing */ }

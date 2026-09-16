@@ -75,6 +75,8 @@ class Application {
     var workspace: Workspace?
     var notation: Notation
     
+    var currentDocument: Document? { workspace?.currentDocument }
+    
     init() {
         self.notation = Notation.DefaultNotation
         
@@ -95,6 +97,10 @@ class Application {
         Self._shared = self
     }
 
+    func requestQuit() {
+        self.quitRequested = true
+    }
+    
     func queueAlert(title: String, message: String) {
         let alert = ConfirmationDialog(
             title: title,

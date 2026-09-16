@@ -54,25 +54,36 @@ struct CommandError: Error {
 ///
 @MainActor
 protocol Command {
-    associatedtype Context: CommandContext
     var name: String { get }
-    func run(_ context: Context) throws (CommandError)
+    func run(_ context: CommandContext) throws (CommandError)
 }
 
-protocol CommandContext {
-    
-}
-
-protocol WorkspaceCommand: Command where Context == WorkspaceCommandContext {
-    // Empty
-}
-
-struct WorkspaceCommandContext: CommandContext {
-    weak private let app: Application?
+struct CommandContext {
+//    weak private let app: Application?
     weak let workspace: Workspace?
     weak let document: Document?
     weak let canvas: DiagramCanvas?
     
     var design: Design? { document?.design }
     var world: World? { document?.world }
+    
+    @MainActor
+    func logError(_ message: String) {
+        workspace?.logError(message)
+    }
+    @MainActor
+    func log(_ message: String) {
+        workspace?.log(message)
+    }
+    @MainActor
+    func queueAlert(title: String, message: String) {
+        workspace?.queueAlert(title: title, message: message)
+    }
+
+}
+
+struct CommandInvocation {
+    let command: Command
+    weak let document: Document?
+    weak let canvas: DiagramCanvas?
 }

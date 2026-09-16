@@ -62,6 +62,7 @@ class DiagramCanvas: View, DocumentBound {
     var isPointerOver: Bool = false
     var inputState: InputState = InputState()
     
+    // TODO: Make those Vector2D (+ check unnecessary casts)
     var canvasPos = ImVec2(0.0, 0.0)          // Screen position of canvas
     var canvasSize = ImVec2(0.0, 0.0)         // Screen size of canvas
 
@@ -124,12 +125,8 @@ class DiagramCanvas: View, DocumentBound {
     }
     
     /// Convert screen coordinates to world coordinates
-    func screenToWorld(_ screenPos: ImVec2) -> ImVec2 {
-        let worldPos = Vector2D(screenPos - canvasPos) / Double(zoomLevel) + viewOffset
-        return ImVec2(worldPos)
-    }
-    func screenToWorld(_ screenPos: ImVec2) -> Vector2D {
-        let worldPos = Vector2D(screenPos - canvasPos) / Double(zoomLevel) + viewOffset
+    func screenToWorld(_ screenPos: Vector2D) -> Vector2D {
+        let worldPos = Vector2D(screenPos - Vector2D(canvasPos)) / Double(zoomLevel) + viewOffset
         return worldPos
     }
 
@@ -383,7 +380,7 @@ class DiagramCanvas: View, DocumentBound {
         let offset = worldPoint - (canvasCenter / useZoom)
         setView(offset: offset, zoom: useZoom)
     }
-    func hitTarget(screenPosition: ImVec2) -> CanvasHitTarget? {
+    func hitTarget(screenPosition: Vector2D) -> CanvasHitTarget? {
         guard let scene else { return nil }
         
         let scenePosition = worldToScene(screenToWorld(screenPosition))

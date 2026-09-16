@@ -66,6 +66,7 @@ class Document {
     typealias EventObserver = ((Document) -> Void)
 
     var observers: [Event:[EventObserver]]
+    var commandQueue: [CommandInvocation]
     
     let design: Design
     var designURL: URL? = nil
@@ -81,7 +82,6 @@ class Document {
     
     var transaction: TransientPlane?
     var hasTransaction: Bool { transaction != nil }
-    var commandQueue: [any Command]
 
     let world: World
     
@@ -163,6 +163,14 @@ class Document {
         }
     }
     
+    // MARK: - Commands
+    func enqueue(_ command: any Command, canvas: DiagramCanvas? = nil) {
+        let item = CommandInvocation(command: command,
+                                     document: self,
+                                     canvas: canvas)
+        self.commandQueue.append(item)
+    }
+    
     // MARK: - Selection
 
     func changeSelection(_ change: SelectionChange) {
@@ -228,16 +236,6 @@ class Document {
     }
 }
 
-
-// TODO: Use shared application logger
-extension Document {
-    func log(_ message: String) {
-        print("INFO: ", message)
-    }
-    func logError(_ message: String) {
-        print("ERROR: ", message)
-    }
-}
 
 // FIXME: Make a proper alert mechanism. This is a quick hack to silence the compiler after refactoring.
 extension Document {

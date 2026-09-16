@@ -24,7 +24,7 @@ class PanTool: CanvasTool {
     override var iconKey: IconKey { .hand }
     
     var cursor: ImGuiMouseCursor_ = ImGuiMouseCursor_Arrow
-    var previousScreenPos: ImVec2 = ImVec2()
+    var previousScreenPos: Vector2D = .zero
     var state: State = .idle
     
     override func handleEvent(_ event: ToolEvent) -> EngagementResult {
@@ -127,9 +127,9 @@ class PanTool: CanvasTool {
         return .consumed
     }
     
-    private func zoom(to newZoom: Double, at screenPos: ImVec2, canvas: DiagramCanvas) {
+    private func zoom(to newZoom: Double, at screenPos: Vector2D, canvas: DiagramCanvas) {
         let worldBefore: Vector2D = canvas.screenToWorld(screenPos)
-        let viewportOffset = Vector2D(screenPos - canvas.canvasPos) / newZoom
+        let viewportOffset = Vector2D(screenPos - Vector2D(canvas.canvasPos)) / newZoom
         canvas.setView(offset: worldBefore - viewportOffset, zoom: newZoom)
     }
 }

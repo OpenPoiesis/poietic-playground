@@ -110,7 +110,7 @@ class IssuesPanel: Panel, DocumentBound {
                     selectedIssueIndex = i
                     if let document {
                         document.changeSelection(.replaceAllWithOne(object.objectID))
-                        document.queueCommand(CenterCanvasOnObjectCommand(object.objectID))
+                        document.enqueue(CenterCanvasOnObjectCommand(object.objectID))
                     }
                 }
 //                ImGui.TableNextColumn()

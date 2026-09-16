@@ -67,11 +67,11 @@ class Dashboard: Panel, DocumentBound {
                let document
             {
                 // TODO: Add chart
-                let command = CreateChartCommand(
+                let createChart = CreateChartCommand(
                     name: nil,
                     series: Array(document.selection.ids)
                 )
-                document.queueCommand(command)
+                document.enqueue(createChart)
             }
             ImGui.EndGroup()
         }

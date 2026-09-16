@@ -8,7 +8,7 @@
 import PoieticCore
 import Diagramming
 
-struct SwitchToolCommand: WorkspaceCommand {
+struct SwitchToolCommand: Command {
     var name: String { "switch-tool" } // TODO: Use CanvasTool.Type
 
     let toolType: CanvasToolType
@@ -18,12 +18,12 @@ struct SwitchToolCommand: WorkspaceCommand {
     }
 
     @MainActor
-    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
+    func run(_ context: CommandContext) throws (CommandError) {
         context.workspace?.toolBar.setTool(toolType)
     }
 }
 
-struct OpenIssuesCommand: WorkspaceCommand {
+struct OpenIssuesCommand: Command {
     var name: String { "open-issues" }
 
     /// Object to open issues for. If nil - open for all.
@@ -34,12 +34,12 @@ struct OpenIssuesCommand: WorkspaceCommand {
     }
     
     @MainActor
-    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
+    func run(_ context: CommandContext) throws (CommandError) {
         context.workspace?.issuesPanel.isVisible = true
     }
 }
 
-struct CenterCanvasOnObjectCommand: WorkspaceCommand {
+struct CenterCanvasOnObjectCommand: Command {
     // TODO: Seems to be centring incorrectly, needs verification
     // TODO: Make it work with other objects, Works only with blocks for now
     var name: String { "center-canvas-on-object" }
@@ -53,7 +53,7 @@ struct CenterCanvasOnObjectCommand: WorkspaceCommand {
     }
     
     @MainActor
-    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
+    func run(_ context: CommandContext) throws (CommandError) {
         print("CENTER ON: \(objectID), zoom: \(zoomLevel)")
         guard let entity = context.world?.entity(objectID),
               let block: DiagramBlock = entity.component()
@@ -62,13 +62,13 @@ struct CenterCanvasOnObjectCommand: WorkspaceCommand {
     }
 }
 
-struct ResetZoomCommand: WorkspaceCommand {
+struct ResetZoomCommand: Command {
     var name: String { "reset-zoom" }
     
     @MainActor
-    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
+    func run(_ context: CommandContext) throws (CommandError) {
         guard let canvas = context.canvas else { return }
-        let worldSize: Vector2D = canvas.screenToWorld(canvas.canvasSize)
+        let worldSize: Vector2D = canvas.screenToWorld(Vector2D(canvas.canvasSize))
         let center = canvas.viewOffset + (worldSize / 2)
         canvas.centerView(at: center, zoom: 1.0)
     }

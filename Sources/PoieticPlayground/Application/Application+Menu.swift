@@ -147,7 +147,7 @@ extension Application {
             // Model menu
             if ImGui.BeginMenu("Model") {
                 if ImGui.MenuItem("Auto-connect Parameters", nil) {
-                    self.document?.autoConnectParameters()
+                    handleAction(.autoConnectParameters)
                 }
                 ImGui.EndMenu()
             }
@@ -190,8 +190,8 @@ extension Application {
         }
     }
     
-    func canUndo() -> Bool { document?.design.canUndo ?? false }
-    func canRedo() -> Bool { document?.design.canRedo ?? false }
-    func hasSelection() -> Bool { (document?.selection).map { !$0.isEmpty } ?? false }
+    func canUndo() -> Bool { currentDocument?.design.canUndo ?? false }
+    func canRedo() -> Bool { currentDocument?.design.canRedo ?? false }
+    func hasSelection() -> Bool { (currentDocument?.selection).map { !$0.isEmpty } ?? false }
 
 }

@@ -47,6 +47,9 @@ enum Action: Hashable {
 
     case nameInlineEditor
     case secondaryInlineEditor
+   
+    // -- Model --
+    case autoConnectParameters
     
     // -- Simulation --
     case runPlayer
@@ -84,6 +87,9 @@ enum Action: Hashable {
         case .toggleGraphicalFunctionPanel: "toggle_graphical_function_panel"
         case .toggleToolBar: "toggle_toolbar"
         case .toggleDebugDesignPanel: "toggle_debug_design_panel"
+
+        case .autoConnectParameters: "auto_connect_parameters"
+
         case .runPlayer: "run_player"
         case .stopPlayer: "stop_player"
         }

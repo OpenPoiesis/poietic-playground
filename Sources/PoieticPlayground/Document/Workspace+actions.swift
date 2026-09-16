@@ -34,20 +34,23 @@ extension Workspace {
         case .cut:
             guard let document = currentDocument else { break }
             let ids: [ObjectID] = Array(document.selection.ids)
-            queueCommand(CutToPasteboardCommand(ids))
+            document.enqueue(CutToPasteboardCommand(ids))
         case .copy:
             guard let document = currentDocument  else { break }
             let ids: [ObjectID] = Array(document.selection.ids)
-            queueCommand(CopyToPasteboardCommand(ids))
+            document.enqueue(CopyToPasteboardCommand(ids))
         case .delete:
             guard let document = currentDocument  else { break }
             let ids: [ObjectID] = Array(document.selection.ids)
-            queueCommand(DeleteObjectsCommand(ids))
+            document.enqueue(DeleteObjectsCommand(ids))
         case .paste:
-            queueCommand(PasteFromPasteboardCommand())
+            guard let document = currentDocument  else { break }
+            document.enqueue(PasteFromPasteboardCommand())
             
-        case .undo: queueCommand(UndoCommand())
-        case .redo: queueCommand(RedoCommand())
+        case .undo:
+            currentDocument?.enqueue(UndoCommand())
+        case .redo:
+            currentDocument?.enqueue(RedoCommand())
         case .selectAll: self.selectAll()
             
         // -- View ---
@@ -57,7 +60,8 @@ extension Workspace {
         case .toggleGraphicalFunctionPanel: graphicFunctionPanel.isVisible.toggle()
         case .toggleToolBar:                toolBar.isVisible.toggle()
         case .toggleDebugDesignPanel:       debugDesignPanel.isVisible.toggle()
-        case .resetZoom:                    queueCommand(ResetZoomCommand())
+        case .resetZoom:
+            currentDocument?.enqueue(ResetZoomCommand(), canvas: canvas)
             
         // -- Inspector --
         case .overviewInspector:
@@ -70,6 +74,9 @@ extension Workspace {
         case .nameInlineEditor:      self.canvas.openInlineEditorForSelection("name")
         case .secondaryInlineEditor: self.canvas.openSecondaryInlineEditorForSelection()
 
+        // Model
+        case .autoConnectParameters: self.currentDocument?.autoConnectParameters()
+        // Simulation
         case .runPlayer: self.player.run()
         case .stopPlayer: self.player.stop()
         default: return false

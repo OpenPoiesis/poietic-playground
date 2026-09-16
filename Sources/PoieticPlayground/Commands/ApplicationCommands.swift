@@ -11,7 +11,6 @@ import Diagramming
 import Foundation
 import CIimgui
 
-// FIXME: Move elsewhere
 extension Application {
     static func setPasteboardText(_ text: String) throws (CommandError) {
         let platformIO = ImGui.GetPlatformIO().pointee
@@ -41,13 +40,4 @@ extension Application {
         return string
     }
 
-}
-
-class QuitApplicationCommand: AppCommand {
-    var name: String { "quit" }
-
-    @MainActor
-    func run(_ context: Context) throws (CommandError) {
-        context.app?.quitRequested = true
-    }
 }

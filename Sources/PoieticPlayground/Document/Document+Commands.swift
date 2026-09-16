@@ -43,7 +43,6 @@ extension Document {
     }
     
     func save(to url: URL) throws (DesignStoreError) {
-        self.log("Saving design to: \(url.standardizedFileURL)")
         let store = DesignStore(url: url)
         try store.save(design: design)
         self.designURL = url

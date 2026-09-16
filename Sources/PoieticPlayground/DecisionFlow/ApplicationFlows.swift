@@ -16,23 +16,17 @@ final class QuitApplicationFlow: DecisionFlow {
     func start() {
         guard let context else { return }
 
-        let subflow = SaveDocumentIfNeededFlow(context: context)
+        let saveIfNeeded = SaveDocumentIfNeededFlow(context: context)
 
-        context.startSubflow(subflow) { [weak self] completion in
+        context.startSubflow(saveIfNeeded) { [weak self] completion in
             guard let self else { return }
             
-            guard completion == .success else {
-                context.finish(self, outcome: .cancelled)
-                return
-            }
-                
-            do {
-                try context.execute(QuitApplicationCommand())
+            switch completion {
+            case .success:
+                context.requestQuit()
                 context.finish(self, outcome: .success)
-            }
-            catch {
-                context.presentMessage(title: "Quit", message: error.localizedDescription, style: .error)
-                context.finish(self, outcome: .failure)
+            case .cancelled, .failure:
+                context.finish(self, outcome: .cancelled)
             }
         }
     }

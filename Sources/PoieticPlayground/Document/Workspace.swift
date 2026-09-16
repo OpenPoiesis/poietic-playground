@@ -6,6 +6,7 @@
 //
 
 import PoieticCore
+import Diagramming
 
 @MainActor
 protocol DocumentBound {
@@ -17,8 +18,15 @@ protocol DocumentBound {
 // Group information that we want to request from the app.
 // TODO: This is just a placeholder during refactoring
 struct _PLACEHOLDER_AppContext {
-    let isInteractionBlocked: Bool
-    func queueAlert(title: String, message: String) { }
+    weak let app: Application?
+    @MainActor
+    var isInteractionBlocked: Bool {
+        app?.isInteractionBlocked ?? false
+    }
+    @MainActor
+    func queueAlert(title: String, message: String) {
+        app?.queueAlert(title: title, message: message)
+    }
 }
 
 @MainActor
@@ -27,14 +35,9 @@ class Workspace {
     private(set) var currentDocument: Document?
     private var bound: [any DocumentBound] = []
 
-    struct QueuedCommand {
-        let command: WorkspaceCommand
-        weak let document: Document?
-        weak let canvas: DiagramCanvas?
-    }
     var appContext: _PLACEHOLDER_AppContext? = nil
 
-    var commandQueue: [QueuedCommand]
+    var notation: Notation
     
     // TODO: Rename to activeCanvas, make optional. today we have just one, but window split is planned
     var canvas: DiagramCanvas
@@ -63,8 +66,9 @@ class Workspace {
 
 
     init() {
+        // FIXME: Fix notation setup
+        self.notation = Notation.DefaultNotation
         self.currentDocument = nil
-        self.commandQueue = []
         self.bound = []
 
         self.canvas = DiagramCanvas()
@@ -183,31 +187,41 @@ class Workspace {
     
 
     func updateDocument(_ timeDelta: Double) {
-        guard let appContext else { return }
+        guard let appContext,
+              let document = currentDocument
+        else { return }
         guard !appContext.isInteractionBlocked else { return }
+
+        
+        for invocation in document.commandQueue {
+            guard invocation.document === document else  {
+                self.log("Command '\(invocation.command.name)' dropped: workspace document mismatch")
+                continue
+            }
+            runCommand(invocation.command, document: document, canvas: invocation.canvas)
+        }
+        
         // Run the Command Queue.
         // When a command replaces the document, we continue with the new one.
         // The rest of the commands in the replaced document queue is dropped.
-        while !commandQueue.isEmpty {
-            let item = commandQueue.removeFirst()
+        while !document.commandQueue.isEmpty {
+            let item = document.commandQueue.removeFirst()
             let command = item.command
             guard let document = item.document else { continue }
-            self.runCommand(command, document: document, canvas: item.canvas)
         }
         
-        if let document = self.currentDocument {
-            do {
-                try document.consumeAndAcceptTransaction()
-            }
-            catch {
-                // This is not user's fault and never should be.
-                // The application failed to make sure structural integrity is assured
-                appContext.queueAlert(title: "Plane validation error (report to developers)",
-                                      message: String(describing: error))
-                return
-            }
-            document.update(timeDelta)
+        do {
+            try document.consumeAndAcceptTransaction()
+            self.log("Transaction accepted. Current plane: \(document.design.currentPlaneID!), plane count: \(document.design.planes.count)")
         }
+        catch {
+            // This is not user's fault and never should be.
+            // The application failed to make sure structural integrity is assured
+            appContext.queueAlert(title: "Plane validation error (report to developers)",
+                                  message: String(describing: error))
+            return
+        }
+        document.update(timeDelta)
     }
 
     func replaceDocument(_ newDocument: Document) {

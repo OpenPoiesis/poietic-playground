@@ -42,8 +42,6 @@ class NameInlineEditor: InlineEditor {
     
     override func draw() -> Bool {
         guard currentObjectID != nil,
-              let currentEntity,
-              let block: DiagramBlock = currentEntity.component(),
               let nameBuffer,
               let canvas
         else { return false } // Cancelled

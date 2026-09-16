@@ -5,19 +5,26 @@
 //  Created by Stefan Urbanek on 14/09/2026.
 //
 
+// FIXME: Use app logging
 extension Workspace {
-    func queueCommand(_ command: any WorkspaceCommand) {
-        let item = QueuedCommand(command: command,
-                                 document: currentDocument,
-                                 canvas: canvas)
-        self.commandQueue.append(item)
+    func log(_ message: String) {
+        print("INFO: ", message)
     }
-    
+    func logError(_ message: String) {
+        print("ERROR: ", message)
+    }
+    func queueAlert(title: String, message: String) {
+        app?.queueAlert(title: title, message: message)
+    }
+}
+
+
+extension Workspace {
     @MainActor
-    func runCommand(_ command: WorkspaceCommand, document: Document, canvas: DiagramCanvas?) {
-        let context = WorkspaceCommandContext(workspace: self,
-                                              document: document,
-                                              canvas: canvas)
+    func runCommand(_ command: Command, document: Document, canvas: DiagramCanvas?) {
+        let context = CommandContext(workspace: self,
+                                     document: document,
+                                     canvas: canvas)
         do {
             self.log("Running command '\(command.name)'")
             try command.run(context)
@@ -36,5 +43,4 @@ extension Workspace {
             self.queueAlert(title: title, message: error.message)
         }
     }
-
 }

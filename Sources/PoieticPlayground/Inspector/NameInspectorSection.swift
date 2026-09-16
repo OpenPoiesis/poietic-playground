@@ -39,9 +39,7 @@ class NameInspectorSection: InspectorSection {
         }
     }
     func onSimulationFinished(_ document: Document) {
-        for objectID in document.selection {
-            guard let entity = document.world.entity(objectID) else { continue }
-        }
+        // Nothing (for now)
     }
 
     func update(_ document: Document) { /* Nothing for now */ }

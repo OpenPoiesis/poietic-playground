@@ -5,6 +5,7 @@
 //  Created by Stefan Urbanek on 05/02/2026.
 //
 
+// FIXME: Remove dependency on CIimgui
 import CIimgui
 import PoieticCore
 import Diagramming
@@ -35,7 +36,7 @@ class SelectionTool: CanvasTool {
     }
     
     var state: State = .idle
-    var dragStartScreenPos: ImVec2 = ImVec2()
+    var dragStartScreenPos: Vector2D = .zero
     
     override func bind(canvas: DiagramCanvas, document: Document) {
         super.bind(canvas: canvas, document: document)
@@ -105,7 +106,7 @@ class SelectionTool: CanvasTool {
             self.removeHandles()
             state = .idle
             guard let objectID = world.entity(runtimeID)?.objectID else { break }
-            self.document?.queueCommand(OpenIssuesCommand(objectID))
+            self.document?.enqueue(OpenIssuesCommand(objectID))
 
         case .object(let runtimeID, let part):
             self.removeHandles()
@@ -196,7 +197,7 @@ class SelectionTool: CanvasTool {
     
     // MARK: - Object Move
     
-    func previewSelectionMove(screenDelta: ImVec2) {
+    func previewSelectionMove(screenDelta: Vector2D) {
         guard let canvas,
               let scene = canvas.scene,
               let document,
@@ -205,7 +206,7 @@ class SelectionTool: CanvasTool {
         let selection = document.selection
 
         var dependentEdges: Set<PoieticCore.ObjectID> = Set()
-        let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
+        let worldDelta = screenDelta / canvas.zoomLevel
 
         for objectID in selection {
             guard let entity = world.entity(objectID),
@@ -257,9 +258,7 @@ class SelectionTool: CanvasTool {
     }
     
     func finalizeSelectionMove(_ selection: Selection, by designDelta: Vector2D) {
-        guard let document,
-              let scene = canvas?.scene
-        else { return }
+        guard let document else { return }
 
         let trans = document.createOrReuseTransaction()
 
@@ -387,13 +386,13 @@ class SelectionTool: CanvasTool {
         }
     }
 
-    func dragHandle(_ handleRuntimeID: RuntimeID, screenDelta: ImVec2) {
+    func dragHandle(_ handleRuntimeID: RuntimeID, screenDelta: Vector2D) {
         guard let document,
               let canvas,
               let handle = document.world.entity(handleRuntimeID),
               var component: CanvasHandle = handle.component()
         else { return }
-        let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
+        let worldDelta = screenDelta / canvas.zoomLevel
         component.worldPosition += worldDelta
         handle.setComponent(component)
         handle.setComponent(PositionComponent(position: canvas.worldToScene(component.worldPosition)))

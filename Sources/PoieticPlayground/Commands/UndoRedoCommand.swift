@@ -9,21 +9,21 @@ import PoieticCore
 import PoieticFlows
 import Foundation
 
-struct UndoCommand: WorkspaceCommand {
+struct UndoCommand: Command {
     var name: String { "undo" }
     
     @MainActor
-    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
+    func run(_ context: CommandContext) throws (CommandError) {
         context.document?.hadTransactionSinceSave = true
         context.design?.undo() // The plane change will be detected and handled through Document
     }
 }
 
-struct RedoCommand: WorkspaceCommand {
+struct RedoCommand: Command {
     var name: String { "redo" }
     
     @MainActor
-    func run(_ context: WorkspaceCommandContext) throws (CommandError) {
+    func run(_ context: CommandContext) throws (CommandError) {
         context.document?.hadTransactionSinceSave = true
         context.design?.redo() // The plane change will be detected and handled through Document
     }

@@ -111,4 +111,7 @@ protocol DecisionFlowContext: AnyObject {
     func execute(_ command: any Command) throws (CommandError)
     func queue(_ command: any Command)
     func finish(_ flow: any DecisionFlow, outcome: DecisionFlowOutcome)
+
+    // Other capabilities
+    func requestQuit()
 }

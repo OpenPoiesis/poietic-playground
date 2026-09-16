@@ -63,8 +63,7 @@ class ChartView {
     func drawSeries(chart: RuntimeEntity, seriesEntity: RuntimeEntity) {
         guard let chartSeries: ChartSeries = seriesEntity.component(),
               let target = seriesEntity.firstOutgoing(RepresentationOf.self),
-              let timeSeries: RegularTimeSeries = target.component(),
-              let stats: NumericValueStats = target.component()
+              let timeSeries: RegularTimeSeries = target.component()
         else { return }
         
         var wrap = _TimeSeriesWrapper(series: timeSeries)

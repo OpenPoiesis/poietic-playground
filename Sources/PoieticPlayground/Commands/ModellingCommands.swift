@@ -20,7 +20,8 @@ struct CreateChartCommand: Command {
     }
     
     func run(_ context: CommandContext) throws (CommandError) {
-        let trans = context.document.createOrReuseTransaction()
+        guard let document = context.document else { return }
+        let trans = document.createOrReuseTransaction()
         let chart = trans.createNode(StockFlowDomain.Types.Chart)
 
         for objectID in ids {
