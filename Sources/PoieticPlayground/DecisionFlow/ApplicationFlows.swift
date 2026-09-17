@@ -7,15 +7,13 @@
 
 
 final class QuitApplicationFlow: DecisionFlow {
-    weak let context: (any DecisionFlowContext)?
+    let context: DecisionFlowContext
 
-    init(context: any DecisionFlowContext) {
+    init(context: DecisionFlowContext) {
         self.context = context
     }
 
     func start() {
-        guard let context else { return }
-
         let saveIfNeeded = SaveDocumentIfNeededFlow(context: context)
 
         context.startSubflow(saveIfNeeded) { [weak self] completion in
@@ -33,15 +31,13 @@ final class QuitApplicationFlow: DecisionFlow {
 }
 
 final class NewDesignFlow: DecisionFlow {
-    weak let context: (any DecisionFlowContext)?
+    let context: DecisionFlowContext
 
-    init(context: any DecisionFlowContext) {
+    init(context: DecisionFlowContext) {
         self.context = context
     }
 
     func start() {
-        guard let context else { return }
-        
         let subflow = SaveDocumentIfNeededFlow(context: context)
 
         context.startSubflow(subflow) { [weak self] outcome in

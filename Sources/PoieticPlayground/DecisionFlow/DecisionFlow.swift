@@ -88,30 +88,60 @@ struct DecisionFlowChoice {
 }
 
 @MainActor
-protocol DecisionFlowContext: AnyObject {
-    // TODO: Do not provide whole document
-    var document: Document? { get }
+struct DecisionFlowContext {
+    private weak let environment: ApplicationEnvironment?
+    weak let workspace: Workspace?
+   
+    var document: Document? { workspace?.currentDocument }
     
-    func presentMessage(title: String, message: String, style: MessageStyle)
+    init(environment: ApplicationEnvironment, workspace: Workspace?) {
+        self.environment = environment
+        self.workspace = workspace
+    }
+    
+    // TODO: Do not provide whole document
+    func presentMessage(title: String, message: String, style: MessageStyle) {
+        environment?.presentMessage(title: title, message: message, style: style)
+    }
     func presentDecision(title: String,
                          message: String,
-                         choices: [DecisionFlowChoice])
+                         choices: [DecisionFlowChoice]) {
+        environment?.presentDecision(title: title, message: message, choices: choices)
+    }
     func presentFileSelector(title: String,
                              mode: FileSelectionMode,
                              filter: String?,
-                            completion: @escaping (String?) -> Void)
+                             completion: @escaping (String?) -> Void)
+    {
+        environment?.presentFileSelector(title: title, mode: mode, filter: filter, completion: completion)
+    }
 
     /// Present another flow as a sub-flow.
     ///
     /// - Important: The `completion` must call ``DecisionFlowContext/finish(_:outcome:)``.
     ///
-    func startSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void))
+    func startSubflow(_ flow: any DecisionFlow, completion: @escaping ((DecisionFlowOutcome)->Void)) {
+        environment?.startSubflow(flow, completion: completion)
+    }
 
     // Execute command immediately
-    func execute(_ command: any Command) throws (CommandError)
-    func queue(_ command: any Command)
-    func finish(_ flow: any DecisionFlow, outcome: DecisionFlowOutcome)
+    func execute(_ command: any Command, document: Document) throws (CommandError) {
+        guard let workspace else {
+            throw CommandError("Flow without workspace", kind: .internal)
+        }
+        try workspace.execute(command, document: document)
+
+    }
+    // TODO: Do we still need this here? Maybe for workspace ownership validation?
+    func enqueue(_ command: any Command, document: Document) {
+        document.enqueue(command)
+    }
+    func finish(_ flow: any DecisionFlow, outcome: DecisionFlowOutcome) {
+        environment?.finish(flow, outcome: outcome)
+    }
 
     // Other capabilities
-    func requestQuit()
+    func requestQuit() {
+        environment?.requestQuit()
+    }
 }

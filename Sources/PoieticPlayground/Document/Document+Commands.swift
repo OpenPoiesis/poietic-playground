@@ -48,5 +48,25 @@ extension Document {
         self.designURL = url
         self.hadTransactionSinceSave = false
     }
+    
+    /// Serialise objects with given IDs as a text.
+    ///
+    /// The method first extracts objects by pruning loose ends (for example requested edges where
+    /// one or both endpoints are not in the list).
+    ///
+    func serialiseForTextExport(ids: [ObjectID]) -> String? {
+        guard let plane = design.currentPlane else { return nil }
+        let ids = plane.contained(ids)
+        
+        let extractor = DesignExtractor()
+        let extract = extractor.extractPruning(objects: ids, plane: plane)
+        let rawDesign = RawDesign(metamodelName: design.metamodel.name,
+                                  metamodelVersion: design.metamodel.version,
+                                  snapshots: extract)
+        
+        let writer = JSONDesignWriter()
+        return writer.write(rawDesign)
+    }
+
 
 }

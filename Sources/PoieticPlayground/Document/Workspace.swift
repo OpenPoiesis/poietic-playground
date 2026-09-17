@@ -17,16 +17,25 @@ protocol DocumentBound {
 
 // Group information that we want to request from the app.
 // TODO: This is just a placeholder during refactoring
-struct _PLACEHOLDER_AppContext {
-    weak let app: Application?
-    @MainActor
-    var isInteractionBlocked: Bool {
-        app?.isInteractionBlocked ?? false
-    }
-    @MainActor
-    func queueAlert(title: String, message: String) {
-        app?.queueAlert(title: title, message: message)
-    }
+@MainActor
+protocol ApplicationEnvironment: AnyObject {
+    func log(_ text: String)
+    func logError(_ text: String)
+    
+    func setPasteboardText(_ text: String) -> Bool
+    func getPasteboardText() -> String?
+
+    
+    var isInteractionBlocked: Bool { get }
+    func queueAlert(title: String, message: String)
+
+    func presentMessage(title: String, message: String, style: MessageStyle)
+    func presentDecision(title: String, message: String, choices: [DecisionFlowChoice])
+    func presentFileSelector(title: String, mode: FileSelectionMode, filter: String?,
+                             completion: @escaping (String?) -> Void)
+    func startSubflow(_ flow: any DecisionFlow, completion: @escaping (DecisionFlowOutcome) -> Void)
+    func finish(_ flow: any DecisionFlow, outcome: DecisionFlowOutcome)
+    func requestQuit()
 }
 
 @MainActor
@@ -35,7 +44,7 @@ class Workspace {
     private(set) var currentDocument: Document?
     private var bound: [any DocumentBound] = []
 
-    var appContext: _PLACEHOLDER_AppContext? = nil
+    weak var environment: any ApplicationEnvironment? = nil
 
     var notation: Notation
     
@@ -182,43 +191,31 @@ class Workspace {
         case .consumed, .pass:
             toolBar.engagedTool = nil
         }
-
     }
-    
 
     func updateDocument(_ timeDelta: Double) {
-        guard let appContext,
+        guard let environment,
               let document = currentDocument
         else { return }
-        guard !appContext.isInteractionBlocked else { return }
+        guard !environment.isInteractionBlocked else { return }
 
         
-        for invocation in document.commandQueue {
-            guard invocation.document === document else  {
-                self.log("Command '\(invocation.command.name)' dropped: workspace document mismatch")
-                continue
-            }
-            runCommand(invocation.command, document: document, canvas: invocation.canvas)
-        }
-        
-        // Run the Command Queue.
-        // When a command replaces the document, we continue with the new one.
-        // The rest of the commands in the replaced document queue is dropped.
         while !document.commandQueue.isEmpty {
-            let item = document.commandQueue.removeFirst()
-            let command = item.command
-            guard let document = item.document else { continue }
+            let invocation = document.commandQueue.removeFirst()
+            execute(invocation.command, document: document, canvas: invocation.canvas)
         }
         
         do {
             try document.consumeAndAcceptTransaction()
-            self.log("Transaction accepted. Current plane: \(document.design.currentPlaneID!), plane count: \(document.design.planes.count)")
+            environment.log("Transaction accepted. Current plane: \(document.design.currentPlaneID!), plane count: \(document.design.planes.count)")
         }
         catch {
             // This is not user's fault and never should be.
             // The application failed to make sure structural integrity is assured
-            appContext.queueAlert(title: "Plane validation error (report to developers)",
-                                  message: String(describing: error))
+            environment.presentMessage(title: "Plane validation error (report to developers)",
+                                       message: String(describing: error),
+                                       style: .error)
+            
             return
         }
         document.update(timeDelta)

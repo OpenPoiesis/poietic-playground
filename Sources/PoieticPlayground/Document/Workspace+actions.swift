@@ -32,21 +32,26 @@ extension Workspace {
             
         // -- Edit --
         case .cut:
-            guard let document = currentDocument else { break }
+            guard let document = currentDocument  else { break }
             let ids: [ObjectID] = Array(document.selection.ids)
-            document.enqueue(CutToPasteboardCommand(ids))
+            copyToPasteboard(ids, from: document)
+            document.enqueue(DeleteObjectsCommand(ids))
+
         case .copy:
             guard let document = currentDocument  else { break }
             let ids: [ObjectID] = Array(document.selection.ids)
-            document.enqueue(CopyToPasteboardCommand(ids))
+            copyToPasteboard(ids, from: document)
+
         case .delete:
             guard let document = currentDocument  else { break }
             let ids: [ObjectID] = Array(document.selection.ids)
             document.enqueue(DeleteObjectsCommand(ids))
+
         case .paste:
             guard let document = currentDocument  else { break }
-            document.enqueue(PasteFromPasteboardCommand())
-            
+            guard let rawDesign = self.rawDesignFromPasteboard() else { break }
+            document.enqueue(InsertObjectsCommand(rawDesign: rawDesign))
+
         case .undo:
             currentDocument?.enqueue(UndoCommand())
         case .redo:
@@ -93,4 +98,38 @@ extension Workspace {
                                  + plane.filter(trait: DiagramDomain.Traits.DiagramConnector).map {$0.objectID}
         document.changeSelection(.replaceAll(allIDs))
     }
+    
+    func copyToPasteboard(_ ids: [ObjectID], from document: Document) {
+        guard let text = document.serialiseForTextExport(ids: ids) else  {
+            environment?.presentMessage(title: "Internal Error",
+                                        message: "Object serialisation failed",
+                                        style: .error)
+            return
+        }
+        _ = environment?.setPasteboardText(text)
+    }
+    
+    func rawDesignFromPasteboard() -> RawDesign? {
+        guard let text = environment?.getPasteboardText() else { return nil }
+        guard let data = text.data(using: .utf8) else {
+            environment?.presentMessage(title: "Error",
+                                        message: "Can not get pasteboard data",
+                                        style: .error)
+        }
+
+        let reader = JSONDesignReader()
+        let rawDesign: RawDesign
+        do {
+            rawDesign = try reader.read(data: data)
+        }
+        catch {
+            environment?.presentMessage(title: "Error",
+                                        message: "Unable to process pasteboard content: \(error.description)",
+                                        style: .error)
+
+            return nil
+        }
+        return rawDesign
+    }
+    
 }

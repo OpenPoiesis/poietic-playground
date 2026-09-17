@@ -21,12 +21,12 @@ extension Application {
         // New template design
         let templateURL = ResourceManager.shared.resourceURL(Self.NewDesignTemplatePath)
         do {
-            try self.openDesign(url: templateURL)
+            try workspace?.openDesign(url: templateURL)
         }
         catch {
             self.queueAlert(title: "Error",
                        message: "Unable to open template design '\(templateURL)'. Reason: \(error)")
-            self.newDesign()
+            workspace?.newDesign()
         }
         
         mainLoop()
@@ -37,13 +37,7 @@ extension Application {
         var lastTime = ImGui.GetTime()
 
         loop: while !quitRequested {
-            let timeout: Int32
-            if let document {
-                timeout = document.requiresInteractivePreviewUpdate ? Self.InteractivePreviewEventPollTimeout : Self.DefaultEventPollTimeout
-            }
-            else {
-                timeout = Self.DefaultEventPollTimeout
-            }
+            let timeout = Self.DefaultEventPollTimeout
 
             // FIXME: [IMPORTANT] Too crowded, clean-it up.
             switch backend.pollEvent(timeout: timeout) {
