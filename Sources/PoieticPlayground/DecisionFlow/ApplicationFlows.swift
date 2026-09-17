@@ -44,14 +44,8 @@ final class NewDesignFlow: DecisionFlow {
             guard let self else { return }
             switch outcome {
             case .success:
-                do {
-                    try context.execute(NewDesignCommand())
-                    context.finish(self, outcome: .success)
-                }
-                catch {
-                    context.presentMessage(title: "New Design", message: error.localizedDescription, style: .error)
-                    context.finish(self, outcome: .failure)
-                }
+                context.workspace?.newDesign()
+                context.finish(self, outcome: .success)
             case .cancelled, .failure:
                 context.finish(self, outcome: .cancelled)
             }

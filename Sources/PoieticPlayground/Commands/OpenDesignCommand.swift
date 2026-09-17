@@ -12,59 +12,11 @@ import Diagramming
 
 let DefaultDesignPath = "Unnamed.poietic"
 
-class NewDesignCommand: Command {
-    var name: String { "new-design" }
-
-    func run(_ context: CommandContext) throws (CommandError) {
-        context.workspace?.newDesign()
-    }
-}
-
-class OpenDesignCommand: Command {
-    var name: String { "open-design" }
-    let url: URL
-    init(url: URL) {
-        self.url = url
-    }
-    func run(_ context: CommandContext) throws (CommandError) {
-        do {
-            try context.workspace?.openDesign(url: url)
-        }
-        catch {
-            throw CommandError(String(describing: error), underlyingError: error)
-        }
-    }
-}
-
-class SaveDesignCommand: Command {
-    var name: String { "save-design" }
-    let url: URL?
-    init(url: URL? = nil, appendExtensionIfNeeded: Bool = false) {
-        if appendExtensionIfNeeded, let url {
-            self.url = Document.normalizePathExtension(url)
-        }
-        else {
-            self.url = url
-        }
-    }
-    func run(_ context: CommandContext) throws (CommandError) {
-        guard let targetURL = url ?? context.document?.designURL else {
-            throw CommandError("Save design: No URL provided", severity: .error)
-        }
-        
-        do {
-            try context.document?.save(to: targetURL)
-        }
-        catch {
-            throw CommandError(String(describing: error), underlyingError: error)
-        }
-    }
-}
-
 class ExportSVGCommand: Command {
     static let FileExtension = "svg"
     var name: String { "export-svg" }
     let url: URL
+    
     init(url: URL, appendExtensionIfNeeded: Bool = false) {
         if appendExtensionIfNeeded,
            url.pathExtension.isEmpty || url.pathExtension != Self.FileExtension
@@ -81,7 +33,7 @@ class ExportSVGCommand: Command {
         let world = document.world
         
         guard let diagram = document.mainDiagram else {
-            throw CommandError("No main diagram found", severity: .fatal)
+            throw CommandError("No main diagram found", kind: .internal)
         }
         
         let composer = DiagramSceneComposer(world: world)

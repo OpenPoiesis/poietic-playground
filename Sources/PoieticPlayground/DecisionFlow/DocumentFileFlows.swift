@@ -9,16 +9,31 @@ import Foundation
 
 @MainActor
 func saveDocument(to url: URL, context: DecisionFlowContext) -> DecisionFlowOutcome {
-    let command = SaveDesignCommand(url: url, appendExtensionIfNeeded: true)
+    let normalizedURL = Document.normalizePathExtension(url)
+
+    guard let document = context.document else { return .cancelled }
     do {
-        try context.workspace.execute(command, document: context.document)
+        try document.save(to: normalizedURL)
         return .success
     }
     catch {
-        context.presentMessage(title: "Save Failed", message: error.message, style: .error)
+        context.presentMessage(title: "Save Failed", message: error.description, style: .error)
         return .failure
     }
 }
+
+@MainActor
+func openDocument(from url: URL, context: DecisionFlowContext) -> DecisionFlowOutcome{
+    do {
+        try context.workspace?.openDesign(url: url)
+        return .success
+    }
+    catch {
+        context.presentMessage(title: "Open Failed", message: error.description, style: .error)
+        return .failure
+    }
+}
+
 
 /// Save document to a file selected by a file selector.
 ///
@@ -31,9 +46,9 @@ final class SaveDocumentWithFileSelectionFlow: DecisionFlow {
     
     func start() {
         context.presentFileSelector(title: "Save Document To",
-                                  mode: .save,
-                                  filter: "*." + Document.FileExtension,
-                                  completion: self.pathSelected)
+                                    mode: .save,
+                                    filter: "*." + Document.FileExtension,
+                                    completion: self.pathSelected)
     }
     
     func pathSelected(selectedPath: String?) {
@@ -74,7 +89,7 @@ final class SaveDocumentWithFileSelectionFlow: DecisionFlow {
 final class SaveDocumentFlow: DecisionFlow {
     let context: DecisionFlowContext
 
-    init(context: any DecisionFlowContext) {
+    init(context: DecisionFlowContext) {
         self.context = context
     }
 
@@ -170,19 +185,19 @@ final class OpenDocumentWithFileSelectionFlow: DecisionFlow {
             }
             
             let url = URL(fileURLWithPath: selectedPath)
-            self.open(from: url)
+            let outcome = openDocument(from: url, context: context)
+            self.context.finish(self, outcome: outcome)
         }
 
     }
     
     func open(from url: URL) {
-        let command = OpenDesignCommand(url: url)
         do {
-            try context.execute(command)
+            try context.workspace?.openDesign(url: url)
             context.finish(self, outcome: .success)
         }
         catch {
-            context.presentMessage(title: "Open Failed", message: error.message, style: .error)
+            context.presentMessage(title: "Open Failed", message: error.description, style: .error)
             context.finish(self, outcome: .failure)
         }
     }
@@ -204,22 +219,11 @@ final class OpenDocumentFromURLFlow: DecisionFlow {
             guard let self else { return }
             switch outcome {
             case .success:
-                self.open(from: self.url)
+                let outcome = openDocument(from: url, context: context)
+                self.context.finish(self, outcome: outcome)
             case .cancelled, .failure:
                 self.context.finish(self, outcome: .cancelled)
             }
-        }
-    }
-    
-    func open(from url: URL) {
-        let command = OpenDesignCommand(url: url)
-        do {
-            try context.execute(command)
-            context.finish(self, outcome: .success)
-        }
-        catch {
-            context.presentMessage(title: "Open Failed", message: error.message, style: .error)
-            context.finish(self, outcome: .failure)
         }
     }
 }

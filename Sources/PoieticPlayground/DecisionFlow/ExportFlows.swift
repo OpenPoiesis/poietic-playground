@@ -8,20 +8,19 @@
 import Foundation
 
 final class ChoosePathForWritingFlow: DecisionFlow {
-    private weak let context: (any DecisionFlowContext)?
+    private let context: DecisionFlowContext
     private let title: String
     private let fileExtension: String
     
     private(set) var selectedURL: URL? = nil
     
-    init(context: any DecisionFlowContext, title: String, fileExtension: String) {
+    init(context: DecisionFlowContext, title: String, fileExtension: String) {
         self.title = title
         self.context = context
         self.fileExtension = fileExtension
     }
     
     func start() {
-        guard let context else { return }
         context.presentFileSelector(title: title,
                                     mode: .save,
                                     filter: "*." + fileExtension,
@@ -29,7 +28,6 @@ final class ChoosePathForWritingFlow: DecisionFlow {
     }
     
     func pathSelected(selectedPath: String?) {
-        guard let context else { return }
         guard let selectedPath else {
             context.finish(self, outcome: .cancelled)
             return
@@ -47,17 +45,16 @@ final class ChoosePathForWritingFlow: DecisionFlow {
     }
     
     func confirmOverwrite(url: URL) {
-        guard let context else { return }
         context.presentDecision(
             title: "File Exists",
             message: "'\(url.lastPathComponent)' already exists. Overwrite?",
             choices: [
                 DecisionFlowChoice("Cancel") {
-                    context.finish(self, outcome: .cancelled)
+                    self.context.finish(self, outcome: .cancelled)
                 },
                 DecisionFlowChoice("Overwrite", emphasis: .destructive) {
                     self.selectedURL = url
-                    context.finish(self, outcome: .success)
+                    self.context.finish(self, outcome: .success)
                 }
             ]
         )
@@ -65,15 +62,13 @@ final class ChoosePathForWritingFlow: DecisionFlow {
 }
 
 final class ExportSVGFlow: DecisionFlow {
-    weak let context: (any DecisionFlowContext)?
+    let context: DecisionFlowContext
 
-    init(context: any DecisionFlowContext) {
+    init(context: DecisionFlowContext) {
         self.context = context
     }
     
     func start() {
-        guard let context else { return }
-        
         let choosePath = ChoosePathForWritingFlow(context: context, title: "Export SVG", fileExtension: "svg")
         context.startSubflow(choosePath) { [weak self] outcome in
             guard let self else { return }
@@ -81,26 +76,25 @@ final class ExportSVGFlow: DecisionFlow {
             switch outcome {
             case .success:
                 guard let url = choosePath.selectedURL else {
-                    context.finish(self, outcome: .cancelled)
+                    self.context.finish(self, outcome: .cancelled)
                     break
                 }
                 self.export(to: url)
             case .cancelled, .failure:
-                context.finish(self, outcome: outcome)
+                self.context.finish(self, outcome: outcome)
             }
         }
     }
     func export(to url: URL) {
-        guard let context else { return }
-        
+        guard let document = context.document else { return }
         let command = ExportSVGCommand(url: url, appendExtensionIfNeeded: true)
         do {
-            try context.execute(command)
-            context.finish(self, outcome: .success)
+            try context.execute(command, document: document)
+            self.context.finish(self, outcome: .success)
         }
         catch {
-            context.presentMessage(title: "Export Failed", message: error.message, style: .error)
-            context.finish(self, outcome: .failure)
+            self.context.presentMessage(title: "Export Failed", message: error.message, style: .error)
+            self.context.finish(self, outcome: .failure)
         }
     }
 }
