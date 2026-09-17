@@ -233,13 +233,3 @@ class Document {
         // TODO: This is weird, as we should be receiving this event only triggered by us.
     }
 }
-
-
-// FIXME: Make a proper alert mechanism. This is a quick hack to silence the compiler after refactoring.
-extension Document {
-    func queueAlert(title: String, message: String) {
-        Task { @MainActor in
-            Application.shared.queueAlert(title: title, message: message)
-        }
-    }
-}

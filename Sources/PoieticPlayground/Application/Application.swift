@@ -23,13 +23,6 @@ import Foundation
 /// - Glue between Document and UI
 @MainActor
 class Application {
-    // TODO: Temporary for prototyping
-    static var shared: Application {
-        guard let app = self._shared else { fatalError("Shared application is not set-up") }
-        return app
-    }
-    internal static var _shared: Application? = nil
-    
     // Dumping ground of globals (for now)
     //    static let NewDesignTemplatePath = "designs/new_canvas.json"
     static let NewDesignTemplatePath = "designs/design-capital.poietic"
@@ -93,8 +86,6 @@ class Application {
         panels.append(self.keyboardShortcutsPanel)
         self.metamodelPanel = MetamodelPanel()
         panels.append(self.metamodelPanel)
-        
-        Self._shared = self
     }
 
     func requestQuit() {
