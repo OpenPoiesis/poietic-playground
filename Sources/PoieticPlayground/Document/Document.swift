@@ -164,7 +164,7 @@ class Document {
     }
     
     // MARK: - Commands
-    func enqueue(_ command: any Command, canvas: DiagramCanvas? = nil) {
+    func enqueue(_ command: Command, canvas: DiagramCanvas? = nil) {
         let item = CommandInvocation(command: command, canvas: canvas)
         self.commandQueue.append(item)
     }

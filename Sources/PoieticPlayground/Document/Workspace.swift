@@ -15,21 +15,22 @@ protocol DocumentBound {
 }
 
 
+@MainActor
+protocol Reporter: AnyObject {
+    func log(_ text: String)
+    func logError(_ text: String)
+    func report(title: String, message: String, style: MessageStyle)
+}
+
 // Group information that we want to request from the app.
 // TODO: This is just a placeholder during refactoring
 @MainActor
-protocol ApplicationEnvironment: AnyObject {
-    func log(_ text: String)
-    func logError(_ text: String)
-    
+protocol ApplicationEnvironment: Reporter {
     func setPasteboardText(_ text: String) -> Bool
     func getPasteboardText() -> String?
 
-    
     var isInteractionBlocked: Bool { get }
-    func queueAlert(title: String, message: String)
 
-    func presentMessage(title: String, message: String, style: MessageStyle)
     func presentDecision(title: String, message: String, choices: [DecisionFlowChoice])
     func presentFileSelector(title: String, mode: FileSelectionMode, filter: String?,
                              completion: @escaping (String?) -> Void)
@@ -74,18 +75,18 @@ class Workspace {
     var currentTool: CanvasTool? { toolBar.currentTool }
 
 
-    init() {
-        // FIXME: Fix notation setup
-        self.notation = Notation.DefaultNotation
+    init(environment: ApplicationEnvironment, notation: Notation) {
+        self.environment = environment
+        self.notation = notation
+        
         self.currentDocument = nil
+
         self.bound = []
 
         self.canvas = DiagramCanvas()
         bound.append(self.canvas)
         self.player = ResultPlayer()
         bound.append(self.player)
-        self.toolBar = ToolBar()
-        bound.append(self.toolBar)
 
         panels = []
         self.inspector = InspectorPanel()
@@ -114,7 +115,10 @@ class Workspace {
 
         self.controlBar.bind(player)
 
+        self.toolBar = ToolBar()
+        self.toolBar.bind(self)
         
+        // FIXME: Use enum instead of names
         // Register inline editors
         editors = InlineEditorManager()
         self.editors.register(name: "name", editor: NameInlineEditor())
@@ -142,7 +146,13 @@ class Workspace {
             panel.update(timeDelta)
         }
         
-        currentDocument?.run(schedule: DocumentCleanupSchedule.self)
+        do {
+            try currentDocument?.world.run(schedule: DocumentCleanupSchedule.self)
+        }
+        catch {
+            environment?.report(title: "Internal System Error", message: String(describing: error), style: .error)
+            environment?.logError("Internal system error:" + String(describing: error))
+        }
     }
     
     func draw() {
@@ -155,9 +165,16 @@ class Workspace {
     }
 
     func dispatchInput(_ input: InputFrame, gestures: [GestureEvent]) {
-        let gestureEvents = gestures.map { ToolEvent($0, input: input) }
+        let events: [ToolEvent]
+        
+        if canvas.isPointerOver {
+            let gestureEvents = gestures.map { ToolEvent($0, input: input) }
+            events = canvas.recognizeInput(input) + gestureEvents
+        }
+        else {
+            events = canvas.recognizeInput(input)
+        }
 
-        let events = canvas.recognizeInput(input) + gestureEvents
 
         for event in events {
             dispatchToolEvent(event)
@@ -202,7 +219,9 @@ class Workspace {
         
         while !document.commandQueue.isEmpty {
             let invocation = document.commandQueue.removeFirst()
-            execute(invocation.command, document: document, canvas: invocation.canvas)
+            executeWithReporting(invocation.command,
+                                 document: document,
+                                 canvas: invocation.canvas)
         }
         
         do {
@@ -212,13 +231,20 @@ class Workspace {
         catch {
             // This is not user's fault and never should be.
             // The application failed to make sure structural integrity is assured
-            environment.presentMessage(title: "Plane validation error (report to developers)",
-                                       message: String(describing: error),
-                                       style: .error)
+            environment.report(title: "Plane validation error (report to developers)",
+                               message: String(describing: error),
+                               style: .error)
             
             return
         }
-        document.update(timeDelta)
+
+        do {
+            try document.update(timeDelta)
+        }
+        catch {
+            environment.report(title: "Internal System Error", message: String(describing: error), style: .error)
+            environment.logError("Internal system error during document update:" + String(describing: error))
+        }
     }
 
     func replaceDocument(_ newDocument: Document) {

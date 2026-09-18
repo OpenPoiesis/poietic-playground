@@ -6,8 +6,22 @@
 //
 
 extension Workspace {
+    /// Execute given command in the context of the document. Re-throws command error.
+    ///
+    /// - SeeAlso: ``executeWithReporting(_:document:canvas:)``
+    ///
     @MainActor
-    func execute(_ command: Command, document: Document, canvas: DiagramCanvas? = nil) {
+    func execute(_ command: Command, document: Document, canvas: DiagramCanvas? = nil) throws (CommandError) {
+        let context = CommandContext(document: document, canvas: canvas)
+        try command.run(context)
+    }
+
+    /// Executes given command in the context of the document. Presents alerts on command failure.
+    ///
+    /// - SeeAlso: ``execute(_:document:canvas:)``
+    /// 
+    @MainActor
+    func executeWithReporting(_ command: Command, document: Document, canvas: DiagramCanvas? = nil) {
         let context = CommandContext(document: document, canvas: canvas)
 
         do {
@@ -32,7 +46,8 @@ extension Workspace {
                 
             }
             
-            environment?.presentMessage(title: title, message: error.message, style: .error)
+            environment?.report(title: title, message: error.message, style: .error)
         }
     }
+
 }

@@ -23,8 +23,8 @@ extension Document {
         guard let proposal: ParameterProposal = world.singleton(),
               !proposal.isEmpty
         else {
-            self.queueAlert(title: "Auto-Connect Parameters",
-                            message: "Nothing automatically proposed for parameter connections")
+            // TODO: Use the result when we convert this to a command
+            // let result = CommandResult(details: ["removed": Variant(0), "created": Variant(0)])
             return
         }
         
@@ -37,9 +37,8 @@ extension Document {
             trans.createEdge(StockFlowDomain.Types.Parameter, origin: edgeProposal.origin, target: edgeProposal.target)
         }
 
-        self.queueAlert(title: "Auto-Connect Parameters",
-                        message: "Removed \(proposal.toRemove.count), created \(proposal.toAdd.count) connections.")
-
+        // TODO: Use the result when we convert this to a command
+        // let result = CommandResult(details: ["removed": Variant(proposal.toRemove.count), "created": Variant(proposal.toAdd.count)])
     }
     
     func save(to url: URL) throws (DesignStoreError) {

@@ -89,20 +89,15 @@ struct DecisionFlowChoice {
 
 @MainActor
 struct DecisionFlowContext {
-    private weak let environment: ApplicationEnvironment?
+    // TODO: make DecisionFlowContext conform to ApplicationEnvironment?
+    weak let environment: ApplicationEnvironment?
     weak let workspace: Workspace?
    
-    var document: Document? { workspace?.currentDocument }
-    
     init(environment: ApplicationEnvironment, workspace: Workspace?) {
         self.environment = environment
         self.workspace = workspace
     }
     
-    // TODO: Do not provide whole document
-    func presentMessage(title: String, message: String, style: MessageStyle) {
-        environment?.presentMessage(title: title, message: message, style: style)
-    }
     func presentDecision(title: String,
                          message: String,
                          choices: [DecisionFlowChoice]) {
@@ -125,7 +120,7 @@ struct DecisionFlowContext {
     }
 
     // Execute command immediately
-    func execute(_ command: any Command, document: Document) throws (CommandError) {
+    func execute(_ command: Command, document: Document) throws (CommandError) {
         guard let workspace else {
             throw CommandError("Flow without workspace", kind: .internal)
         }
@@ -133,7 +128,7 @@ struct DecisionFlowContext {
 
     }
     // TODO: Do we still need this here? Maybe for workspace ownership validation?
-    func enqueue(_ command: any Command, document: Document) {
+    func enqueue(_ command: Command, document: Document) {
         document.enqueue(command)
     }
     func finish(_ flow: any DecisionFlow, outcome: DecisionFlowOutcome) {

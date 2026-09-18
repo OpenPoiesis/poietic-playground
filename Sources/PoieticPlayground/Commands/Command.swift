@@ -11,14 +11,8 @@ import PoieticCore
 //       infrastructure within either PoieticCore or maybe PoieticApp (CLI & app-support classes)
 
 
-enum CommandStatus {
-    case success
-    case failure(CommandError)
-    case cancelation
-}
-
+// TODO: Integrate
 struct CommandResult {
-    let status: CommandStatus
     /// Result values to be used for detailed reporting.
     let details: [String:Variant]
 }
@@ -53,11 +47,13 @@ protocol Command {
 }
 
 struct CommandContext {
-    weak let document: Document?
-    weak let canvas: DiagramCanvas?
+    let document: Document
+    let canvas: DiagramCanvas?
     
-    var design: Design? { document?.design }
-    var world: World? { document?.world }
+    /// Short-hand for `document.design`
+    var design: Design { document.design }
+    /// Short-hand for `document.world`
+    var world: World { document.world }
 }
 
 struct CommandInvocation {

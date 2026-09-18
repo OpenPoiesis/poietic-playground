@@ -18,16 +18,22 @@ extension Application {
         
         self.settingsPanel.bind(self)
 
+
+        let workspace = Workspace(environment: self, notation: notation)
+
         // New template design
         let templateURL = ResourceManager.shared.resourceURL(Self.NewDesignTemplatePath)
         do {
-            try workspace?.openDesign(url: templateURL)
+            try workspace.openDesign(url: templateURL)
         }
         catch {
-            self.queueAlert(title: "Error",
-                       message: "Unable to open template design '\(templateURL)'. Reason: \(error)")
-            workspace?.newDesign()
+            self.report(title: "Error",
+                        message: "Unable to open template design '\(templateURL)'. Reason: \(error)",
+                        style: .error)
+            workspace.newDesign()
         }
+        
+        self.workspace = workspace
         
         mainLoop()
     }
@@ -46,11 +52,10 @@ extension Application {
             case .skip: continue
             case .none: break
             case .gesture(let gesture):
-                guard canvas.isMouseInViewport else { break }
                 pendingBackendGestures.append(gesture)
             case .dropFile(path: let path):
                 let url = URL(fileURLWithPath: path)
-                self.startFlow(OpenDocumentFromURLFlow(context: self, url: url))
+                self.startFlow(OpenDocumentFromURLFlow(context: flowContext(), url: url))
             }
             
             backend.newFrame()

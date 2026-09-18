@@ -8,21 +8,6 @@
 import PoieticCore
 import Diagramming
 
-struct SwitchToolCommand: Command {
-    var name: String { "switch-tool" } // TODO: Use CanvasTool.Type
-
-    let toolType: CanvasToolType
-
-    init(_ toolType: CanvasToolType) {
-        self.toolType = toolType
-    }
-
-    @MainActor
-    func run(_ context: CommandContext) throws (CommandError) {
-        context.workspace?.toolBar.setTool(toolType)
-    }
-}
-
 struct OpenIssuesCommand: Command {
     var name: String { "open-issues" }
 

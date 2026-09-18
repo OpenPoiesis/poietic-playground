@@ -63,9 +63,11 @@ final class ChoosePathForWritingFlow: DecisionFlow {
 
 final class ExportSVGFlow: DecisionFlow {
     let context: DecisionFlowContext
-
-    init(context: DecisionFlowContext) {
+    weak let document: Document?
+    
+    init(context: DecisionFlowContext, document: Document) {
         self.context = context
+        self.document = document
     }
     
     func start() {
@@ -86,14 +88,14 @@ final class ExportSVGFlow: DecisionFlow {
         }
     }
     func export(to url: URL) {
-        guard let document = context.document else { return }
+        guard let document else { return }
         let command = ExportSVGCommand(url: url, appendExtensionIfNeeded: true)
         do {
             try context.execute(command, document: document)
             self.context.finish(self, outcome: .success)
         }
         catch {
-            self.context.presentMessage(title: "Export Failed", message: error.message, style: .error)
+            self.context.environment?.report(title: "Export Failed", message: error.message, style: .error)
             self.context.finish(self, outcome: .failure)
         }
     }

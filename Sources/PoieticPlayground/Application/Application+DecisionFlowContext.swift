@@ -15,18 +15,6 @@ extension Application {
         return DecisionFlowContext(environment: self, workspace: workspace)
     }
     
-    func presentMessage(title: String, message: String, style: MessageStyle) {
-        let alert = ConfirmationDialog(
-            title: title,
-            message: message,
-            style: style,
-            options: [
-                DecisionOption("Dismiss")
-            ]
-        )
-        
-        queueDialog(alert)
-    }
     func presentDecision(title: String, message: String, choices: [DecisionFlowChoice])
     {
         let options = choices.map { $0.option }

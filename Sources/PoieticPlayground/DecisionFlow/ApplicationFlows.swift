@@ -14,7 +14,16 @@ final class QuitApplicationFlow: DecisionFlow {
     }
 
     func start() {
-        let saveIfNeeded = SaveDocumentIfNeededFlow(context: context)
+        // TODO: Once with multi-document app run this sub-flow for each document
+        guard let workspace = context.workspace,
+              let document = workspace.currentDocument
+        else {
+            context.requestQuit()
+            context.finish(self, outcome: .success)
+            return
+        }
+
+        let saveIfNeeded = SaveDocumentIfNeededFlow(context: context, document: document)
 
         context.startSubflow(saveIfNeeded) { [weak self] completion in
             guard let self else { return }
@@ -38,7 +47,19 @@ final class NewDesignFlow: DecisionFlow {
     }
 
     func start() {
-        let subflow = SaveDocumentIfNeededFlow(context: context)
+        // TODO: This goes away with multi-document app
+        guard let workspace = context.workspace else {
+            context.finish(self, outcome: .failure)
+            return
+        }
+        guard let document = workspace.currentDocument
+        else {
+            workspace.newDesign()
+            context.finish(self, outcome: .success)
+            return
+        }
+
+        let subflow = SaveDocumentIfNeededFlow(context: context, document: document)
 
         context.startSubflow(subflow) { [weak self] outcome in
             guard let self else { return }

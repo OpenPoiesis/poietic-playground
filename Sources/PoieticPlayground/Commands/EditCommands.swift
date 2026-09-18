@@ -19,8 +19,7 @@ struct DeleteObjectsCommand: Command {
     
     @MainActor
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let document = context.document else { return }
-        let trans = document.createOrReuseTransaction()
+        let trans = context.document.createOrReuseTransaction()
         for objectID in ids {
             guard trans.contains(objectID) else { continue }
             trans.removeCascading(objectID)
@@ -47,9 +46,7 @@ struct InsertObjectsCommand: Command {
     
     @MainActor
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let document = context.document else { return }
-
-        let trans = document.createOrReuseTransaction()
+        let trans = context.document.createOrReuseTransaction()
 
         let loader = DesignLoader(metamodel: trans.design.metamodel)
         let ids: [PoieticCore.ObjectID]
@@ -60,11 +57,12 @@ struct InsertObjectsCommand: Command {
                                   identityStrategy: strategy)
         }
         catch {
-            document.discardTransaction()
+            context.document.discardTransaction()
             throw CommandError("Failed to paste content", underlyingError: error)
         }
 
-        document.changeSelection(.replaceAll(ids))
+        // TODO: Decouple selection from insert (we need flag "recently inserted/updated/flagged" or something like that)
+        context.document.changeSelection(.replaceAll(ids))
     }
 }
 

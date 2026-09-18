@@ -8,16 +8,15 @@
 import Foundation
 
 @MainActor
-func saveDocument(to url: URL, context: DecisionFlowContext) -> DecisionFlowOutcome {
+func saveDocument(_ document: Document, to url: URL, context: DecisionFlowContext) -> DecisionFlowOutcome {
     let normalizedURL = Document.normalizePathExtension(url)
 
-    guard let document = context.document else { return .cancelled }
     do {
         try document.save(to: normalizedURL)
         return .success
     }
     catch {
-        context.presentMessage(title: "Save Failed", message: error.description, style: .error)
+        context.environment?.report(title: "Save Failed", message: error.description, style: .error)
         return .failure
     }
 }
@@ -29,7 +28,7 @@ func openDocument(from url: URL, context: DecisionFlowContext) -> DecisionFlowOu
         return .success
     }
     catch {
-        context.presentMessage(title: "Open Failed", message: error.description, style: .error)
+        context.environment?.report(title: "Open Failed", message: error.description, style: .error)
         return .failure
     }
 }
@@ -39,9 +38,11 @@ func openDocument(from url: URL, context: DecisionFlowContext) -> DecisionFlowOu
 ///
 final class SaveDocumentWithFileSelectionFlow: DecisionFlow {
     let context: DecisionFlowContext
+    weak let document: Document?
 
-    init(context: DecisionFlowContext) {
+    init(context: DecisionFlowContext, document: Document) {
         self.context = context
+        self.document = document
     }
     
     func start() {
@@ -52,6 +53,10 @@ final class SaveDocumentWithFileSelectionFlow: DecisionFlow {
     }
     
     func pathSelected(selectedPath: String?) {
+        guard let document else {
+            context.finish(self, outcome: .cancelled)
+            return
+        }
         guard let selectedPath else {
             context.finish(self, outcome: .cancelled)
             return
@@ -63,12 +68,17 @@ final class SaveDocumentWithFileSelectionFlow: DecisionFlow {
             self.confirmOverwrite(url: url)
         }
         else {
-            let outcome = saveDocument(to: url, context: context)
+            let outcome = saveDocument(document, to: url, context: context)
             context.finish(self, outcome: outcome)
         }
     }
     
     func confirmOverwrite(url: URL) {
+        guard let document else {
+            context.finish(self, outcome: .cancelled)
+            return
+        }
+
         context.presentDecision(
             title: "File Exists",
             message: "'\(url.lastPathComponent)' already exists. Overwrite?",
@@ -77,7 +87,7 @@ final class SaveDocumentWithFileSelectionFlow: DecisionFlow {
                     self.context.finish(self, outcome: .cancelled)
                 },
                 DecisionFlowChoice("Overwrite", emphasis: .destructive) {
-                    let outcome = saveDocument(to: url, context: self.context)
+                    let outcome = saveDocument(document, to: url, context: self.context)
                     self.context.finish(self, outcome: outcome)
                 }
             ]
@@ -88,18 +98,25 @@ final class SaveDocumentWithFileSelectionFlow: DecisionFlow {
 
 final class SaveDocumentFlow: DecisionFlow {
     let context: DecisionFlowContext
+    weak let document: Document?
 
-    init(context: DecisionFlowContext) {
+    init(context: DecisionFlowContext, document: Document) {
         self.context = context
+        self.document = document
     }
 
     func start() {
-        if let url = context.document?.designURL {
-            let outcome = saveDocument(to: url, context: context)
+        guard let document else {
+            context.finish(self, outcome: .cancelled)
+            return
+        }
+
+        if let url = document.designURL {
+            let outcome = saveDocument(document, to: url, context: context)
             context.finish(self, outcome: outcome)
         }
         else {
-            let subflow = SaveDocumentWithFileSelectionFlow(context: context)
+            let subflow = SaveDocumentWithFileSelectionFlow(context: context, document: document)
 
             context.startSubflow(subflow) { outcome in
                 self.context.finish(self, outcome: outcome)
@@ -110,14 +127,16 @@ final class SaveDocumentFlow: DecisionFlow {
 
 final class SaveDocumentIfNeededFlow: DecisionFlow {
     let context: DecisionFlowContext
+    weak let document: Document?
 
-    init(context: DecisionFlowContext) {
+    init(context: DecisionFlowContext, document: Document) {
         self.context = context
+        self.document = document
     }
 
     func start() {
-        guard let document = context.document else {
-            context.finish(self, outcome: .failure)
+        guard let document else {
+            context.finish(self, outcome: .cancelled)
             return
         }
         
@@ -144,7 +163,12 @@ final class SaveDocumentIfNeededFlow: DecisionFlow {
     }
     
     func saveDocument() {
-        context.startSubflow(SaveDocumentFlow(context: context)) { outcome in
+        guard let document else {
+            context.finish(self, outcome: .cancelled)
+            return
+        }
+
+        context.startSubflow(SaveDocumentFlow(context: context, document: document)) { outcome in
             self.context.finish(self, outcome: outcome)
         }
     }
@@ -160,16 +184,21 @@ final class OpenDocumentWithFileSelectionFlow: DecisionFlow {
     }
 
     func start() {
-        let subflow = SaveDocumentIfNeededFlow(context: context)
-        
-        context.startSubflow(subflow) { [weak self] outcome in
-            guard let self else { return }
-            switch outcome {
-            case .success:
-                self.selectDocumentFile()
-            case .cancelled, .failure:
-                self.context.finish(self, outcome: .cancelled)
+        if let document = context.workspace?.currentDocument {
+            let subflow = SaveDocumentIfNeededFlow(context: context, document: document)
+            
+            context.startSubflow(subflow) { [weak self] outcome in
+                guard let self else { return }
+                switch outcome {
+                case .success:
+                    self.selectDocumentFile()
+                case .cancelled, .failure:
+                    self.context.finish(self, outcome: .cancelled)
+                }
             }
+        }
+        else {
+            self.selectDocumentFile()
         }
     }
     
@@ -197,7 +226,7 @@ final class OpenDocumentWithFileSelectionFlow: DecisionFlow {
             context.finish(self, outcome: .success)
         }
         catch {
-            context.presentMessage(title: "Open Failed", message: error.description, style: .error)
+            context.environment?.report(title: "Open Failed", message: error.description, style: .error)
             context.finish(self, outcome: .failure)
         }
     }
@@ -213,17 +242,23 @@ final class OpenDocumentFromURLFlow: DecisionFlow {
     }
 
     func start() {
-        let subflow = SaveDocumentIfNeededFlow(context: context)
-
-        context.startSubflow(subflow) { [weak self] outcome in
-            guard let self else { return }
-            switch outcome {
-            case .success:
-                let outcome = openDocument(from: url, context: context)
-                self.context.finish(self, outcome: outcome)
-            case .cancelled, .failure:
-                self.context.finish(self, outcome: .cancelled)
+        if let document = context.workspace?.currentDocument {
+            let subflow = SaveDocumentIfNeededFlow(context: context, document: document)
+            
+            context.startSubflow(subflow) { [weak self] outcome in
+                guard let self else { return }
+                switch outcome {
+                case .success:
+                    let outcome = openDocument(from: url, context: context)
+                    self.context.finish(self, outcome: outcome)
+                case .cancelled, .failure:
+                    self.context.finish(self, outcome: .cancelled)
+                }
             }
+        }
+        else {
+            let outcome = openDocument(from: url, context: context)
+            self.context.finish(self, outcome: outcome)
         }
     }
 }

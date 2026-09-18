@@ -31,7 +31,7 @@ class Application {
     static let DefaultWindowWidth = 1280
     static let DefaultWindowHeight = 800
     static let PictogramAdjustmentScale = 0.5
-   
+    
     var pendingBackendGestures: [GestureEvent] = []
     
     var showMetrics = false
@@ -39,7 +39,7 @@ class Application {
     var quitRequested: Bool = false
     
     // -- Document --
-
+    
     // -- Modals and Decisions --
     var isInteractionBlocked: Bool {
         modalQueue.contains { $0.status != .resolved } || decisionManager.isActive
@@ -61,7 +61,7 @@ class Application {
     
     var panels: [any Panel] = []
     
-
+    
     // ## GUI
     //
     // ## The Document – Design and World
@@ -75,7 +75,7 @@ class Application {
         
         // Document
         self.workspace = nil
-
+        
         // Regualr Panels
         panels = []
         self.aboutPanel = AboutPanel()
@@ -87,15 +87,18 @@ class Application {
         self.metamodelPanel = MetamodelPanel()
         panels.append(self.metamodelPanel)
     }
-
+    
     func requestQuit() {
         self.quitRequested = true
     }
     
-    func queueAlert(title: String, message: String) {
+}
+extension Application: Reporter {
+    func report(title: String, message: String, style: MessageStyle) {
         let alert = ConfirmationDialog(
             title: title,
             message: message,
+            style: style,
             options: [
                 DecisionOption("Dismiss")
             ]

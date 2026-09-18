@@ -36,11 +36,14 @@ extension Application {
         case .open:
             self.startFlow(OpenDocumentWithFileSelectionFlow(context: flowContext()))
         case .save:
-            self.startFlow(SaveDocumentFlow(context: flowContext()))
+            guard let document = workspace?.currentDocument else { break }
+            self.startFlow(SaveDocumentFlow(context: flowContext(), document: document))
         case .saveAs:
-            self.startFlow(SaveDocumentWithFileSelectionFlow(context: flowContext()))
+            guard let document = workspace?.currentDocument else { break }
+            self.startFlow(SaveDocumentWithFileSelectionFlow(context: flowContext(), document: document))
         case .exportSVG:
-            self.startFlow(ExportSVGFlow(context: flowContext()))
+            guard let document = workspace?.currentDocument else { break }
+            self.startFlow(ExportSVGFlow(context: flowContext(), document: document))
 
         default:
             self.log("Unhandled action: \(action.name)")
