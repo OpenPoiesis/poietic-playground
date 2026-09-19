@@ -29,7 +29,7 @@ class ExportSVGCommand: Command {
     }
     
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let document = context.document else { return }
+        let document = context.document
         let world = document.world
         
         guard let diagram = document.mainDiagram else {
