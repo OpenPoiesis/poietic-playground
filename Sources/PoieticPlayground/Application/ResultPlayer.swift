@@ -20,7 +20,7 @@ struct SimulationReplayTime: Component {
 /// simulation finished and simulation failed events.
 ///
 class ResultPlayer: DocumentBound {
-    var needsWorldUpdate: Bool = false
+    private(set) var needsWorldUpdate: Bool = false
     
     var isRunning: Bool = false
     var isLooping: Bool = true
@@ -77,10 +77,12 @@ class ResultPlayer: DocumentBound {
 
         self.lastSampleIndex = Int(settings.steps)
         self.currentStep = clampStep(self.currentStep)
+        worldNeedsUpdate()
     }
 
     func onSimulationFailed(_ document: Document) {
         self.isRunning = false
+        worldNeedsUpdate()
     }
     
     func onSimulationFinished(_ document: Document) {

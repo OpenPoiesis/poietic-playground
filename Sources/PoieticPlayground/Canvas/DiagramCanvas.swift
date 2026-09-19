@@ -356,10 +356,12 @@ class DiagramCanvas: View, DocumentBound {
     func resetView() {
         self.setView(offset: .zero, zoom: 1.0)
     }
-    
+    static func clampZoom(_ zoom: Double) -> Double {
+        return max(0.01, min(100.0, zoom))
+    }
     func setView(offset: Vector2D, zoom: Double) {
         viewOffset = offset
-        zoomLevel = max(0.01, min(100.0, zoom))
+        zoomLevel = Self.clampZoom(zoom)
         toOverlayTransform = AffineTransform(translation: -viewOffset)
                                 .scaled(Vector2D(zoomLevel, zoomLevel))
 
@@ -375,11 +377,22 @@ class DiagramCanvas: View, DocumentBound {
     }
     
     func centerView(at worldPoint: Vector2D, zoom: Double? = nil) {
-        let useZoom = zoom ?? self.zoomLevel
+        let useZoom: Double
+        if let zoom {
+            useZoom = Self.clampZoom(zoom)
+        }
+        else {
+            useZoom = self.zoomLevel
+        }
         let canvasCenter = Vector2D(canvasSize) / 2.0
         let offset = worldPoint - (canvasCenter / useZoom)
         setView(offset: offset, zoom: useZoom)
     }
+
+    func resetZoom() {
+        centerView(at: visibleWorldRect.center, zoom: 1.0)
+    }
+    
     func hitTarget(screenPosition: Vector2D) -> CanvasHitTarget? {
         guard let scene else { return nil }
         

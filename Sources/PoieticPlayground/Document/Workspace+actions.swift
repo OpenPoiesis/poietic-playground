@@ -65,9 +65,8 @@ extension Workspace {
         case .toggleGraphicalFunctionPanel: graphicFunctionPanel.isVisible.toggle()
         case .toggleToolBar:                toolBar.isVisible.toggle()
         case .toggleDebugDesignPanel:       debugDesignPanel.isVisible.toggle()
-        case .resetZoom:
-            currentDocument?.enqueue(ResetZoomCommand(), canvas: canvas)
-            
+        case .resetZoom:                    canvas.resetZoom()
+
         // -- Inspector --
         case .overviewInspector:
             self.inspector.selectTab(.overview)
@@ -133,5 +132,4 @@ extension Workspace {
         }
         return rawDesign
     }
-    
 }
