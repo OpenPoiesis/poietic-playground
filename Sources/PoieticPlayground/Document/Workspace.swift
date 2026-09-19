@@ -14,6 +14,13 @@ protocol DocumentBound {
     func unbind()
 }
 
+@MainActor
+protocol WorkspaceBound {
+    func bind(workspace: any WorkspaceServices, _ document: Document)
+    func unbind()
+}
+
+
 
 @MainActor
 protocol Reporter: AnyObject {
@@ -116,7 +123,6 @@ class Workspace {
         self.controlBar.bind(player)
 
         self.toolBar = ToolBar()
-        self.toolBar.bind(self)
         
         // FIXME: Use enum instead of names
         // Register inline editors
@@ -130,13 +136,41 @@ class Workspace {
         self.editors.register(name: "graphical_function",
                                     editor: GraphicalFunctionInlineEditor(panel: graphicFunctionPanel))
         canvas.editorManager = editors
+
+        self.toolBar.bind(self)
     }
     
+    /// Update the document and the world.
+    ///
+    /// The flow:
+    ///
+    /// 1. Updates the document ``updateDocument(_:)``
+    /// 2. Checks whether the player is running and updates the player.
+    /// 3. If the player requests world update, then runs ``PlayerStepSchedule``
+    ///    through ``Document/updatePlayerStep(step:time:)``.
+    /// 4. Updates canvas.
+    /// 5. Updates toolbar.
+    /// 6. Updates all workspace-associated panels.
+    /// 7. Finalises by running the `DocumentCleanupSchedule`.
+    ///
     func update(_ timeDelta: Double) {
         updateDocument(timeDelta)
 
         if player.isRunning {
             player.update(timeDelta)
+        }
+        if player.needsWorldUpdate {
+            player.needsWorldUpdate = false
+            do {
+                try currentDocument?.updatePlayerStep(step: player.currentStep,
+                                                      time: player.currentTime)
+            }
+            catch {
+                environment?.report(title: "Player Schedule Failed",
+                                    message: "Please file an issue with developers",
+                                    style: .error)
+
+            }
         }
 
         // Update UI components
@@ -210,12 +244,25 @@ class Workspace {
         }
     }
 
+    /// Updates the document.
+    ///
+    /// Called by ``update(_:)`` and runs only when interaction is not blocked.
+    ///
+    /// The flow:
+    ///
+    /// 1. Runs commands in the document queue (``Document/commandQueue``).
+    ///    See ``executeWithReporting(_:document:canvas:)``.
+    /// 2. Tries to accept the transaction ``Document/consumeAndAcceptTransaction()``
+    /// 3. Updates the document ``Document/update(_:)`` which does the following:
+    ///     - changes world plane if needed, and then simulate
+    ///     - runs `DocumentUpdateSchedule`.
+    ///     - runs `InteractivePreviewSchedule` if interactive preview is active.
+    ///
     func updateDocument(_ timeDelta: Double) {
         guard let environment,
               let document = currentDocument
         else { return }
         guard !environment.isInteractionBlocked else { return }
-
         
         while !document.commandQueue.isEmpty {
             let invocation = document.commandQueue.removeFirst()
@@ -234,7 +281,6 @@ class Workspace {
             environment.report(title: "Plane validation error (report to developers)",
                                message: String(describing: error),
                                style: .error)
-            
             return
         }
 
@@ -279,8 +325,11 @@ class Workspace {
 
         document.addObserver(controlBar.onDesignPlaneChanged, on: .designPlaneChanged)
         document.addObserver(controlBar.onSimulationPlayerStep, on: .simulationPlayerStep)
+        
         document.addObserver(player.onDesignPlaneChanged, on: .designPlaneChanged)
+        document.addObserver(player.onSimulationFinished, on: .simulationFinished)
         document.addObserver(player.onSimulationFailed, on: .simulationFailed)
+
         document.addObserver(dashboard.onDesignPlaneChanged, on: .designPlaneChanged)
 
         document.addObserver(graphicFunctionPanel.onSelectionChanged, on: .selectionChanged)

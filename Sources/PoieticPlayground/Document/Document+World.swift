@@ -147,4 +147,10 @@ extension Document {
         let diagram = DiagramSceneComposer.createDiagramFromAll(world: world, diagram: mainDiagram)
         self.mainDiagram = diagram
     }
+    
+    func updatePlayerStep(step: Int, time: Double) throws (InternalSystemError) {
+        world.setSingleton(SimulationReplayTime(step: step, time: time))
+        try world.run(schedule: PlayerStepSchedule.self)
+        trigger(.simulationPlayerStep)
+    }
 }

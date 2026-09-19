@@ -228,8 +228,4 @@ class Document {
         world.removeComponentForAll(PreviewMidpoints.self)
         self.trigger(.previewEnded)
     }
-
-    func onSimulationPlayerStep(_ document: Document) {
-        // TODO: This is weird, as we should be receiving this event only triggered by us.
-    }
 }

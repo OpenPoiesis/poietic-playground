@@ -116,6 +116,7 @@ extension Workspace {
             environment?.report(title: "Error",
                                 message: "Can not get pasteboard data",
                                 style: .error)
+            return nil
         }
 
         let reader = JSONDesignReader()
