@@ -68,6 +68,8 @@ class ConnectTool: CanvasTool {
     override func deactivate() {
         removeDragConnector()
         document?.endInteractivePreview()
+        intendedConnector = nil
+        connectorHandle = nil
     }
 
     override func drawPalette() {
@@ -95,10 +97,10 @@ class ConnectTool: CanvasTool {
         guard event.triggerButton == .left else { return .pass }
         guard let canvas,
               let document,
+              let world,
               let scene = canvas.scene,
               let hitTarget = canvas.hitTarget(screenPosition: event.screenPos),
               world.contains(hitTarget.sceneNode),
-              case .object(let originID, _) = hitTarget.kind,
               let typeName = palette?.selectedIdentifier,
               let type = document.design.metamodel.objectType(name: typeName)
         else {
@@ -151,10 +153,10 @@ class ConnectTool: CanvasTool {
         guard state == .connecting,
               let canvas,
               let document,
+              let world,
               let intendedConnector,
               let connectorHandle,
-              let intent: ConnectorIntent = intendedConnector.component(),
-              let originSceneNode = intendedConnector.target(ConnectorSceneNode.Origin.self)
+              let intent: ConnectorIntent = intendedConnector.component()
         else { return .pass}
         
         // -- Handle --
@@ -247,7 +249,8 @@ class ConnectTool: CanvasTool {
     ///   but can still be not allowed. Invalid target is another connector for example.
     ///
     func isValidTarget(_ runtimeID: RuntimeID) -> Bool {
-        guard let entity = world.entity(runtimeID)
+        guard let world,
+              let entity = world.entity(runtimeID)
         else { return false }
         
         return entity.contains(BlockSceneNode.self)

@@ -16,7 +16,7 @@ protocol DocumentBound {
 
 @MainActor
 protocol WorkspaceBound {
-    func bind(workspace: any WorkspaceServices, _ document: Document)
+    func bind(workspace: any WorkspaceServices, document: Document)
     func unbind()
 }
 
@@ -51,6 +51,7 @@ class Workspace {
     // TODO: Add multi-document support later
     private(set) var currentDocument: Document?
     private var bound: [any DocumentBound] = []
+    private var workspaceBound: [any WorkspaceBound] = []
 
     weak var environment: any ApplicationEnvironment? = nil
 
@@ -160,7 +161,6 @@ class Workspace {
             player.update(timeDelta)
         }
         if player.needsWorldUpdate {
-            player.needsWorldUpdate = false
             do {
                 try currentDocument?.updatePlayerStep(step: player.currentStep,
                                                       time: player.currentTime)
@@ -171,6 +171,7 @@ class Workspace {
                                     style: .error)
 
             }
+            player.worldUpdated()
         }
 
         // Update UI components

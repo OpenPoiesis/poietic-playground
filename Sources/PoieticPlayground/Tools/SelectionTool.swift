@@ -5,7 +5,6 @@
 //  Created by Stefan Urbanek on 05/02/2026.
 //
 
-// FIXME: Remove dependency on CIimgui
 import CIimgui
 import PoieticCore
 import Diagramming
@@ -13,8 +12,6 @@ import Diagramming
 /// Selection tool is ...
 ///
 class SelectionTool: CanvasTool {
-    // TODO: Implement the tool (empty stub for now)
-
     override var type: CanvasToolType { .selection }
     override var iconKey: IconKey { .select }
 
@@ -38,17 +35,14 @@ class SelectionTool: CanvasTool {
     var state: State = .idle
     var dragStartScreenPos: Vector2D = .zero
     
-    override func bind(canvas: DiagramCanvas, document: Document) {
-        super.bind(canvas: canvas, document: document)
-        document.addObserver(onDesignPlaneChanged, on: .designPlaneChanged)
-    }
-
-    func onDesignPlaneChanged(_ document: Document) {
-        // We need this especially for undo operations, to recreate handles for re-added objects.
-        removeHandles()
+    override func activate() {
         createHandles()
     }
 
+    override func deactivate() {
+        removeHandles()
+    }
+    
     // MARK: - Events
 
     override func handleEvent(_ event: ToolEvent) -> EngagementResult {
@@ -82,7 +76,8 @@ class SelectionTool: CanvasTool {
 
         case .object(let runtimeID, .body):
             // TODO: Defer opening of context menu on inputEnded or move context menu out of the tool
-            guard let objectID = world.entity(runtimeID)?.objectID
+            guard let world,
+                  let objectID = world.entity(runtimeID)?.objectID
             else { return .consumed } // Not a design object
             
             if event.modifiers.contains(.shift) {
@@ -105,8 +100,9 @@ class SelectionTool: CanvasTool {
         case .object(let runtimeID, .issueIndicator):
             self.removeHandles()
             state = .idle
-            guard let objectID = world.entity(runtimeID)?.objectID else { break }
-            self.document?.enqueue(OpenIssuesCommand(objectID))
+            guard let world,
+                  let objectID = world.entity(runtimeID)?.objectID else { break }
+            self.context?.openIssues(for: objectID)
 
         case .object(let runtimeID, let part):
             self.removeHandles()
@@ -199,6 +195,7 @@ class SelectionTool: CanvasTool {
     
     func previewSelectionMove(screenDelta: Vector2D) {
         guard let canvas,
+              let world,
               let scene = canvas.scene,
               let document,
               let plane = document.world.plane
@@ -306,6 +303,7 @@ class SelectionTool: CanvasTool {
     func createMidpointHandles(_ entity: RuntimeEntity) {
         guard let connector: DiagramConnector = entity.component(),
               let canvas,
+              let world,
               let scene = canvas.scene
         else { return }
         
@@ -357,6 +355,8 @@ class SelectionTool: CanvasTool {
                               parent: RuntimeEntity,
                               size: Double)
     {
+        guard let world else { return }
+        
         let handle = world.spawn(
             SceneNode(),
             CanvasHandle(position: worldPosition, kind: .midpoint(index)),
@@ -370,7 +370,9 @@ class SelectionTool: CanvasTool {
     }
     
     func syncHandlesToPreview() {
-        guard let canvas else { return }
+        guard let world,
+              let canvas
+        else { return }
 
         for (entity, var handle) in world.query(CanvasHandle.self) {
             guard let target = entity.target(Handles.self),
@@ -473,11 +475,13 @@ class SelectionTool: CanvasTool {
     // MARK: - Clean-up
     
     func cleanUp() {
+        guard let world else { return }
         world.removeComponentForAll(PreviewPositionComponent.self)
         world.removeComponentForAll(PreviewMidpoints.self)
     }
     
     func removeHandles() {
+        guard let world else { return }
         for (runtimeID, _) in world.query(CanvasHandle.self) {
             world.despawn(runtimeID)
         }

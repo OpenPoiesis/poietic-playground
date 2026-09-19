@@ -61,6 +61,7 @@ class PlacementTool: CanvasTool {
     func createBlockIntent(position: Vector2D, typeName: String) {
         guard let document,
               let canvas,
+              let world,
               let scene = canvas.scene,
               let notation: Notation = world.singleton(),
               let type = document.design.metamodel.objectType(name: typeName)
@@ -147,14 +148,15 @@ class PlacementTool: CanvasTool {
     func pointerUp(_ event: ToolEvent)  -> EngagementResult {
         guard let document,
               let canvas,
+              let world,
               let blockIntent,
               let intent: BlockIntent = blockIntent.component()
         else { return .pass }
         let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
 
         if let objectID = placeObject(type: intent.type, at: worldPos) {
-            document.queueCommand(SwitchToolCommand(.selection))
             document.changeSelection(.replaceAllWithOne(objectID))
+            context?.switchTool(.selection)
         }
         document.queueInteractivePreviewUpdate()
         document.endInteractivePreview()

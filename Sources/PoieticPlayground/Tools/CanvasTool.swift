@@ -27,6 +27,51 @@ enum CanvasToolType {
     }
 }
 
+@MainActor
+struct ToolContext {
+    private weak let workspace: any WorkspaceServices?
+    /// Document the tool is bound to.
+    ///
+    /// Tool is bound to a document together with a canvas using ``bind(canvas:document:)``.
+    ///
+    /// Document properties and functions typically used by a tool:
+    ///
+    /// - ``Document/selection`` and ``Session/changeSelection(_:)``
+    /// - ``Document/createOrReuseTransaction()``
+    /// - ``Document/requiresInteractivePreviewUpdate``
+    ///
+    weak let document: Document?
+
+    /// Canvas the tool is bound to.
+    ///
+    /// Tool is bound to a canvas together with a document on activation.
+    ///
+    /// Functions typically used:
+    ///
+    /// - ``DiagramCanvas/screenToWorld(_:)->Vector2D``
+    /// - ``DiagramCanvas/hitTarget(screenPosition:)``
+    /// - ``DiagramCanvas/zoomLevel``
+    ///
+    weak let canvas: DiagramCanvas?
+    
+    public init(workspace: any WorkspaceServices, document: Document, canvas: DiagramCanvas) {
+        self.workspace = workspace
+        self.document = document
+        self.canvas = canvas
+    }
+    
+    func switchTool(_ tool: CanvasToolType) {
+        workspace?.switchTool(tool)
+    }
+    func openIssues(for object: ObjectID?) {
+        workspace?.openIssues(for: object)
+    }
+    func centerView(at position: Vector2D, zoom: Double? = nil) {
+        workspace?.centerView(at: position, zoom: zoom)
+    }
+}
+
+
 /// Abstract class for canvas tools.
 ///
 /// Subclasses should implement:
@@ -47,6 +92,7 @@ enum CanvasToolType {
 ///
 @MainActor
 class CanvasTool {
+    
     enum EngagementResult {
         /// Tool is not concerned about the event, try fallback in tool chain.
         case pass
@@ -55,44 +101,20 @@ class CanvasTool {
         /// Tool has processed the event and will handle all future events until finished or cancelled.
         case engaged
     }
+   
+    var context: ToolContext?
     
-    /// Canvas the tool is bound to.
-    ///
-    /// Tool is bound to a canvas together with a document using ``bind(canvas:document:)``.
-    ///
-    /// Functions typically used:
-    ///
-    /// - ``DiagramCanvas/screenToWorld(_:)->Vector2D``
-    /// - ``DiagramCanvas/hitTarget(screenPosition:)``
-    /// - ``DiagramCanvas/zoomLevel``
-    ///
-    weak var canvas: DiagramCanvas?
+    weak var canvas: DiagramCanvas? { context?.canvas }
+    weak var document: Document? { context?.document }
+    weak var world: World? { context?.document?.world }
 
-    /// Document the tool is bound to.
-    ///
-    /// Tool is bound to a document together with a canvas using ``bind(canvas:document:)``.
-    ///
-    /// Document properties and functions typically used by a tool:
-    ///
-    /// - ``Document/selection`` and ``Session/changeSelection(_:)``
-    /// - ``Document/createOrReuseTransaction()``
-    /// - ``Document/requiresInteractivePreviewUpdate``
-    ///
-    weak var document: Document?
-
-    internal var world: World {
-        guard let document else { fatalError("CanvasTool used before binding")}
-        return document.world
-    }
-    
     var hasObjectPalette: Bool { false }
     var type: CanvasToolType { .empty }
     var iconKey: IconKey { .empty }
     
     /// Called before tool activation.
-    func bind(canvas: DiagramCanvas, document: Document) {
-        self.document = document
-        self.canvas = canvas
+    func bind(_ context: ToolContext) {
+        self.context = context
     }
 
     func drawPalette() { }

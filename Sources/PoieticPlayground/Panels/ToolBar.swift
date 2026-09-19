@@ -7,11 +7,13 @@
 
 import CIimgui
 
+// TODO: (later) split into ToolBar and ToolManager
+
 @MainActor
-class ToolBar: @MainActor Panel, DocumentBound {
+class ToolBar: @MainActor Panel {
     var isVisible: Bool = true
     
-    internal weak var document: Document? = nil
+    internal weak var workspace: any WorkspaceServices? = nil
     var previousTool: CanvasTool? = nil
     var currentTool: CanvasTool? = nil
     /// Tool that is currently engaged, for example in a dragging operation.
@@ -31,14 +33,15 @@ class ToolBar: @MainActor Panel, DocumentBound {
             panTool,
         ]
         self.currentTool = selectionTool
-        // TODO: Makeshift tool chaining. Use current/engaged
         self.secondaryTool = panTool
     }
-    func bind(_ document: Document) {
-        self.document = document
+    
+    func bind(_ workspace: any WorkspaceServices) {
+        self.workspace = workspace
     }
+
     func unbind() {
-        self.document = nil
+        self.workspace = nil
     }
     
     func tool(type: CanvasToolType) -> CanvasTool? {
@@ -53,6 +56,11 @@ class ToolBar: @MainActor Panel, DocumentBound {
     }
     
     func setTool(_ tool: CanvasTool) {
+        guard let workspace,
+              let document = workspace.currentDocument
+        else {
+            return
+        }
         if let currentTool {
             currentTool.deactivate()
         }
@@ -66,6 +74,8 @@ class ToolBar: @MainActor Panel, DocumentBound {
         default: secondaryTool = self.tool(type: .pan)
         }
         
+        let context = ToolContext(workspace: workspace, document: document, canvas: workspace.canvas)
+        tool.bind(context)
         tool.activate()
     }
     
