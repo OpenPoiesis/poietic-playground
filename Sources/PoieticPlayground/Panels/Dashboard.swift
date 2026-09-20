@@ -11,17 +11,17 @@ import PoieticFlows
 
 /// Makeshift dashboard.
 @MainActor
-class Dashboard: Panel, DocumentBound {
+class Dashboard: Panel, WorkspaceBound {
     var document: Document?
     static let ChartSize = ImVec2(100, 80)
     var isVisible: Bool = true
     var chartViews: [ChartView] = []
     
-    func bind(_ document: Document) {
+    func bind(workspace: any WorkspaceServices, document: Document) {
         chartViews.removeAll()
         self.document = document
     }
-    func unbind() {
+    func unbindWorkspace() {
         self.document = nil
         self.chartViews.removeAll()
     }

@@ -76,7 +76,7 @@ extension InspectorSection {
 }
 
 @MainActor
-class InspectorPanel: Panel, DocumentBound {
+class InspectorPanel: Panel, WorkspaceBound {
     enum Category {
         case overview
         case properties
@@ -118,7 +118,7 @@ class InspectorPanel: Panel, DocumentBound {
         designSections.append(SimulationInspectorSection())
     }
     
-    func bind(_ document: Document) {
+    func bind(workspace: any WorkspaceServices, document: Document) {
         self.document = document
         for section in allSections {
             section.bind(document)
@@ -128,7 +128,7 @@ class InspectorPanel: Panel, DocumentBound {
         }
     }
     
-    func unbind() {
+    func unbindWorkspace() {
         self.document = nil
         for section in allSections {
             section.unbind()

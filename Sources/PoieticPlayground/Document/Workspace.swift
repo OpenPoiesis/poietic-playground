@@ -9,17 +9,11 @@ import PoieticCore
 import Diagramming
 
 @MainActor
-protocol DocumentBound {
-    func bind(_ document: Document)
-    func unbind()
-}
-
-@MainActor
 protocol WorkspaceBound {
+    // TODO: For the time being we give both worskpace and doc, but consider giving only what is needed or if the binding is even necessary.
     func bind(workspace: any WorkspaceServices, document: Document)
-    func unbind()
+    func unbindWorkspace()
 }
-
 
 
 @MainActor
@@ -50,7 +44,7 @@ protocol ApplicationEnvironment: Reporter {
 class Workspace {
     // TODO: Add multi-document support later
     private(set) var currentDocument: Document?
-    private var bound: [any DocumentBound] = []
+    private var bound: [any WorkspaceBound] = []
     private var workspaceBound: [any WorkspaceBound] = []
 
     weak var environment: any ApplicationEnvironment? = nil
@@ -75,13 +69,7 @@ class Workspace {
     let debugDesignPanel: DebugDesignPanel
     let metamodelPanel: MetamodelPanel
     
-
-    // let bound object list
-    // let deferred action queue
-    // func new/open/save/close/unsaved changes review
-    
     var currentTool: CanvasTool? { toolBar.currentTool }
-
 
     init(environment: ApplicationEnvironment, notation: Notation) {
         self.environment = environment
@@ -93,8 +81,6 @@ class Workspace {
 
         self.canvas = DiagramCanvas()
         bound.append(self.canvas)
-        self.player = ResultPlayer()
-        bound.append(self.player)
 
         panels = []
         self.inspector = InspectorPanel()
@@ -121,6 +107,7 @@ class Workspace {
         bound.append(self.metamodelPanel)
         panels.append(self.metamodelPanel)
 
+        self.player = ResultPlayer()
         self.controlBar.bind(player)
 
         self.toolBar = ToolBar()
@@ -296,7 +283,7 @@ class Workspace {
 
     func replaceDocument(_ newDocument: Document) {
         for object in bound {
-            object.unbind()
+            object.unbindWorkspace()
         }
         // modals.removeAll(scope: .document)
         // flows.discardAll()
@@ -304,7 +291,7 @@ class Workspace {
         
         currentDocument = newDocument
         for object in bound {
-            object.bind(newDocument)
+            object.bind(workspace: self, document: newDocument)
         }
 
         canvas.setView(offset: .zero, zoom: 1)

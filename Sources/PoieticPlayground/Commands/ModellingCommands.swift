@@ -13,19 +13,17 @@ import CIimgui
 struct CreateChartCommand: Command {
     var name: String { "create_chart" }
 
-    weak let document: Document?
     let ids: [ObjectID]
     let chartName: String?
     
     /// A chart command with series from numeric values of given objects.
-    init(name: String? = nil, series: [ObjectID], document: Document) {
+    init(name: String? = nil, series: [ObjectID]) {
         self.ids = series
-        self.document = document
         self.chartName = name
     }
     
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let document else { return }
+        let document = context.document
         let trans = document.createOrReuseTransaction()
         let chart = trans.createNode(StockFlowDomain.Types.Chart)
         

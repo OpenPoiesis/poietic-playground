@@ -19,7 +19,7 @@ import Diagramming
 ///
 /// Corresponds to `DevelopmentDebuggingWindow` in the Godot prototype.
 @MainActor
-class DebugDesignPanel: Panel, DocumentBound {
+class DebugDesignPanel: Panel, WorkspaceBound {
 
     var isVisible: Bool = false
 
@@ -31,11 +31,11 @@ class DebugDesignPanel: Panel, DocumentBound {
 
     // MARK: - Panel
 
-    func bind(_ document: Document) {
+    func bind(workspace: any WorkspaceServices, document: Document) {
         self.document = document
         refreshFromSelection()
     }
-    func unbind() {
+    func unbindWorkspace() {
         self.document = nil
         objectIDs.removeAll()
         selectedIndex = nil

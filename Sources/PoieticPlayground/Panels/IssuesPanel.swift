@@ -24,7 +24,7 @@ class IssuesPanel: Panel, WorkspaceBound {
         self.document = document
         self.workspace = workspace
     }
-    func unbind() {
+    func unbindWorkspace() {
         self.document = nil
         self.selectedObject = nil
         self.selectedIssueIndex = nil

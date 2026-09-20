@@ -21,7 +21,7 @@ import Diagramming
 ///
 /// Corresponds to `GraphicalCurvesEditorWindow` in the Godot prototype.
 @MainActor
-class GraphicalFunctionPanel: Panel, DocumentBound {
+class GraphicalFunctionPanel: Panel, WorkspaceBound {
     var isVisible: Bool = false
     
     // MARK: - State
@@ -65,10 +65,10 @@ class GraphicalFunctionPanel: Panel, DocumentBound {
 
     // MARK: - Lifecycle
 
-    func bind(_ document: Document) {
+    func bind(workspace: any WorkspaceServices, document: Document) {
         self.document = document
     }
-    func unbind() {
+    func unbindWorkspace() {
         self.document = nil
         self.editingObjectID = nil
     }

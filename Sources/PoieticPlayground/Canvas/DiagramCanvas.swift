@@ -18,7 +18,7 @@ import PoieticFlows
 ///
 /// The canvas draws a scene rooted in ``/Diagramming/DiagramCanvas``.
 ///
-class DiagramCanvas: View, DocumentBound {
+class DiagramCanvas: View, WorkspaceBound {
     static let DefaultHitRadius: Double = 5.0
 
     var debugRendering: Bool = false
@@ -93,8 +93,7 @@ class DiagramCanvas: View, DocumentBound {
 
     var editorManager: InlineEditorManager? = nil
 
-    init(document: Document? = nil) {
-        self.document = document
+    init() {
         self.style = CanvasStyle.Default
 
         self.overlays = OverlayStack()
@@ -111,13 +110,13 @@ class DiagramCanvas: View, DocumentBound {
         self.editorManager = InlineEditorManager()
     }
     
-    func bind(_ document: Document) {
+    func bind(workspace: any WorkspaceServices, document: Document) {
         self.scene = nil
         self.diagram = nil
         self.document = document
         self.editorManager?.bind(document: document, canvas: self)
     }
-    func unbind() {
+    func unbindWorkspace() {
         self.scene = nil
         self.diagram = nil
         self.document = nil
