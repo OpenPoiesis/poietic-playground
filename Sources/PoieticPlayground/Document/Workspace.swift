@@ -185,6 +185,7 @@ class Workspace {
     }
 
     func dispatchInput(_ input: InputFrame, gestures: [GestureEvent]) {
+//        print("🎮 Dispatch input: \(input)")
         let events: [ToolEvent]
         
         if canvas.isPointerOver {
@@ -197,7 +198,8 @@ class Workspace {
 
 
         for event in events {
-            toolManager.dispatch(event, canvas: canvas)
+            let disposition = toolManager.dispatch(event, canvas: canvas)
+            print("↩️ Disposition: \(disposition)")
         }
     }
 
@@ -230,7 +232,6 @@ class Workspace {
         
         do {
             try document.consumeAndAcceptTransaction()
-            environment.log("Transaction accepted. Current plane: \(document.design.currentPlaneID!), plane count: \(document.design.planes.count)")
         }
         catch {
             // This is not user's fault and never should be.
@@ -251,6 +252,8 @@ class Workspace {
     }
 
     func replaceDocument(_ newDocument: Document) {
+        toolManager.deactivate()
+        
         for object in bound {
             object.unbindWorkspace()
         }
@@ -263,6 +266,8 @@ class Workspace {
             object.bind(workspace: self, document: newDocument)
         }
 
+        toolManager.bind(workspace: self, document: newDocument, canvas: canvas)
+        
         canvas.setView(offset: .zero, zoom: 1)
         connectObservers(to: newDocument)
     }
