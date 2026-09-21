@@ -19,7 +19,7 @@ struct SimulationReplayTime: Component {
 /// Read by ``Workspace`` on ``Workspace/update(_:)`` and updated by design plane changes,
 /// simulation finished and simulation failed events.
 ///
-class ResultPlayer: DocumentBound {
+class ResultPlayer {
     private(set) var needsWorldUpdate: Bool = false
     
     var isRunning: Bool = false
@@ -42,19 +42,6 @@ class ResultPlayer: DocumentBound {
         timeSettings.startTime + Double(currentStep) * timeSettings.timeStep
     }
 
-    // TODO: Do we still need it?
-    weak var document: Document? = nil
-
-    func bind(_ document: Document) {
-        self.document = document
-    }
-    
-    func unbind() {
-        self.document = nil
-        self.isRunning = false
-        self.lastSampleIndex = 0
-    }
-    
     func update(_ delta: Double) {
         guard isRunning else { return }
         if timeToStep <= 0 {
