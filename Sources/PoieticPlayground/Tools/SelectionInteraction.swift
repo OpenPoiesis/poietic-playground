@@ -8,10 +8,13 @@
 import PoieticCore
 import Diagramming
 
+// TODO: Break into SelectionInteraction and ObjectMoveInteraction
+
 @MainActor
 class SelectionInteraction: ToolInteraction {
-    unowned let document: Document
-    unowned let canvas: DiagramCanvas
+    let context: ToolContext
+    var document: Document { context.document }
+    var canvas: DiagramCanvas { context.canvas }
     
     var world: World { document.world }
     
@@ -35,9 +38,8 @@ class SelectionInteraction: ToolInteraction {
     var state: State = .idle
     var dragStartScreenPos: Vector2D = .zero
     
-    init(document: Document, canvas: DiagramCanvas) {
-        self.document = document
-        self.canvas = canvas
+    init(context: ToolContext) {
+        self.context = context
     }
     
     func begin() {
@@ -105,7 +107,7 @@ class SelectionInteraction: ToolInteraction {
             self.removeHandles()
             state = .idle
             guard let objectID = world.entity(runtimeID)?.objectID else { break }
-            self.context?.openIssues(for: objectID)
+            context.openIssues(for: objectID)
 
         case .object(let runtimeID, let part):
             self.removeHandles()

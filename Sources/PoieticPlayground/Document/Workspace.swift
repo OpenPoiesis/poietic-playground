@@ -197,7 +197,7 @@ class Workspace {
 
 
         for event in events {
-            toolManager.dispatch(event)
+            toolManager.dispatch(event, canvas: canvas)
         }
     }
 

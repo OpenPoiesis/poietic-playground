@@ -9,18 +9,17 @@ import PoieticCore
 import Diagramming
 
 class PlacementInteraction: ToolInteraction {
-    
-    unowned let document: Document
-    unowned let canvas: DiagramCanvas
-    
+    let context: ToolContext
+    var document: Document { context.document }
+    var canvas: DiagramCanvas { context.canvas }
+
     var world: World { document.world }
 
     let selectedType: String?
     var blockIntent: RuntimeEntity? = nil
     
-    init(document: Document, canvas: DiagramCanvas, selectedType: String?) {
-        self.document = document
-        self.canvas = canvas
+    init(context: ToolContext, selectedType: String?) {
+        self.context = context
         self.selectedType = selectedType
     }
     
@@ -122,7 +121,7 @@ class PlacementInteraction: ToolInteraction {
 
         if let objectID = placeObject(type: intent.type, at: worldPos) {
             document.changeSelection(.replaceAllWithOne(objectID))
-            context?.switchTool(.selection)
+            context.switchTool(.selection)
         }
         document.queueInteractivePreviewUpdate()
         document.endInteractivePreview()

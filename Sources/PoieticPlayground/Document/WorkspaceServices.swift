@@ -35,6 +35,6 @@ extension Workspace: WorkspaceServices {
     }
 
     func switchTool(_ tool: CanvasToolType) {
-        toolBar.setTool(tool)
+        toolManager.select(tool)
     }
 }

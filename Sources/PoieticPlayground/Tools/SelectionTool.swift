@@ -26,6 +26,6 @@ class SelectionTool: CanvasTool {
 //
     
     override func makeInteraction(context: ToolContext) -> any ToolInteraction {
-        return SelectionInteraction(document: context.document, canvas: context.canvas)
+        return SelectionInteraction(context: context)
     }
 }

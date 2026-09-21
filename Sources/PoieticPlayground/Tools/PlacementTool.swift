@@ -40,8 +40,6 @@ class PlacementTool: CanvasTool {
     }
 
     override func makeInteraction(context: ToolContext) -> any ToolInteraction {
-        return PlacementInteraction(document: context.document,
-                                    canvas: context.canvas,
-                                    selectedType: self.selectedPaletteItem)
+        return PlacementInteraction(context: context, selectedType: self.selectedPaletteItem)
     }
 }
