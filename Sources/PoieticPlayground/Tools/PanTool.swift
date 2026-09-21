@@ -27,7 +27,7 @@ class PanTool: CanvasTool {
     var previousScreenPos: Vector2D = .zero
     var state: State = .idle
     
-    override func handleEvent(_ event: ToolEvent) -> EngagementResult {
+    override func handleEvent(_ event: ToolEvent) -> EventDisposition {
         switch event.type {
         case .dragStart: return self.dragStart(event)
         case .dragMove: return self.dragMove(event)
@@ -37,12 +37,12 @@ class PanTool: CanvasTool {
         case .pinchStart: return self.pinchStart(event)
         case .pinchUpdate: return self.pinchUpdate(event)
         case .pinchEnd: return self.pinchEnd(event)
-        default: return .pass
+        default: return .ignored
         }
     }
     
-    func dragStart(_ event: ToolEvent) -> EngagementResult {
-        guard event.triggerButton == .left else { return .pass }
+    func dragStart(_ event: ToolEvent) -> EventDisposition {
+        guard event.triggerButton == .left else { return .ignored }
         
         self.previousScreenPos = event.screenPos
         self.state = .panning
@@ -50,9 +50,9 @@ class PanTool: CanvasTool {
         return .engaged
     }
     
-    func dragMove(_ event: ToolEvent) -> EngagementResult {
-        guard state == .panning else { return .pass }
-        guard let canvas else { return .pass }
+    func dragMove(_ event: ToolEvent) -> EventDisposition {
+        guard state == .panning else { return .ignored }
+        guard let canvas else { return .ignored }
         
         let screenOffset = event.screenPos - self.previousScreenPos
         let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
@@ -65,9 +65,9 @@ class PanTool: CanvasTool {
         return .engaged
     }
     
-    func dragEnd(_ event: ToolEvent) -> EngagementResult {
-        guard state == .panning else { return .pass }
-        guard let canvas else { return .pass }
+    func dragEnd(_ event: ToolEvent) -> EventDisposition {
+        guard state == .panning else { return .ignored }
+        guard let canvas else { return .ignored }
         
         let screenOffset = event.screenPos - self.previousScreenPos
         let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
@@ -76,41 +76,41 @@ class PanTool: CanvasTool {
         
         state = .idle
         cursor = ImGuiMouseCursor_Arrow
-        return .consumed
+        return .handled
     }
     
-    func dragCancel(_ event: ToolEvent) -> EngagementResult {
+    func dragCancel(_ event: ToolEvent) -> EventDisposition {
         cursor = ImGuiMouseCursor_Arrow
         state = .idle
-        return .consumed
+        return .handled
     }
     
-    func pinchStart(_ event: ToolEvent) -> EngagementResult {
-        guard state == .idle else { return .pass }
+    func pinchStart(_ event: ToolEvent) -> EventDisposition {
+        guard state == .idle else { return .ignored }
         self.state = .pinching
-        return .consumed
+        return .handled
     }
-    func pinchUpdate(_ event: ToolEvent) -> EngagementResult {
+    func pinchUpdate(_ event: ToolEvent) -> EventDisposition {
         guard state == .pinching,
               let canvas, event.scale > 0 else
-        { return .pass }
+        { return .ignored }
         
         let zoomFactor = Double(event.scale)
         let newZoom = max(min((canvas.zoomLevel * zoomFactor), Self.MaxZoom), Self.MinZoom)
         
         zoom(to: newZoom, at: event.screenPos, canvas: canvas)
 
-        return .consumed
+        return .handled
     }
-    func pinchEnd(_ event: ToolEvent) -> EngagementResult {
-        guard state == .pinching else { return .pass }
+    func pinchEnd(_ event: ToolEvent) -> EventDisposition {
+        guard state == .pinching else { return .ignored }
         self.state = .idle
-        return .consumed
+        return .handled
     }
     
     // TODO: Make it smooth-er + add inertia
-    func scroll(_ event: ToolEvent) -> EngagementResult {
-        guard let canvas else { return .pass }
+    func scroll(_ event: ToolEvent) -> EventDisposition {
+        guard let canvas else { return .ignored }
 
         // Cmd/Ctrl + scroll zooms
         if event.modifiers.contains(.command) {
@@ -124,7 +124,7 @@ class PanTool: CanvasTool {
             canvas.setView(offset: canvas.viewOffset - worldDelta, zoom: canvas.zoomLevel)
         }
         
-        return .consumed
+        return .handled
     }
     
     private func zoom(to newZoom: Double, at screenPos: Vector2D, canvas: DiagramCanvas) {

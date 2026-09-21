@@ -156,7 +156,6 @@ class Workspace {
                 environment?.report(title: "Player Schedule Failed",
                                     message: "Please file an issue with developers",
                                     style: .error)
-
             }
             player.worldUpdated()
         }
@@ -204,7 +203,7 @@ class Workspace {
     }
 
     func dispatchToolEvent(_ event: ToolEvent) {
-        var result: CanvasTool.EngagementResult = .pass
+        var result: CanvasTool.EventDisposition = .ignored
         var toolUsed: CanvasTool? = nil
         
         if let engagedTool = toolBar.engagedTool {
@@ -215,7 +214,7 @@ class Workspace {
             result = currentTool.handleEvent(event)
             toolUsed = currentTool
             
-            if result == .pass,
+            if result == .ignored,
                let fallbackTool = toolBar.secondaryTool
             {
                 result = fallbackTool.handleEvent(event)
@@ -227,7 +226,7 @@ class Workspace {
         case .engaged:
             toolBar.engagedTool = toolUsed
             
-        case .consumed, .pass:
+        case .handled, .ignored:
             toolBar.engagedTool = nil
         }
     }

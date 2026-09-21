@@ -29,7 +29,7 @@ enum CanvasToolType {
 
 @MainActor
 struct ToolContext {
-    private weak let workspace: any WorkspaceServices?
+    private unowned let workspace: any WorkspaceServices
     /// Document the tool is bound to.
     ///
     /// Tool is bound to a document together with a canvas using ``bind(canvas:document:)``.
@@ -40,7 +40,7 @@ struct ToolContext {
     /// - ``Document/createOrReuseTransaction()``
     /// - ``Document/requiresInteractivePreviewUpdate``
     ///
-    weak let document: Document?
+    unowned let document: Document
 
     /// Canvas the tool is bound to.
     ///
@@ -52,7 +52,7 @@ struct ToolContext {
     /// - ``DiagramCanvas/hitTarget(screenPosition:)``
     /// - ``DiagramCanvas/zoomLevel``
     ///
-    weak let canvas: DiagramCanvas?
+    unowned let canvas: DiagramCanvas
     
     public init(workspace: any WorkspaceServices, document: Document, canvas: DiagramCanvas) {
         self.workspace = workspace
@@ -61,79 +61,40 @@ struct ToolContext {
     }
     
     func switchTool(_ tool: CanvasToolType) {
-        workspace?.switchTool(tool)
+        workspace.switchTool(tool)
     }
     func openIssues(for object: ObjectID?) {
-        workspace?.openIssues(for: object)
+        workspace.openIssues(for: object)
     }
     func centerView(at position: Vector2D, zoom: Double? = nil) {
-        workspace?.centerView(at: position, zoom: zoom)
+        workspace.centerView(at: position, zoom: zoom)
     }
 }
 
 
 /// Abstract class for canvas tools.
 ///
-/// Subclasses should implement:
+/// Subclasses must implement ``makeInteraction(context:)`` and return a ``ToolInteraction``
+/// object that will handle the events.
 ///
-/// - Input handling: ``inputBegan(_:in:)``, ``inputMoved(_:in:)``, ``inputEnded(_:in:)``.
-/// - Optional activation/deactivation with ``activate()``, ``deactivate()``.
-/// - Internal tool state management.
-///
-/// Tools are authority for interactions and interaction state. They can:
-///
-/// - Change selection with ``Document/changeSelection(_:)``
-/// - Create transactions with ``Document/createOrReuseTransaction()``
-/// - Queue commands.
-/// - Open and close inline editors.
-///
-/// Tools can create interactive preview components in the world (``Document/world``) which
-/// will be drawn by setting ``Document/requiresInteractivePreviewUpdate`` to ``true``.
+/// Optionally, if the tool uses an item from a palette, it should provide
+/// a list of palette items through ``paletteItems(in:)``.
 ///
 @MainActor
 class CanvasTool {
-    
-    enum EngagementResult {
-        /// Tool is not concerned about the event, try fallback in tool chain.
-        case pass
-        /// Tool has processed the event and has finished.
-        case consumed
-        /// Tool has processed the event and will handle all future events until finished or cancelled.
-        case engaged
-    }
-   
-    var context: ToolContext?
-    
-    weak var canvas: DiagramCanvas? { context?.canvas }
-    weak var document: Document? { context?.document }
-    weak var world: World? { context?.document?.world }
-
-    var hasObjectPalette: Bool { false }
     var type: CanvasToolType { .empty }
     var iconKey: IconKey { .empty }
+    var isSticky: Bool { true }
+
+    var selectedPaletteItem: String?
+
+    var hasObjectPalette: Bool { false }
     
-    /// Called before tool activation.
-    func bind(_ context: ToolContext) {
-        self.context = context
+    func paletteItems(in context: ToolContext) -> [PaletteItem] {
+        return [] // Empty default
     }
 
-    func drawPalette() { }
-    
-    /// Function called when tool was set active.
-    func activate() { /* Implementation in subclasses */ }
-
-    /// Function called when tool was released and set inactive.
-    func deactivate() { /* Implementation in subclasses */ }
-
-    /// Function called on plane update when the tool is active.
-    func update() { /* Implementation in subclasses */ }
-
-    /// Function called when tool operation was cancelled.
-    func cancel() { /* Implementation in subclasses */ }
-
-    // func getCursorType()
-   
-    func handleEvent(_ event: ToolEvent) -> EngagementResult {
-        return .pass
+    func makeInteraction(context: ToolContext) -> any ToolInteraction {
+        fatalError("Subclasses of \(String(describing: Self.self)) are required to implement \(#function)")
     }
 }
