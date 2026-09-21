@@ -132,7 +132,7 @@ extension Application {
                 if ImGui.MenuItem("Show Graphical Function Panel", nil, &gfPanelVisible) {
                     handleAction(.toggleGraphicalFunctionPanel)
                 }
-                var toolBarVisible = workspace?.toolBar.isVisible ?? false
+                var toolBarVisible = workspace?.toolbar.isVisible ?? false
                 ImGui.Separator()
                 if ImGui.MenuItem("Show Toolbar", nil, &toolBarVisible) {
                     handleAction(.toggleToolBar)

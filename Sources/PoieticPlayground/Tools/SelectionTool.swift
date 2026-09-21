@@ -26,7 +26,6 @@ class SelectionTool: CanvasTool {
 //
     
     override func makeInteraction(context: ToolContext) -> any ToolInteraction {
-        // FIXME: Remove force unwrap, context MUST have document
-        return SelectionInteraction(document: context.document!, canvas: context.canvas)
+        return SelectionInteraction(document: context.document, canvas: context.canvas)
     }
 }

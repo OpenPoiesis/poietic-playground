@@ -17,18 +17,10 @@ extension Workspace {
         // NOTE: We are giving a chance for the caller to handle the action if we can not handle it
         switch action {
         // -- Tools --
-        case .switchSelectionTool: toolBar.setTool(.selection)
-        case .switchPlacementTool: toolBar.setTool(.placement)
-        case .switchConnectTool: toolBar.setTool(.connect)
-        case .switchPanTool:
-            if let previousTool = toolBar.previousTool,
-               toolBar.currentTool is PanTool
-            {
-                toolBar.setTool(previousTool)
-            }
-            else {
-                toolBar.setTool(.pan)
-            }
+        case .switchSelectionTool: toolManager.select(.selection)
+        case .switchPlacementTool: toolManager.select(.placement)
+        case .switchConnectTool:   toolManager.select(.connect)
+        case .switchPanTool:       toolManager.toggle(.pan)
             
         // -- Edit --
         case .cut:
@@ -63,7 +55,7 @@ extension Workspace {
         case .toggleIssuesPanel:            issuesPanel.isVisible.toggle()
         case .toggleDataTablePanel:         dataTablePanel.isVisible.toggle()
         case .toggleGraphicalFunctionPanel: graphicFunctionPanel.isVisible.toggle()
-        case .toggleToolBar:                toolBar.isVisible.toggle()
+        case .toggleToolBar:                toolbar.isVisible.toggle()
         case .toggleDebugDesignPanel:       debugDesignPanel.isVisible.toggle()
         case .resetZoom:                    canvas.resetZoom()
 

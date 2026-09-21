@@ -1,5 +1,5 @@
 //
-//  ToolBar.swift
+//  Toolbar.swift
 //  PoieticPlayground
 //
 //  Created by Stefan Urbanek on 31/01/2026.
@@ -7,93 +7,32 @@
 
 import CIimgui
 
-// TODO: (later) split into ToolBar and ToolManager
-
 @MainActor
-class ToolBar: @MainActor Panel {
+class Toolbar: @MainActor Panel {
     var isVisible: Bool = true
     
-    internal weak var workspace: any WorkspaceServices? = nil
-    var previousTool: CanvasTool? = nil
-    var currentTool: CanvasTool? = nil
-    /// Tool that is currently engaged, for example in a dragging operation.
-    /// If set, then events go to the engaged tool, instead of being chained.
-    ///
-    var engagedTool: CanvasTool? = nil
-    var secondaryTool: CanvasTool? = nil
-    var tools: [CanvasTool]
-    
-    init() {
-        let selectionTool = SelectionTool()
-        let panTool = PanTool()
-        self.tools = [
-            selectionTool,
-            PlacementTool(),
-            ConnectTool(),
-            panTool,
-        ]
-        self.currentTool = selectionTool
-        self.secondaryTool = panTool
-    }
-    
-    func bind(_ workspace: any WorkspaceServices) {
-        self.workspace = workspace
-    }
+    private weak var toolManager: ToolManager?
+    private let palette: ObjectPalette
 
-    func unbind() {
-        self.workspace = nil
+    init(toolManager: ToolManager) {
+        self.toolManager = toolManager
+        self.palette = ObjectPalette(columns: 3, items: [])
     }
     
-    func tool(type: CanvasToolType) -> CanvasTool? {
-        tools.first { $0.type == type }
-    }
+    func update(_ timeDelta: Double) { }
     
-    @discardableResult
-    func setTool(_ type: CanvasToolType) -> Bool {
-        guard let tool = self.tool(type: type) else { return false }
-        self.setTool(tool)
-        return true
-    }
-    
-    func setTool(_ tool: CanvasTool) {
-        guard let workspace,
-              let document = workspace.currentDocument
-        else {
-            return
-        }
-        if let currentTool {
-            currentTool.deactivate()
-        }
-        
-        previousTool = currentTool
-        currentTool = tool
-        engagedTool = nil
-                
-        switch tool {
-        case is PanTool: secondaryTool = nil
-        default: secondaryTool = self.tool(type: .pan)
-        }
-        
-        let context = ToolContext(workspace: workspace, document: document, canvas: workspace.canvas)
-        tool.bind(context)
-        tool.activate()
-    }
-    
-    func update(_ timeDelta: Double) {
-        // Nothing for now
-    }
-    
+
     func draw() {
+        guard let toolManager else { return }
         let style = InterfaceStyle.current
-        let manager = ResourceManager.shared
         
         let buttonSize = ImVec2(32, 32)
         ImGui.Begin("Tools", &isVisible, ImGuiWindowFlags_NoResize
                                         | ImGuiWindowFlags_NoScrollbar
                                         | ImGuiWindowFlags_NoCollapse)
         
-        for (index, tool) in tools.enumerated() {
-            let isActive = (currentTool === tool)
+        for (index, tool) in toolManager.tools.enumerated() {
+            let isActive = toolManager.isActive(tool)
             
             if isActive {
                 ImGui.PushStyleColor(ImGuiCol(ImGuiCol_Button.rawValue), ImVec4(0.7, 0.7, 0.7, 1.0))
@@ -106,9 +45,7 @@ class ToolBar: @MainActor Panel {
             let texture = style.texture(forIcon: tool.iconKey)
             let ref = ImTextureRef(texture.textureID)
             if ImGui.ImageButton("##\(tool.type.name)", ref, buttonSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 0), ImVec4(1, 1, 1, 1)) {
-                if currentTool !== tool {
-                    setTool(tool)
-                }
+                toolManager.select(tool.type)
             }
             ImGui.PopID()
             
@@ -122,19 +59,21 @@ class ToolBar: @MainActor Panel {
                 ImGui.PopStyleColor(3)
             }
             
-            if index < tools.count - 1 {
+            if index < toolManager.tools.count - 1 {
                 ImGui.Spacing()
             }
         }
         
-        if let currentTool, currentTool.hasObjectPalette {
-            drawObjectPalette(currentTool)
+        if !toolManager.activePaletteItems.isEmpty {
+            palette.setItems(toolManager.activePaletteItems)
+            palette.select(toolManager.selectedPaletteItem)
+            drawObjectPalette(palette)
         }
         
         ImGui.End()
     }
     
-    func drawObjectPalette(_ tool: CanvasTool) {
+    func drawObjectPalette(_ palette: ObjectPalette) {
         let paletteSpacing: Float = 0.0
         let toolbarPos = ImGui.GetWindowPos()
         let toolbarSize = ImGui.GetWindowSize()
@@ -148,7 +87,7 @@ class ToolBar: @MainActor Panel {
                     | ImGuiWindowFlags_NoTitleBar
                     | ImGuiWindowFlags_NoSavedSettings)
 
-        tool.drawPalette()
+        palette.draw()
         ImGui.End()
     }
 }

@@ -55,7 +55,8 @@ class Workspace {
     var canvas: DiagramCanvas
     var player: ResultPlayer
 
-    let toolBar: ToolBar
+    let toolManager: ToolManager
+    let toolbar: Toolbar
     
     var panels: [any Panel] = []
     var editors: InlineEditorManager
@@ -69,8 +70,6 @@ class Workspace {
     let debugDesignPanel: DebugDesignPanel
     let metamodelPanel: MetamodelPanel
     
-    var currentTool: CanvasTool? { toolBar.currentTool }
-
     init(environment: ApplicationEnvironment, notation: Notation) {
         self.environment = environment
         self.notation = notation
@@ -110,7 +109,9 @@ class Workspace {
         self.player = ResultPlayer()
         self.controlBar.bind(player)
 
-        self.toolBar = ToolBar()
+        
+        self.toolManager = ToolManager()
+        self.toolbar = Toolbar(toolManager: self.toolManager)
         
         // FIXME: Use enum instead of names
         // Register inline editors
@@ -124,8 +125,6 @@ class Workspace {
         self.editors.register(name: "graphical_function",
                                     editor: GraphicalFunctionInlineEditor(panel: graphicFunctionPanel))
         canvas.editorManager = editors
-
-        self.toolBar.bind(self)
     }
     
     /// Update the document and the world.
@@ -162,7 +161,7 @@ class Workspace {
 
         // Update UI components
         canvas.update(timeDelta)
-        toolBar.update(timeDelta)
+        toolbar.update(timeDelta)
         for panel in panels {
             panel.update(timeDelta)
         }
@@ -178,7 +177,7 @@ class Workspace {
     
     func draw() {
         canvas.draw()
-        toolBar.draw()
+        toolbar.draw()
         for panel in panels {
             guard panel.isVisible else { continue }
             panel.draw()
@@ -198,36 +197,7 @@ class Workspace {
 
 
         for event in events {
-            dispatchToolEvent(event)
-        }
-    }
-
-    func dispatchToolEvent(_ event: ToolEvent) {
-        var result: CanvasTool.EventDisposition = .ignored
-        var toolUsed: CanvasTool? = nil
-        
-        if let engagedTool = toolBar.engagedTool {
-            result = engagedTool.handleEvent(event)
-            toolUsed = engagedTool
-        }
-        else if let currentTool = toolBar.currentTool {
-            result = currentTool.handleEvent(event)
-            toolUsed = currentTool
-            
-            if result == .ignored,
-               let fallbackTool = toolBar.secondaryTool
-            {
-                result = fallbackTool.handleEvent(event)
-                toolUsed = fallbackTool
-            }
-        }
-        
-        switch result {
-        case .engaged:
-            toolBar.engagedTool = toolUsed
-            
-        case .handled, .ignored:
-            toolBar.engagedTool = nil
+            toolManager.dispatch(event)
         }
     }
 

@@ -8,26 +8,40 @@
 import CIimgui
 import Diagramming
 
-class PanTool: CanvasTool {
+class NavigationInteraction: ToolInteraction {
     static let MinZoom: Double = 0.1
     static let MaxZoom: Double = 10.0
     static let ZoomSensitivity: Double = 0.1
     static let ScrollSensitivity: Double = 4.0
-    
+
+    unowned let canvas: DiagramCanvas
+
     enum State {
         case idle
         case panning
         case pinching
     }
-    
-    override var type: CanvasToolType { .pan }
-    override var iconKey: IconKey { .hand }
-    
-    var cursor: ImGuiMouseCursor_ = ImGuiMouseCursor_Arrow
+
     var previousScreenPos: Vector2D = .zero
+    var cursor: ImGuiMouseCursor_ = ImGuiMouseCursor_Arrow
     var state: State = .idle
     
-    override func handleEvent(_ event: ToolEvent) -> EventDisposition {
+    init(canvas: DiagramCanvas) {
+        self.canvas = canvas
+    }
+
+    
+    func begin() {
+        previousScreenPos = .zero
+        state = .idle
+    }
+    
+    func end() {
+        previousScreenPos = .zero
+        state = .idle
+    }
+    
+    func handleEvent(_ event: ToolEvent) -> EventDisposition {
         switch event.type {
         case .dragStart: return self.dragStart(event)
         case .dragMove: return self.dragMove(event)
@@ -52,7 +66,6 @@ class PanTool: CanvasTool {
     
     func dragMove(_ event: ToolEvent) -> EventDisposition {
         guard state == .panning else { return .ignored }
-        guard let canvas else { return .ignored }
         
         let screenOffset = event.screenPos - self.previousScreenPos
         let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
@@ -67,7 +80,6 @@ class PanTool: CanvasTool {
     
     func dragEnd(_ event: ToolEvent) -> EventDisposition {
         guard state == .panning else { return .ignored }
-        guard let canvas else { return .ignored }
         
         let screenOffset = event.screenPos - self.previousScreenPos
         let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
@@ -92,7 +104,7 @@ class PanTool: CanvasTool {
     }
     func pinchUpdate(_ event: ToolEvent) -> EventDisposition {
         guard state == .pinching,
-              let canvas, event.scale > 0 else
+              event.scale > 0 else
         { return .ignored }
         
         let zoomFactor = Double(event.scale)
@@ -110,8 +122,6 @@ class PanTool: CanvasTool {
     
     // TODO: Make it smooth-er + add inertia
     func scroll(_ event: ToolEvent) -> EventDisposition {
-        guard let canvas else { return .ignored }
-
         // Cmd/Ctrl + scroll zooms
         if event.modifiers.contains(.command) {
             let zoomFactor = 1.0 + (Double(event.scrollDelta.y) * Self.ZoomSensitivity)
@@ -131,6 +141,16 @@ class PanTool: CanvasTool {
         let worldBefore: Vector2D = canvas.screenToWorld(screenPos)
         let viewportOffset = Vector2D(screenPos - Vector2D(canvas.canvasPos)) / newZoom
         canvas.setView(offset: worldBefore - viewportOffset, zoom: newZoom)
+    }
+
+}
+
+class PanTool: CanvasTool {
+    override var type: CanvasToolType { .pan }
+    override var iconKey: IconKey { .hand }
+
+    override func makeInteraction(context: ToolContext) -> any ToolInteraction {
+        return NavigationInteraction(canvas: context.canvas)
     }
 }
 
