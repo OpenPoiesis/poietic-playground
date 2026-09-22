@@ -12,10 +12,6 @@ import Foundation
 public enum AutoCorrectParametersSchedule: ScheduleLabel {}
 
 extension Document {
-    func queueCommand(_ command: any Command) {
-        self.commandQueue.append(command)
-    }
-    
     func autoConnectParameters() {
         
         // We can just run it, as this method is called when the world is populated. If it is not,
@@ -27,8 +23,8 @@ extension Document {
         guard let proposal: ParameterProposal = world.singleton(),
               !proposal.isEmpty
         else {
-            self.queueAlert(title: "Auto-Connect Parameters",
-                            message: "Nothing automatically proposed for parameter connections")
+            // TODO: Use the result when we convert this to a command
+            // let result = CommandResult(details: ["removed": Variant(0), "created": Variant(0)])
             return
         }
         
@@ -41,17 +37,35 @@ extension Document {
             trans.createEdge(StockFlowDomain.Types.Parameter, origin: edgeProposal.origin, target: edgeProposal.target)
         }
 
-        self.queueAlert(title: "Auto-Connect Parameters",
-                        message: "Removed \(proposal.toRemove.count), created \(proposal.toAdd.count) connections.")
-
+        // TODO: Use the result when we convert this to a command
+        // let result = CommandResult(details: ["removed": Variant(proposal.toRemove.count), "created": Variant(proposal.toAdd.count)])
     }
     
     func save(to url: URL) throws (DesignStoreError) {
-        self.log("Saving design to: \(url.standardizedFileURL)")
         let store = DesignStore(url: url)
         try store.save(design: design)
         self.designURL = url
         self.hadTransactionSinceSave = false
     }
+    
+    /// Serialise objects with given IDs as a text.
+    ///
+    /// The method first extracts objects by pruning loose ends (for example requested edges where
+    /// one or both endpoints are not in the list).
+    ///
+    func serialiseForTextExport(ids: [ObjectID]) -> String? {
+        guard let plane = design.currentPlane else { return nil }
+        let ids = plane.contained(ids)
+        
+        let extractor = DesignExtractor()
+        let extract = extractor.extractPruning(objects: ids, plane: plane)
+        let rawDesign = RawDesign(metamodelName: design.metamodel.name,
+                                  metamodelVersion: design.metamodel.version,
+                                  snapshots: extract)
+        
+        let writer = JSONDesignWriter()
+        return writer.write(rawDesign)
+    }
+
 
 }

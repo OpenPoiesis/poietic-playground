@@ -35,6 +35,10 @@ enum Action: Hashable {
     // -- View ---
     case toggleInspector
     case toggleIssuesPanel
+    case toggleDataTablePanel
+    case toggleGraphicalFunctionPanel
+    case toggleToolBar
+    case toggleDebugDesignPanel
     case resetZoom
 
     // -- Inspector --
@@ -43,6 +47,13 @@ enum Action: Hashable {
 
     case nameInlineEditor
     case secondaryInlineEditor
+   
+    // -- Model --
+    case autoConnectParameters
+    
+    // -- Simulation --
+    case runPlayer
+    case stopPlayer
     
     var name: String {
         switch self {
@@ -71,6 +82,16 @@ enum Action: Hashable {
         case .propertiesInspector: "properties_inspector"
         case .nameInlineEditor: "name_inline_editor"
         case .secondaryInlineEditor: "secondary_inline_editor"
+
+        case .toggleDataTablePanel: "toggle_data_table_panel"
+        case .toggleGraphicalFunctionPanel: "toggle_graphical_function_panel"
+        case .toggleToolBar: "toggle_toolbar"
+        case .toggleDebugDesignPanel: "toggle_debug_design_panel"
+
+        case .autoConnectParameters: "auto_connect_parameters"
+
+        case .runPlayer: "run_player"
+        case .stopPlayer: "stop_player"
         }
     }
 

@@ -11,15 +11,19 @@ import PoieticFlows
 
 /// Makeshift dashboard.
 @MainActor
-class Dashboard: Panel {
+class Dashboard: Panel, WorkspaceBound {
     var document: Document?
     static let ChartSize = ImVec2(100, 80)
     var isVisible: Bool = true
     var chartViews: [ChartView] = []
     
-    func bind(_ document: Document) {
+    func bind(workspace: any WorkspaceServices, document: Document) {
         chartViews.removeAll()
         self.document = document
+    }
+    func unbindWorkspace() {
+        self.document = nil
+        self.chartViews.removeAll()
     }
     
     func onDesignPlaneChanged(_ document: Document) {
@@ -63,11 +67,11 @@ class Dashboard: Panel {
                let document
             {
                 // TODO: Add chart
-                let command = CreateChartCommand(
+                let createChart = CreateChartCommand(
                     name: nil,
                     series: Array(document.selection.ids)
                 )
-                document.queueCommand(command)
+                document.enqueue(createChart)
             }
             ImGui.EndGroup()
         }

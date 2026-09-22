@@ -23,13 +23,6 @@ import Foundation
 /// - Glue between Document and UI
 @MainActor
 class Application {
-    // TODO: Temporary for prototyping
-    static var shared: Application {
-        guard let app = self._shared else { fatalError("Shared application is not set-up") }
-        return app
-    }
-    internal static var _shared: Application? = nil
-    
     // Dumping ground of globals (for now)
     //    static let NewDesignTemplatePath = "designs/new_canvas.json"
     static let NewDesignTemplatePath = "designs/design-capital.poietic"
@@ -39,16 +32,14 @@ class Application {
     static let DefaultWindowHeight = 800
     static let PictogramAdjustmentScale = 0.5
     
+    var pendingBackendGestures: [GestureEvent] = []
+    
     var showMetrics = false
     var debugCanvasRendering = false
     var quitRequested: Bool = false
     
-    var pendingToolEvents: [ToolEvent] = []
-    
     // -- Document --
-    var canvas: DiagramCanvas
-    var player: ResultPlayer
-
+    
     // -- Modals and Decisions --
     var isInteractionBlocked: Bool {
         modalQueue.contains { $0.status != .resolved } || decisionManager.isActive
@@ -61,118 +52,53 @@ class Application {
     var decisionManager: DecisionFlowManager = DecisionFlowManager()
     
     // -- Views and Controller-likes --
-    let inspector: InspectorPanel
     let aboutPanel: AboutPanel
     let settingsPanel: SettingsPanel
-    // Document Content Panels
-    let issuesPanel: IssuesPanel
-    let graphicFunctionPanel: GraphicalFunctionPanel
-    let dataTablePanel: DataTablePanel
     
     // Help Panels
     let metamodelPanel: MetamodelPanel
     let keyboardShortcutsPanel: KeyboardShortcutsPanel
-    let debugDesignPanel: DebugDesignPanel
     
     var panels: [any Panel] = []
     
-    var canvasTools: [CanvasTool]
-    var currentTool: CanvasTool? { toolBar.currentTool }
-    let toolBar: ToolBar
-    let controlBar: ControlBar
-    let dashboard: Dashboard
     
-    // Inline Editors
-    var editorManager: InlineEditorManager
-
     // ## GUI
     //
     // ## The Document – Design and World
-    var document: Document?
+    var workspace: Workspace?
     var notation: Notation
+    
+    var currentDocument: Document? { workspace?.currentDocument }
     
     init() {
         self.notation = Notation.DefaultNotation
         
         // Document
-        self.document = nil
-        self.player = ResultPlayer()
+        self.workspace = nil
         
-        // User Interface
-        self.canvas = DiagramCanvas()
-
-        // Special panels
-        self.toolBar = ToolBar()
-
         // Regualr Panels
         panels = []
-        self.inspector = InspectorPanel()
-        panels.append(self.inspector)
         self.aboutPanel = AboutPanel()
         panels.append(self.aboutPanel)
-        self.controlBar = ControlBar()
-        panels.append(self.controlBar)
         self.settingsPanel = SettingsPanel()
         panels.append(self.settingsPanel)
-        self.issuesPanel = IssuesPanel()
-        panels.append(self.issuesPanel)
-        self.dashboard = Dashboard()
-        panels.append(self.dashboard)
         self.keyboardShortcutsPanel = KeyboardShortcutsPanel()
         panels.append(self.keyboardShortcutsPanel)
-        self.graphicFunctionPanel = GraphicalFunctionPanel()
-        panels.append(self.graphicFunctionPanel)
         self.metamodelPanel = MetamodelPanel()
         panels.append(self.metamodelPanel)
-
-        self.debugDesignPanel = DebugDesignPanel()
-        panels.append(self.debugDesignPanel)
-
-        self.dataTablePanel = DataTablePanel()
-        panels.append(self.dataTablePanel)
-        
-        self.canvasTools = [
-            SelectionTool(),
-            PlacementTool(),
-            ConnectTool(),
-            PanTool(),
-        ]
-        
-        // Register inline editors
-        editorManager = InlineEditorManager()
-        self.editorManager.register(name: "name", editor: NameInlineEditor())
-        self.editorManager.register(name: "formula", editor: FormulaInlineEditor())
-        self.editorManager.register(name: "delay",
-                                    editor: NumericValueInlineEditor(attribute: "delay_duration", iconKey: .timeWindow))
-        self.editorManager.register(name: "smooth",
-                                    editor: NumericValueInlineEditor(attribute: "window_time", iconKey: .timeWindow))
-        self.editorManager.register(name: "graphical_function",
-                                    editor: GraphicalFunctionInlineEditor(panel: graphicFunctionPanel))
-        canvas.editorManager = editorManager
-        
-        Self._shared = self
     }
-   
     
-    func applicationSessionDebugWindow() {
-        ImGui.Begin("Application Session")
-        ImGui.TextUnformatted("Current tool: \(toolBar.currentTool?.type.name, default: "no tool")")
-        if let document {
-            let plane = document.world.plane
-            let wPlaneLabel: String = plane.map { String(describing: $0.id) } ?? "(no plane)"
-            let cPlaneLabel: String = document.design.currentPlane.map { String(describing: $0.id) } ?? "(no plane)"
-            ImGui.TextUnformatted("Design plane: \(cPlaneLabel)")
-            ImGui.TextUnformatted("World plane: \(wPlaneLabel)")
-            ImGui.TextUnformatted("Has Transaction: \(document.hasTransaction)")
-            ImGui.TextUnformatted("Selection count: \(document.selection.count)")
-        }
-        ImGui.End()
+    func requestQuit() {
+        self.quitRequested = true
     }
-
-    func queueAlert(title: String, message: String) {
+    
+}
+extension Application: Reporter {
+    func report(title: String, message: String, style: MessageStyle) {
         let alert = ConfirmationDialog(
             title: title,
             message: message,
+            style: style,
             options: [
                 DecisionOption("Dismiss")
             ]

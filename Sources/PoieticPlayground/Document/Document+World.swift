@@ -105,39 +105,42 @@ extension Document {
     /// 3. Run simulation schedule
     /// 4. If required, run interactive preview schedule
     ///
-    func update(_ timeDelta: Double) {
+    func update(_ timeDelta: Double) throws (InternalSystemError) {
         if needsWorldPlaneUpdate || design.currentPlane !== world.plane {
-            changeWorldPlaneAndSimulate()
+            try changeWorldPlaneAndSimulate()
         }
         
-        self.run(schedule: DocumentUpdateSchedule.self)
+        try world.run(schedule: DocumentUpdateSchedule.self)
         
         if requiresInteractivePreviewUpdate {
-            self.run(schedule: InteractivePreviewSchedule.self)
+            try world.run(schedule: InteractivePreviewSchedule.self)
             resetInteractivePreviewUpdate()
             trigger(.previewChanged)
         }
     }
 
-    func changeWorldPlaneAndSimulate() {
+    func changeWorldPlaneAndSimulate() throws (InternalSystemError) {
         if let plane = design.currentPlane {
             world.setPlane(plane)
         }
         else {
             world.removePlane()
         }
-        self.run(schedule: PlaneChangeSchedule.self)
+        try world.run(schedule: PlaneChangeSchedule.self)
         createOrUpdateMainDiagram()
         updateSelectionOverview()
         trigger(.designPlaneChanged)
         trigger(.selectionChanged)
         
-        if self.run(schedule: SimulationSchedule.self) {
+        try world.run(schedule: SimulationSchedule.self)
+        
+        if world.hasSingleton(SimulationResult.self) {
             trigger(.simulationFinished)
         }
         else {
             trigger(.simulationFailed)
         }
+        
         needsWorldPlaneUpdate = false
     }
     func createOrUpdateMainDiagram() {
@@ -145,25 +148,9 @@ extension Document {
         self.mainDiagram = diagram
     }
     
-    /// Convenience runner of a schedule that handles errors and displays an error panel through
-    /// the application.
-    ///
-    /// World runs a given schedule. If an error occurs then it is displayed to the user through
-    /// the application.
-    ///
-    /// - Returns: `true` on successful run, `false` on error.
-    ///
-    @discardableResult
-    func run(schedule: ScheduleLabel.Type) -> Bool {
-        let label = String(describing: schedule)
-        do {
-            try world.run(schedule: schedule)
-        }
-        catch {
-            self.queueAlert(title: "Internal System Error", message: String(describing: error))
-            self.logError("Internal system error:" + String(describing: error))
-            return false
-        }
-        return true
+    func updatePlayerStep(step: Int, time: Double) throws (InternalSystemError) {
+        world.setSingleton(SimulationReplayTime(step: step, time: time))
+        try world.run(schedule: PlayerStepSchedule.self)
+        trigger(.simulationPlayerStep)
     }
 }

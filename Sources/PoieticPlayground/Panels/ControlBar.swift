@@ -15,6 +15,7 @@ class ControlBar: @MainActor Panel {
     static let ButtonGroupOffset: Float = 20.0
     static let StepDisplayWidth: Float = 100.0
     
+    var player: ResultPlayer? = nil
     var isEnabled: Bool = true
     var isVisible: Bool = true
     var currentStep: Int32 = 0
@@ -24,22 +25,26 @@ class ControlBar: @MainActor Panel {
 
     var currentStepBuffer: InputTextBuffer
     
-    internal weak var app: Application? = nil
+    internal weak var document: Document? = nil
     
     init() {
         currentStepBuffer = InputTextBuffer("0")
     }
 
-    func bind(_ application: Application) {
-        self.app = application
+    func bind(_ player: ResultPlayer) {
+        self.player = player
     }
+    func unbind() {
+        self.player = nil
+    }
+    
    
     func onDesignPlaneChanged(_ document: Document) {
         // We are assuming that simulation planning schedule was run.
         // Settings are set regardless whether we have a plan or not.
         self.settings = document.world.singleton() ?? SimulationTimeSettings()
         
-        if let player = self.app?.player {
+        if let player {
             self.currentStep = Int32(player.currentStep)
             self.currentTime = player.currentTime
         }
@@ -52,7 +57,7 @@ class ControlBar: @MainActor Panel {
     }
 
     func onSimulationPlayerStep(_ document: Document) {
-        guard let player = self.app?.player else { return }
+        guard let player else { return }
         self.currentStep = Int32(player.currentStep)
         self.currentTime = player.currentTime
     }
@@ -79,7 +84,7 @@ class ControlBar: @MainActor Panel {
         let previousStep = currentStep
         ImGui.SliderInt("##current_step_slider", &currentStep, 0, Int32(settings.steps), "")
         if currentStep != previousStep {
-            self.app?.player.setCurrentStep(Int(currentStep))
+            self.player?.setCurrentStep(Int(currentStep))
         }
 
         ImGui.EndDisabled()
@@ -91,28 +96,28 @@ class ControlBar: @MainActor Panel {
         ImGui.BeginGroup()
         var flag: Bool = true
         if controlButton("Run", iconKey: .run, isEnabled: &flag) {
-            self.app?.player.run()
+            self.player?.run()
         }
         ImGui.SameLine()
         if controlButton("Stop", iconKey: .stop, isEnabled: &flag) {
-            self.app?.player.stop()
+            self.player?.stop()
         }
         ImGui.SameLine(0, Self.ButtonGroupOffset)
 
         if controlButton("Beginning", iconKey: .restart, isEnabled: &flag) {
-            self.app?.player.toFirstStep()
+            self.player?.toFirstStep()
         }
         ImGui.SameLine()
         if controlButton("Previous", iconKey: .previousStep, isEnabled: &flag) {
-            self.app?.player.previousStep()
+            self.player?.previousStep()
         }
         ImGui.SameLine()
         if controlButton("Next", iconKey: .nextStep, isEnabled: &flag) {
-            self.app?.player.nextStep()
+            self.player?.nextStep()
         }
         ImGui.SameLine()
         if controlButton("End", iconKey: .lastStep, isEnabled: &flag) {
-            self.app?.player.toLastStep()
+            self.player?.toLastStep()
         }
         ImGui.SameLine()
         ImGui.SameLine(0, Self.ButtonGroupOffset)
@@ -126,8 +131,6 @@ class ControlBar: @MainActor Panel {
     }
     
     func drawStepDisplay() {
-        let player = self.app?.player
-        
         let inputFlags: ImGuiInputTextFlags = ImGuiInputTextFlags_None
                             | ImGuiInputTextFlags_CharsDecimal
                             | ImGuiInputTextFlags_CharsNoBlank
@@ -166,7 +169,7 @@ class ControlBar: @MainActor Panel {
         ImGui.InputDouble("##current_time", &currentTime, 0, 0, "%0.2f")
 
         if currentTime != previousTime {
-            self.app?.player.setCurrentTime(currentTime)
+            self.player?.setCurrentTime(currentTime)
         }
 
         ImGui.PopFont()

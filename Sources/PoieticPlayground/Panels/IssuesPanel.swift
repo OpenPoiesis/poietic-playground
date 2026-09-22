@@ -8,18 +8,38 @@
 import CIimgui
 import PoieticCore
 
-class IssuesPanel: Panel {
+// TODO: Review and improve the visuals
+
+class IssuesPanel: Panel, WorkspaceBound {
     var isVisible: Bool = true
-    var document: Document?
+    weak var document: Document?
+    weak var workspace: any WorkspaceServices?
 //    var expandedObjects: Set<ObjectID> = []
 
-    var selectedObject: ObjectSnapshot? = nil
+    // TODO: Keep just objectID and get the name from the world
+    weak var selectedObject: ObjectSnapshot? = nil
     var selectedIssueIndex: Int? = nil
 
-    func bind(_ document: Document) {
+    func bind(workspace: any WorkspaceServices, document: Document) {
         self.document = document
+        self.workspace = workspace
     }
-
+    func unbindWorkspace() {
+        self.document = nil
+        self.selectedObject = nil
+        self.selectedIssueIndex = nil
+    }
+    
+    func setSelectedObject(_ objectID: ObjectID? = nil) {
+        if let objectID, let document {
+            self.selectedObject = document.design.currentPlane?[objectID]
+        }
+        else {
+            self.selectedObject = nil
+            self.selectedIssueIndex = nil
+        }
+    }
+    
     func update(_ timeDelta: Double) {
         // Nothing for now
     }
@@ -103,10 +123,9 @@ class IssuesPanel: Panel {
                     // Update selection
                     selectedObject = object
                     selectedIssueIndex = i
-                    if let document {
-                        document.changeSelection(.replaceAllWithOne(object.objectID))
-                        document.queueCommand(CenterCanvasOnObjectCommand(object.objectID))
-                    }
+
+                    document?.changeSelection(.replaceAllWithOne(object.objectID))
+                    workspace?.locateInView(object: object.objectID, zoom: nil)
                 }
 //                ImGui.TableNextColumn()
 //                ImGui.TextUnformatted("(no action)")

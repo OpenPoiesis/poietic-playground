@@ -13,7 +13,15 @@ struct SimulationReplayTime: Component {
     let time: Double
 }
 
+// TODO: Rename to SimulationReplayClock or just Clock
+/// Clock for replaying simulation results.
+///
+/// Read by ``Workspace`` on ``Workspace/update(_:)`` and updated by design plane changes,
+/// simulation finished and simulation failed events.
+///
 class ResultPlayer {
+    private(set) var needsWorldUpdate: Bool = false
+    
     var isRunning: Bool = false
     var isLooping: Bool = true
 
@@ -34,12 +42,6 @@ class ResultPlayer {
         timeSettings.startTime + Double(currentStep) * timeSettings.timeStep
     }
 
-    var document: Document? = nil
-
-    func bind(_ document: Document) {
-        self.document = document
-    }
-    
     func update(_ delta: Double) {
         guard isRunning else { return }
         if timeToStep <= 0 {
@@ -62,51 +64,51 @@ class ResultPlayer {
 
         self.lastSampleIndex = Int(settings.steps)
         self.currentStep = clampStep(self.currentStep)
+        worldNeedsUpdate()
     }
 
     func onSimulationFailed(_ document: Document) {
         self.isRunning = false
+        worldNeedsUpdate()
     }
+    
     func onSimulationFinished(_ document: Document) {
         if let result: SimulationResult = document.world.singleton() {
             self.lastSampleIndex = result.sampleCount - 1
             self.currentStep = clampStep(self.currentStep)
         }
-        stateChanged()
+        worldNeedsUpdate()
     }
-    /// Run ``PlayerStepSchedule`` and then trigger the ``Document/Event/simulationPlayerStep``
-    /// event.
+    
+    /// Reset the ``needsWorldUpdate`` flag to `false`.
+    func worldUpdated() {
+        self.needsWorldUpdate = false
+    }
+    
+    /// Set the ``needsWorldUpdate`` flag.
     ///
-    func stateChanged() {
-        guard let document else { return }
-
-        let component = SimulationReplayTime(step: currentStep, time: currentTime)
-        document.world.setSingleton(component)
-        do {
-            try document.world.run(schedule: PlayerStepSchedule.self)
-        }
-        catch {
-            document.queueAlert(title: "Player Schedule Failed",
-                                message: "Please file an issue with developers")
-        }
-        document.trigger(.simulationPlayerStep)
+    /// The flag is picked up by ``Workspace`` on ``Workspace/update(_:)`` and reset when
+    /// acknowledged.
+    ///
+    func worldNeedsUpdate() {
+        self.needsWorldUpdate = true
     }
     
     /// Rewind the player to the first simulation step.
     func toFirstStep() {
         currentStep = 0
-        stateChanged()
+        worldNeedsUpdate()
     }
     
     /// Forward the player to the last simulation step.
     func toLastStep() {
         currentStep = lastSampleIndex
-        stateChanged()
+        worldNeedsUpdate()
     }
 
     func run() {
         self.isRunning = true
-        stateChanged()
+        worldNeedsUpdate()
     }
 
     func stop() {
@@ -121,7 +123,7 @@ class ResultPlayer {
         let adjustedStep: Int = clampStep(step)
         guard adjustedStep != currentStep else { return }
         currentStep = adjustedStep
-        stateChanged()
+        worldNeedsUpdate()
     }
 
     func setCurrentTime(_ time: Double) {
@@ -140,7 +142,7 @@ class ResultPlayer {
             }
             currentStep = 0
         }
-        stateChanged()
+        worldNeedsUpdate()
     }
 
     func previousStep() {
@@ -154,6 +156,6 @@ class ResultPlayer {
             }
             currentStep = lastSampleIndex
         }
-        stateChanged()
+        worldNeedsUpdate()
     }
 }

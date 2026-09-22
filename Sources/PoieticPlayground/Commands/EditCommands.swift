@@ -8,57 +8,6 @@
 import PoieticCore
 import PoieticFlows
 import Foundation
-import CIimgui
-
-extension Command {
-    // TODO: Move to application
-    func copySelectionAsText(ids: [ObjectID], plane: DesignPlane) throws (CommandError) -> String {
-        let design = plane.design
-        let ids = plane.contained(ids)
-        
-        let extractor = DesignExtractor()
-        let extract = extractor.extractPruning(objects: ids, plane: plane)
-        let rawDesign = RawDesign(metamodelName: design.metamodel.name,
-                                  metamodelVersion: design.metamodel.version,
-                                  snapshots: extract)
-        
-        let writer = JSONDesignWriter()
-        guard let text: String = writer.write(rawDesign) else {
-            throw CommandError("Unable to get textual representation for pasteboard", severity: .fatal)
-        }
-        return text
-    }
-    
-    // TODO: Move to application
-    func setPasteboardText(_ text: String) throws (CommandError) {
-        let platformIO = ImGui.GetPlatformIO().pointee
-        guard let setPasteboardFn = platformIO.Platform_SetClipboardTextFn,
-              let imguiContext = ImGui.GetCurrentContext()
-        else {
-            throw CommandError("Backend pasteboard configuration error", severity: .fatal)
-        }
-        
-        setPasteboardFn(imguiContext, text)
-    }
-    // TODO: Move to application
-    func getPasteboardText() throws (CommandError) -> String? {
-        let platformIO = ImGui.GetPlatformIO().pointee
-        guard let getPasteboardFn = platformIO.Platform_GetClipboardTextFn,
-              let imguiContext = ImGui.GetCurrentContext()
-        else {
-            throw CommandError("Backend pasteboard configuration error", severity: .fatal)
-        }
-        
-        guard let result = getPasteboardFn(imguiContext) else {
-            return nil
-        }
-        guard let string = String(cString: result, encoding: .utf8) else {
-            return nil
-        }
-        return string
-    }
-
-}
 
 struct DeleteObjectsCommand: Command {
     let ids: [ObjectID]
@@ -68,6 +17,7 @@ struct DeleteObjectsCommand: Command {
         self.ids = ids
     }
     
+    @MainActor
     func run(_ context: CommandContext) throws (CommandError) {
         let trans = context.document.createOrReuseTransaction()
         for objectID in ids {
@@ -77,82 +27,43 @@ struct DeleteObjectsCommand: Command {
     }
 }
 
-struct CopyToPasteboardCommand: Command {
-    let ids: [ObjectID]
-    var name: String { "copy" }
-    init(_ ids: [ObjectID]) {
-        self.ids = ids
-    }
-    func run(_ context: CommandContext) throws (CommandError) {
-        guard let plane = context.world.plane else { return }
-        let text = try copySelectionAsText(ids: ids, plane: plane)
-        try setPasteboardText(text)
-        
-    }
-    
-}
-
-struct CutToPasteboardCommand: Command {
-    let ids: [ObjectID]
-    var name: String { "cut" }
-    init(_ ids: [ObjectID]) {
-        self.ids = ids
-    }
-    func run(_ context: CommandContext) throws (CommandError) {
-        guard let plane = context.world.plane else { return }
-        let text = try copySelectionAsText(ids: ids, plane: plane)
-        try setPasteboardText(text)
-
-        let trans = context.document.createOrReuseTransaction()
-        for objectID in ids {
-            guard trans.contains(objectID) else { continue }
-            trans.removeCascading(objectID)
-        }
-    }
-}
-
-struct PasteFromPasteboardCommand: Command {
+struct InsertObjectsCommand: Command {
     var name: String { "paste" }
-
-    init() { /* Nothing */ }
+    /// Raw design to be pasted.
+    ///
+    /// The raw design must satisfy one of the following:
+    /// - Must contain only single plane.
+    /// - OR Must contain only snapshots (no plane)
+    /// - OR Must contain valid current plane.
+    ///
+    let rawDesign: RawDesign
+    let strategy: DesignLoader.IdentityStrategy
     
+    init(rawDesign: RawDesign, strategy: DesignLoader.IdentityStrategy = .preserveOrCreate) {
+        self.rawDesign = rawDesign
+        self.strategy = strategy
+    }
+    
+    @MainActor
     func run(_ context: CommandContext) throws (CommandError) {
-        guard let text = try getPasteboardText() else {
-            return
-        }
-
         let trans = context.document.createOrReuseTransaction()
-
-        guard let data = text.data(using: .utf8) else {
-            throw CommandError("Can not get data from text")
-        }
-
-        let reader = JSONDesignReader()
-        let rawDesign: RawDesign
-        do {
-            rawDesign = try reader.read(data: data)
-        }
-        catch {
-            throw CommandError("Unable to process pasteboard content", underlyingError: error)
-        }
 
         let loader = DesignLoader(metamodel: trans.design.metamodel)
         let ids: [PoieticCore.ObjectID]
 
         do {
-            // TODO: Make the strategy configurable
             ids = try loader.load(rawDesign,
                                   into: trans,
-                                  identityStrategy: .preserveOrCreate)
+                                  identityStrategy: strategy)
         }
         catch {
             context.document.discardTransaction()
             throw CommandError("Failed to paste content", underlyingError: error)
         }
 
+        // TODO: Decouple selection from insert (we need flag "recently inserted/updated/flagged" or something like that)
         context.document.changeSelection(.replaceAll(ids))
     }
-
 }
 
 

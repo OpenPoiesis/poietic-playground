@@ -11,17 +11,25 @@ import Foundation
 import CIimgui
 
 struct CreateChartCommand: Command {
-    let ids: [ObjectID]
     var name: String { "create_chart" }
+
+    let ids: [ObjectID]
+    let chartName: String?
     
     /// A chart command with series from numeric values of given objects.
     init(name: String? = nil, series: [ObjectID]) {
         self.ids = series
+        self.chartName = name
     }
     
     func run(_ context: CommandContext) throws (CommandError) {
-        let trans = context.document.createOrReuseTransaction()
+        let document = context.document
+        let trans = document.createOrReuseTransaction()
         let chart = trans.createNode(StockFlowDomain.Types.Chart)
+        
+        if let chartName {
+            chart["name"] = Variant(chartName)
+        }
 
         for objectID in ids {
             guard let target = trans[objectID],

@@ -18,7 +18,7 @@ import PoieticFlows
 ///
 /// The canvas draws a scene rooted in ``/Diagramming/DiagramCanvas``.
 ///
-class DiagramCanvas: View {
+class DiagramCanvas: View, WorkspaceBound {
     static let DefaultHitRadius: Double = 5.0
 
     var debugRendering: Bool = false
@@ -59,9 +59,10 @@ class DiagramCanvas: View {
     var indicatorOverlay: Overlay
     var highlightOverlay: Overlay
 
-    var isMouseInViewport: Bool = false
+    var isPointerOver: Bool = false
     var inputState: InputState = InputState()
     
+    // TODO: Make those Vector2D (+ check unnecessary casts)
     var canvasPos = ImVec2(0.0, 0.0)          // Screen position of canvas
     var canvasSize = ImVec2(0.0, 0.0)         // Screen size of canvas
 
@@ -92,8 +93,7 @@ class DiagramCanvas: View {
 
     var editorManager: InlineEditorManager? = nil
 
-    init(document: Document? = nil) {
-        self.document = document
+    init() {
         self.style = CanvasStyle.Default
 
         self.overlays = OverlayStack()
@@ -110,20 +110,22 @@ class DiagramCanvas: View {
         self.editorManager = InlineEditorManager()
     }
     
-    func bind(_ document: Document) {
+    func bind(workspace: any WorkspaceServices, document: Document) {
         self.scene = nil
         self.diagram = nil
         self.document = document
         self.editorManager?.bind(document: document, canvas: self)
     }
+    func unbindWorkspace() {
+        self.scene = nil
+        self.diagram = nil
+        self.document = nil
+        self.editorManager?.unbind()
+    }
     
     /// Convert screen coordinates to world coordinates
-    func screenToWorld(_ screenPos: ImVec2) -> ImVec2 {
-        let worldPos = Vector2D(screenPos - canvasPos) / Double(zoomLevel) + viewOffset
-        return ImVec2(worldPos)
-    }
-    func screenToWorld(_ screenPos: ImVec2) -> Vector2D {
-        let worldPos = Vector2D(screenPos - canvasPos) / Double(zoomLevel) + viewOffset
+    func screenToWorld(_ screenPos: Vector2D) -> Vector2D {
+        let worldPos = Vector2D(screenPos - Vector2D(canvasPos)) / Double(zoomLevel) + viewOffset
         return worldPos
     }
 
@@ -260,7 +262,7 @@ class DiagramCanvas: View {
 
         // Note: We need to do it here for processUnhandledInput(...) to correctly capture
         // the mouse events for canvas. If there is a better solution, I am open.
-        isMouseInViewport = ImGui.IsWindowHovered(
+        isPointerOver = ImGui.IsWindowHovered(
             ImGuiHoveredFlags_ChildWindows |
             ImGuiHoveredFlags_AllowWhenBlockedByPopup
         )
@@ -353,10 +355,12 @@ class DiagramCanvas: View {
     func resetView() {
         self.setView(offset: .zero, zoom: 1.0)
     }
-    
+    static func clampZoom(_ zoom: Double) -> Double {
+        return max(0.01, min(100.0, zoom))
+    }
     func setView(offset: Vector2D, zoom: Double) {
         viewOffset = offset
-        zoomLevel = max(0.01, min(100.0, zoom))
+        zoomLevel = Self.clampZoom(zoom)
         toOverlayTransform = AffineTransform(translation: -viewOffset)
                                 .scaled(Vector2D(zoomLevel, zoomLevel))
 
@@ -372,12 +376,23 @@ class DiagramCanvas: View {
     }
     
     func centerView(at worldPoint: Vector2D, zoom: Double? = nil) {
-        let useZoom = zoom ?? self.zoomLevel
+        let useZoom: Double
+        if let zoom {
+            useZoom = Self.clampZoom(zoom)
+        }
+        else {
+            useZoom = self.zoomLevel
+        }
         let canvasCenter = Vector2D(canvasSize) / 2.0
         let offset = worldPoint - (canvasCenter / useZoom)
         setView(offset: offset, zoom: useZoom)
     }
-    func hitTarget(screenPosition: ImVec2) -> CanvasHitTarget? {
+
+    func resetZoom() {
+        centerView(at: visibleWorldRect.center, zoom: 1.0)
+    }
+    
+    func hitTarget(screenPosition: Vector2D) -> CanvasHitTarget? {
         guard let scene else { return nil }
         
         let scenePosition = worldToScene(screenToWorld(screenPosition))

@@ -68,25 +68,41 @@ struct PaletteItem {
 
 class ObjectPalette {
     static let PaletteCellSize: ImVec2 = ImVec2(80, 40)
-    let items: [PaletteItem]
+    private(set) var items: [PaletteItem]
     let columns: Int
-    var selectedIndex: Int = 0
+    var selectedIndex: Int? = 0
     
     init(columns: Int, items: [PaletteItem]) {
         self.columns = columns
         self.items = items
     }
 
+    func setItems(_ items: [PaletteItem], selected: String?) {
+        self.items = items
+        select(selected)
+    }
+    
+    func select(_ identifier: String?) {
+        guard let identifier else {
+            self.selectedIndex = nil
+            return
+        }
+        let index = items.firstIndex { $0.identifier == identifier }
+        self.selectedIndex = index
+    }
+    
     var selectedIdentifier: String? {
         guard !items.isEmpty,
-              selectedIndex < items.count
+              let selectedIndex,
+              selectedIndex >= 0 && selectedIndex < items.count
         else { return nil }
         return items[selectedIndex].identifier
     }
     
-    func draw() {
+    func draw() -> String? {
         let tableFlags = ImGuiTableFlags(ImGuiTableFlags_SizingFixedFit.rawValue)
         var column: Int = 0
+        var selection: String? = nil
         
         if ImGui.BeginTable("grid", Int32(columns), tableFlags, ImVec2()) {
             for (index, item) in items.enumerated() {
@@ -103,6 +119,7 @@ class ObjectPalette {
                 
                 if ImGui.Selectable("##select", isSelected, 0, Self.PaletteCellSize) {
                     selectedIndex = index
+                    selection = item.identifier
                 }
 
                 let cellOrigin = ImGui.GetItemRectMin()
@@ -118,5 +135,6 @@ class ObjectPalette {
 
             ImGui.EndTable()
         }
+        return selection
     }
 }

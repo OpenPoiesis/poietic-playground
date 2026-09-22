@@ -9,6 +9,7 @@ import PoieticCore
 import Foundation
 import Diagramming
 
+// Design + world, url, trans, selection, observes, change state
 /// Represents and controls the design document.
 ///
 /// Responsibilities:
@@ -65,6 +66,7 @@ class Document {
     typealias EventObserver = ((Document) -> Void)
 
     var observers: [Event:[EventObserver]]
+    var commandQueue: [CommandInvocation]
     
     let design: Design
     var designURL: URL? = nil
@@ -80,7 +82,6 @@ class Document {
     
     var transaction: TransientPlane?
     var hasTransaction: Bool { transaction != nil }
-    var commandQueue: [any Command]
 
     let world: World
     
@@ -140,6 +141,9 @@ class Document {
         self.requiresInteractivePreviewUpdate = false
         self.isPreviewing = false
         
+        // TODO: Validate necessity of this (moved here during refactoring)
+        self.needsWorldPlaneUpdate = true
+        
         setupWorld(notation: notation)
     }
   
@@ -157,6 +161,12 @@ class Document {
         for receiver in receivers {
             receiver(self)
         }
+    }
+    
+    // MARK: - Commands
+    func enqueue(_ command: Command, canvas: DiagramCanvas? = nil) {
+        let item = CommandInvocation(command: command, canvas: canvas)
+        self.commandQueue.append(item)
     }
     
     // MARK: - Selection
@@ -217,29 +227,5 @@ class Document {
         world.removeComponentForAll(PreviewPositionComponent.self)
         world.removeComponentForAll(PreviewMidpoints.self)
         self.trigger(.previewEnded)
-    }
-
-    func onSimulationPlayerStep(_ document: Document) {
-        // TODO: This is weird, as we should be receiving this event only triggered by us.
-    }
-}
-
-
-// TODO: Use shared application logger
-extension Document {
-    func log(_ message: String) {
-        print("INFO: ", message)
-    }
-    func logError(_ message: String) {
-        print("ERROR: ", message)
-    }
-}
-
-// FIXME: Make a proper alert mechanism. This is a quick hack to silence the compiler after refactoring.
-extension Document {
-    func queueAlert(title: String, message: String) {
-        Task { @MainActor in
-            Application.shared.queueAlert(title: title, message: message)
-        }
     }
 }

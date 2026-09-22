@@ -27,47 +27,9 @@ enum CanvasToolType {
     }
 }
 
-/// Abstract class for canvas tools.
-///
-/// Subclasses should implement:
-///
-/// - Input handling: ``inputBegan(_:in:)``, ``inputMoved(_:in:)``, ``inputEnded(_:in:)``.
-/// - Optional activation/deactivation with ``activate()``, ``deactivate()``.
-/// - Internal tool state management.
-///
-/// Tools are authority for interactions and interaction state. They can:
-///
-/// - Change selection with ``Document/changeSelection(_:)``
-/// - Create transactions with ``Document/createOrReuseTransaction()``
-/// - Queue commands.
-/// - Open and close inline editors.
-///
-/// Tools can create interactive preview components in the world (``Document/world``) which
-/// will be drawn by setting ``Document/requiresInteractivePreviewUpdate`` to ``true``.
-///
 @MainActor
-class CanvasTool {
-    enum EngagementResult {
-        /// Tool is not concerned about the event, try fallback in tool chain.
-        case pass
-        /// Tool has processed the event and has finished.
-        case consumed
-        /// Tool has processed the event and will handle all future events until finished or cancelled.
-        case engaged
-    }
-    
-    /// Canvas the tool is bound to.
-    ///
-    /// Tool is bound to a canvas together with a document using ``bind(canvas:document:)``.
-    ///
-    /// Functions typically used:
-    ///
-    /// - ``DiagramCanvas/screenToWorld(_:)->Vector2D``
-    /// - ``DiagramCanvas/hitTarget(screenPosition:)``
-    /// - ``DiagramCanvas/zoomLevel``
-    ///
-    weak var canvas: DiagramCanvas?
-
+struct ToolContext {
+    private unowned let workspace: any WorkspaceServices
     /// Document the tool is bound to.
     ///
     /// Tool is bound to a document together with a canvas using ``bind(canvas:document:)``.
@@ -78,40 +40,61 @@ class CanvasTool {
     /// - ``Document/createOrReuseTransaction()``
     /// - ``Document/requiresInteractivePreviewUpdate``
     ///
-    weak var document: Document?
+    unowned let document: Document
 
-    internal var world: World {
-        guard let document else { fatalError("CanvasTool used before binding")}
-        return document.world
-    }
+    /// Canvas the tool is bound to.
+    ///
+    /// Tool is bound to a canvas together with a document on activation.
+    ///
+    /// Functions typically used:
+    ///
+    /// - ``DiagramCanvas/screenToWorld(_:)->Vector2D``
+    /// - ``DiagramCanvas/hitTarget(screenPosition:)``
+    /// - ``DiagramCanvas/zoomLevel``
+    ///
+    unowned let canvas: DiagramCanvas
     
-    var hasObjectPalette: Bool { false }
-    var type: CanvasToolType { .empty }
-    var iconKey: IconKey { .empty }
-    
-    /// Called before tool activation.
-    func bind(canvas: DiagramCanvas, document: Document) {
+    public init(workspace: any WorkspaceServices, document: Document, canvas: DiagramCanvas) {
+        self.workspace = workspace
         self.document = document
         self.canvas = canvas
     }
-
-    func drawPalette() { }
     
-    /// Function called when tool was set active.
-    func activate() { /* Implementation in subclasses */ }
+    func switchTool(_ tool: CanvasToolType) {
+        workspace.switchTool(tool)
+    }
+    func openIssues(for object: ObjectID?) {
+        workspace.openIssues(for: object)
+    }
+    func centerView(at position: Vector2D, zoom: Double? = nil) {
+        workspace.centerView(at: position, zoom: zoom)
+    }
+}
 
-    /// Function called when tool was released and set inactive.
-    func deactivate() { /* Implementation in subclasses */ }
 
-    /// Function called on plane update when the tool is active.
-    func update() { /* Implementation in subclasses */ }
+/// Protocol for canvas tools.
+///
+/// Subclasses must implement ``makeInteraction(context:)`` and return a ``ToolInteraction``
+/// object that will handle the events.
+///
+/// Optionally, if the tool uses an item from a palette, it should provide
+/// a list of palette items through ``paletteItems(in:)``.
+///
+@MainActor
+protocol CanvasTool: AnyObject {
+    static var type: CanvasToolType { get }
+    static var iconKey: IconKey { get }
+    static var isRepeating: Bool { get }
 
-    /// Function called when tool operation was cancelled.
-    func cancel() { /* Implementation in subclasses */ }
+    var isLocked: Bool { get set }
+    var selectedPaletteItem: String? { get set }
+    
+    func paletteItems(in context: ToolContext) -> [PaletteItem]
+    func makeInteraction(context: ToolContext) -> any ToolInteraction
+}
 
-    // func getCursorType()
-   
-    func handleEvent(_ event: ToolEvent) -> EngagementResult {
-        return .pass
+extension CanvasTool {
+    func paletteItems(in context: ToolContext) -> [PaletteItem] {
+        return [] // Empty default
     }
 }
