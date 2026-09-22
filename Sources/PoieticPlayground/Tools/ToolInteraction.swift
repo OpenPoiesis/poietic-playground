@@ -23,8 +23,22 @@ enum EventDisposition {
 /// - SeeAlso: ``CanvasTool``
 /// 
 @MainActor
-protocol ToolInteraction {
+protocol ToolInteraction: AnyObject {
+    /// Begin a tool interaction.
+    ///
+    /// Called by ``ToolManager`` when a tool is selected or when a palette item selection changed.
+    ///
+    /// Objects conforming to the protocol might initialise a state here or get a selected palette
+    /// item.
     func begin()
+    
+    /// End a tool interaction.
+    ///
+    /// Called by ``ToolManager`` when a tool is deactivated or when a palette item selection
+    /// changed.
     func end()
+    
+    /// Main function that performs the actual tool interaction based on given event.
+    ///
     func handleEvent(_ event: ToolEvent) -> EventDisposition
 }

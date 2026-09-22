@@ -13,11 +13,14 @@ class PlacementTool: CanvasTool {
     static let IconSize: ImVec2 = ImVec2(60, 40)
     static let PaletteCellSize: ImVec2 = ImVec2(60, 60)
 
-    override var type: CanvasToolType { .placement }
-    override var hasObjectPalette: Bool { true }
-    override var iconKey: IconKey { .place }
-    
-    override func paletteItems(in context: ToolContext) -> [PaletteItem] {
+    static let type: CanvasToolType = .placement
+    static let iconKey: IconKey = .place
+    static let isRepeating: Bool = false
+
+    var isLocked: Bool = false
+    var selectedPaletteItem: String? = nil
+
+    func paletteItems(in context: ToolContext) -> [PaletteItem] {
         let document = context.document
         let world = document.world
 
@@ -39,7 +42,7 @@ class PlacementTool: CanvasTool {
         return items
     }
 
-    override func makeInteraction(context: ToolContext) -> any ToolInteraction {
+    func makeInteraction(context: ToolContext) -> any ToolInteraction {
         return PlacementInteraction(context: context, selectedType: self.selectedPaletteItem)
     }
 }

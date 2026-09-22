@@ -72,7 +72,7 @@ struct ToolContext {
 }
 
 
-/// Abstract class for canvas tools.
+/// Protocol for canvas tools.
 ///
 /// Subclasses must implement ``makeInteraction(context:)`` and return a ``ToolInteraction``
 /// object that will handle the events.
@@ -81,20 +81,20 @@ struct ToolContext {
 /// a list of palette items through ``paletteItems(in:)``.
 ///
 @MainActor
-class CanvasTool {
-    var type: CanvasToolType { .empty }
-    var iconKey: IconKey { .empty }
-    var isSticky: Bool { true }
+protocol CanvasTool: AnyObject {
+    static var type: CanvasToolType { get }
+    static var iconKey: IconKey { get }
+    static var isRepeating: Bool { get }
 
-    var selectedPaletteItem: String?
-
-    var hasObjectPalette: Bool { false }
+    var isLocked: Bool { get set }
+    var selectedPaletteItem: String? { get set }
     
+    func paletteItems(in context: ToolContext) -> [PaletteItem]
+    func makeInteraction(context: ToolContext) -> any ToolInteraction
+}
+
+extension CanvasTool {
     func paletteItems(in context: ToolContext) -> [PaletteItem] {
         return [] // Empty default
-    }
-
-    func makeInteraction(context: ToolContext) -> any ToolInteraction {
-        fatalError("Subclasses of \(String(describing: Self.self)) are required to implement \(#function)")
     }
 }

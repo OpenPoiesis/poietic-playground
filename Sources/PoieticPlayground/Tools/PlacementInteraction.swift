@@ -74,6 +74,17 @@ class PlacementInteraction: ToolInteraction {
         self.blockIntent = nil
     }
     
+    @discardableResult
+    func ensureBlockIntent(at screenPosition: Vector2D) -> Bool {
+        guard blockIntent == nil else { return true }
+        guard let typeName = selectedType else { return false }
+        let worldPos: Vector2D = canvas.screenToWorld(screenPosition)
+        createBlockIntent(position: worldPos, typeName: typeName)
+        guard blockIntent != nil else { return false }
+        document.beginInteractivePreview()
+        return true
+    }
+    
     func handleEvent(_ event: ToolEvent) -> EventDisposition {
         switch event.type {
         case .hoverStart: return self.hoverStart(event)
@@ -84,18 +95,16 @@ class PlacementInteraction: ToolInteraction {
         }
     }
     func hoverStart(_ event: ToolEvent) -> EventDisposition {
-        guard let typeName = selectedType else { return .ignored }
-        
         removeBlockIntent()
-        let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
-        createBlockIntent(position: worldPos, typeName: typeName)
-        document.beginInteractivePreview()
+        ensureBlockIntent(at: event.screenPos)
         document.queueInteractivePreviewUpdate()
         return .ignored
     }
     
     func pointerMove(_ event: ToolEvent) -> EventDisposition {
-        guard let blockIntent else { return .ignored }
+        guard ensureBlockIntent(at: event.screenPos),
+              let blockIntent
+        else { return .ignored }
         
         let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
         let canvasPos: Vector2D = canvas.worldToScene(worldPos)
@@ -114,10 +123,11 @@ class PlacementInteraction: ToolInteraction {
     }
     
     func pointerUp(_ event: ToolEvent)  -> EventDisposition {
+        let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
+
         guard let blockIntent,
               let intent: BlockIntent = blockIntent.component()
         else { return .ignored }
-        let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
 
         if let objectID = placeObject(type: intent.type, at: worldPos) {
             document.changeSelection(.replaceAllWithOne(objectID))

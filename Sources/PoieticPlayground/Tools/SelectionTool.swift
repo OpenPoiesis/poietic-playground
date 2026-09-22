@@ -12,8 +12,12 @@ import Diagramming
 /// Selection tool is ...
 ///
 class SelectionTool: CanvasTool {
-    override var type: CanvasToolType { .selection }
-    override var iconKey: IconKey { .select }
+    static let type: CanvasToolType = .selection
+    static let iconKey: IconKey = .select
+    static let isRepeating: Bool = true
+
+    var isLocked: Bool = false
+    var selectedPaletteItem: String? = nil
 
     // FIXME: THIS
     //    override func activate() {
@@ -25,7 +29,7 @@ class SelectionTool: CanvasTool {
 //    }
 //
     
-    override func makeInteraction(context: ToolContext) -> any ToolInteraction {
+    func makeInteraction(context: ToolContext) -> any ToolInteraction {
         return SelectionInteraction(context: context)
     }
 }

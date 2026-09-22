@@ -12,11 +12,14 @@ import PoieticFlows
 
 // TODO: This tool is mostly hard-coded to the stock-flow metamodel
 class ConnectTool: CanvasTool {
-    override var type: CanvasToolType { .connect }
-    override var iconKey: IconKey { .connect }
-    override var hasObjectPalette: Bool { true }
+    static let type: CanvasToolType = .connect
+    static let iconKey: IconKey = .connect
+    static let isRepeating: Bool = false
 
-    override func paletteItems(in context: ToolContext) -> [PaletteItem] {
+    var isLocked: Bool = false
+    var selectedPaletteItem: String? = nil
+
+    func paletteItems(in context: ToolContext) -> [PaletteItem] {
         let document = context.document
         let world = document.world
 
@@ -50,7 +53,7 @@ class ConnectTool: CanvasTool {
         return items
     }
     
-    override func makeInteraction(context: ToolContext) -> any ToolInteraction {
+    func makeInteraction(context: ToolContext) -> any ToolInteraction {
         return ConnectInteraction(document: context.document,
                                   canvas: context.canvas,
                                   selectedType: self.selectedPaletteItem)

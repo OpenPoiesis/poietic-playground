@@ -77,9 +77,9 @@ class ObjectPalette {
         self.items = items
     }
 
-    func setItems(_ items: [PaletteItem]) {
+    func setItems(_ items: [PaletteItem], selected: String?) {
         self.items = items
-        selectedIndex = 0
+        select(selected)
     }
     
     func select(_ identifier: String?) {
@@ -99,9 +99,10 @@ class ObjectPalette {
         return items[selectedIndex].identifier
     }
     
-    func draw() {
+    func draw() -> String? {
         let tableFlags = ImGuiTableFlags(ImGuiTableFlags_SizingFixedFit.rawValue)
         var column: Int = 0
+        var selection: String? = nil
         
         if ImGui.BeginTable("grid", Int32(columns), tableFlags, ImVec2()) {
             for (index, item) in items.enumerated() {
@@ -118,6 +119,7 @@ class ObjectPalette {
                 
                 if ImGui.Selectable("##select", isSelected, 0, Self.PaletteCellSize) {
                     selectedIndex = index
+                    selection = item.identifier
                 }
 
                 let cellOrigin = ImGui.GetItemRectMin()
@@ -133,5 +135,6 @@ class ObjectPalette {
 
             ImGui.EndTable()
         }
+        return selection
     }
 }

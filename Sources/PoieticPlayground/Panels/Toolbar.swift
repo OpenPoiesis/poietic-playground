@@ -21,7 +21,6 @@ class Toolbar: @MainActor Panel {
     
     func update(_ timeDelta: Double) { }
     
-
     func draw() {
         guard let toolManager else { return }
         let style = InterfaceStyle.current
@@ -32,6 +31,7 @@ class Toolbar: @MainActor Panel {
                                         | ImGuiWindowFlags_NoCollapse)
         
         for (index, tool) in toolManager.tools.enumerated() {
+            let toolClass = type(of: tool)
             let isActive = toolManager.isActive(tool)
             
             if isActive {
@@ -42,16 +42,16 @@ class Toolbar: @MainActor Panel {
             
             ImGui.PushID(Int32(index))
 
-            let texture = style.texture(forIcon: tool.iconKey)
+            let texture = style.texture(forIcon: toolClass.iconKey)
             let ref = ImTextureRef(texture.textureID)
-            if ImGui.ImageButton("##\(tool.type.name)", ref, buttonSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 0), ImVec4(1, 1, 1, 1)) {
-                toolManager.select(tool.type)
+            if ImGui.ImageButton("##\(toolClass.type.name)", ref, buttonSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 0), ImVec4(1, 1, 1, 1)) {
+                toolManager.select(toolClass.type)
             }
             ImGui.PopID()
             
             if ImGui.IsItemHovered(ImGuiHoveredFlags(ImGuiHoveredFlags_DelayShort.rawValue)) {
                 ImGui.BeginTooltip()
-                ImGui.TextUnformatted(tool.type.name)
+                ImGui.TextUnformatted(toolClass.type.name)
                 ImGui.EndTooltip()
             }
             
@@ -64,16 +64,18 @@ class Toolbar: @MainActor Panel {
             }
         }
         
-        if !toolManager.activePaletteItems.isEmpty {
-            palette.setItems(toolManager.activePaletteItems)
-            palette.select(toolManager.selectedPaletteItem)
-            drawObjectPalette(palette)
+        let items = toolManager.activePaletteItems
+        if !items.isEmpty {
+            palette.setItems(items, selected: toolManager.selectedPaletteItem)
+            if let selection = drawObjectPalette(palette) {
+                toolManager.selectPaletteItem(selection)
+            }
         }
         
         ImGui.End()
     }
     
-    func drawObjectPalette(_ palette: ObjectPalette) {
+    func drawObjectPalette(_ palette: ObjectPalette) -> String? {
         let paletteSpacing: Float = 0.0
         let toolbarPos = ImGui.GetWindowPos()
         let toolbarSize = ImGui.GetWindowSize()
@@ -87,7 +89,8 @@ class Toolbar: @MainActor Panel {
                     | ImGuiWindowFlags_NoTitleBar
                     | ImGuiWindowFlags_NoSavedSettings)
 
-        palette.draw()
+        let selection = palette.draw()
         ImGui.End()
+        return selection
     }
 }

@@ -146,10 +146,14 @@ class NavigationInteraction: ToolInteraction {
 }
 
 class PanTool: CanvasTool {
-    override var type: CanvasToolType { .pan }
-    override var iconKey: IconKey { .hand }
+    static let type: CanvasToolType = .pan
+    static let iconKey: IconKey = .hand
+    static let isRepeating: Bool = false
 
-    override func makeInteraction(context: ToolContext) -> any ToolInteraction {
+    var isLocked: Bool = false
+    var selectedPaletteItem: String? = nil
+
+    func makeInteraction(context: ToolContext) -> any ToolInteraction {
         return NavigationInteraction(canvas: context.canvas)
     }
 }
