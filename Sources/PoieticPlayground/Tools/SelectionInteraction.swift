@@ -18,7 +18,7 @@ class SelectionInteraction: ToolInteraction {
     
     var world: World { document.world }
     
-    enum State {
+    enum State: Equatable {
         /// Nothing hit, initial state
         case idle
         /// Direct hit of a single object, typically a block or a connector.
@@ -79,7 +79,6 @@ class SelectionInteraction: ToolInteraction {
             document.changeSelection(.removeAll)
             state = .objectSelect
             removeHandles()
-            return .handled
 
         case .object(let runtimeID, .body):
             // TODO: Defer opening of context menu on inputEnded or move context menu out of the tool
@@ -117,79 +116,85 @@ class SelectionInteraction: ToolInteraction {
             state = .handleEngaged(runtimeID)
         }
         
-        switch state {
-        case .idle: return .handled
-        default: return .engaged
-        }
-
+        return .handled
     }
     func dragStart(_ event: ToolEvent) -> EventDisposition {
 //        TODO: popupManager?.closeInlinePopup()
         switch state {
         case .idle, .objectSelect:
             return .ignored
-        case .objectHit, .objectMove, .objectPartHit:
+        case .objectHit, .objectPartHit, .objectMove:
             document.beginInteractivePreview()
             previewSelectionMove(screenDelta: event.delta)
             state = .objectMove
+            return .engaged
             
         case .handleEngaged(let handleID), .handleMove(let handleID):
             document.beginInteractivePreview()
             dragHandle(handleID, screenDelta: event.delta)
             state = .handleMove(handleID)
+            return .engaged
         }
-        return .engaged
     }
+
     func dragMove(_ event: ToolEvent) -> EventDisposition {
 
 //        TODO: popupManager?.closeInlinePopup()
         switch state {
-        case .idle: break
-        case .objectSelect: break
+        case .idle, .objectSelect:
+            return .ignored
+
         case .objectHit, .objectMove, .objectPartHit:
             previewSelectionMove(screenDelta: event.delta)
             syncHandlesToPreview()
             state = .objectMove
-            
+            return .engaged
+
         case .handleEngaged(let handleID), .handleMove(let handleID):
             dragHandle(handleID, screenDelta: event.delta)
             state = .handleMove(handleID)
+            return .engaged
         }
-
-        return .engaged
     }
 
     func dragEnd(_ event: ToolEvent) -> EventDisposition {
         defer {
+            document.endInteractivePreview()
             state = .idle
         }
         // TODO: Mouse cursors
         let screenDelta = event.screenPos - self.dragStartScreenPos
         let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
-
+        
         switch state {
         case .objectMove:
             finalizeSelectionMove(document.selection, by: worldDelta)
+            return .handled
 
         case .handleMove(let handleID):
-            guard let handle = document.world.entity(handleID) else { break }
+            guard let handle = document.world.entity(handleID) else {
+                return .ignored
+            }
             let worldPosition: Vector2D = canvas.screenToWorld(event.screenPos)
             finalizeHandleMove(handle, finalPosition: worldPosition, totalDelta: worldDelta)
             state = .handleMove(handleID)
+            return .handled
 
-        case .idle, .objectHit, .objectSelect, .handleEngaged: break
+        case .idle, .objectHit, .objectSelect, .handleEngaged:
+            return .ignored
 
         case .objectPartHit:
             // TODO: Open editor for the part hit: primary/secondary label, error indicator
-            break
+            return .handled
         }
-        document.endInteractivePreview()
-        return .handled
     }
+    
     func dragCancel(_ event: ToolEvent) -> EventDisposition {
         cleanUp()
         document.endInteractivePreview()
-        return .handled
+        
+        if state == .idle { return .ignored }
+        else { return .handled }
     }
     
     // MARK: - Object Move

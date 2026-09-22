@@ -80,7 +80,6 @@ class ToolManager {
         if tool.selectedPaletteItem == nil, let first = tool.paletteItems(in: context).first {
             tool.selectedPaletteItem = first.identifier
         }
-        print("    SELECTED ITEM: \(tool.selectedPaletteItem ?? "(none)")")
         let interaction = tool.makeInteraction(context: context)
         activeInteraction = interaction
         interaction.begin()
@@ -109,11 +108,9 @@ class ToolManager {
     
     @discardableResult
     func dispatch(_ event: ToolEvent, canvas: DiagramCanvas) -> EventDisposition {
-        print("🎮 Dispatch event: \(event)")
 
         // FIXME: We are using capture here, but the interaction might be bound to other canvas on init (through tool's makeInteraction())
         if let capture, capture.canvas === canvas {
-            print("    🖼️ Capture: \(capture)")
             let disposition = capture.interaction.handleEvent(event)
             switch disposition {
             case .ignored:
@@ -127,7 +124,6 @@ class ToolManager {
         }
         
         if let activeInteraction {
-            print("    ✏️ Active: \(activeInteraction)")
             let disposition = activeInteraction.handleEvent(event)
             switch disposition {
             case .ignored: break // navigation handles it
@@ -136,7 +132,6 @@ class ToolManager {
             }
         }
         
-        print("    🧭 Fallback to navigation: \(navigation)")
         return navigation?.handleEvent(event) ?? .ignored
     }
 
