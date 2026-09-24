@@ -60,8 +60,8 @@ class ConnectInteraction: ToolInteraction {
     func dragStart(_ event: ToolEvent) -> EventDisposition{
         guard event.triggerButton == .left else { return .ignored }
         guard let scene = canvas.scene,
-              let hitTarget = canvas.hitTarget(screenPosition: event.screenPos),
-              world.contains(hitTarget.sceneNode),
+              let hitObject = canvas.hitObject(screenPosition: event.screenPos),
+              world.contains(hitObject.sceneNode),
               let typeName = selectedType,
               let type = document.design.metamodel.objectType(name: typeName)
         else {
@@ -98,7 +98,7 @@ class ConnectInteraction: ToolInteraction {
         )
         connector.relate(ChildOf(), to: scene)
         connector.relate(MemberOf(), to: scene)
-        connector.relate(ConnectorSceneNode.Origin(),to: hitTarget.sceneNode)
+        connector.relate(ConnectorSceneNode.Origin(),to: hitObject.sceneNode)
         connector.relate(ConnectorSceneNode.Target(),to: handle)
 
         self.intendedConnector = connector
@@ -128,8 +128,7 @@ class ConnectInteraction: ToolInteraction {
         // -- Connector Intent --
         let newTargetID: RuntimeID?
 
-        if let target = canvas.hitTarget(screenPosition: event.screenPos),
-           case .object(_, .body) = target.kind,
+        if let target = canvas.hitObject(screenPosition: event.screenPos),
            isValidTarget(target.sceneNode)
         {
             newTargetID = target.sceneNode
@@ -182,12 +181,11 @@ class ConnectInteraction: ToolInteraction {
         guard let intendedConnector,
               let intent: ConnectorIntent = intendedConnector.component(),
               let origin: RuntimeEntity = intendedConnector.target(ConnectorSceneNode.Origin.self),
-              let hitTarget = canvas.hitTarget(screenPosition: event.screenPos),
-              case .object(let targetID, _) = hitTarget.kind
+              let hitObject = canvas.hitObject(screenPosition: event.screenPos)
         else { return .ignored }
         
         if canConnect(type: intent.type) {
-            createConnection(type: intent.type, from: origin.runtimeID, to: targetID)
+            createConnection(type: intent.type, from: origin.runtimeID, to: hitObject.designObject)
         }
 
         return .handled

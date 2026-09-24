@@ -19,17 +19,14 @@ class SelectionTool: CanvasTool {
     var isLocked: Bool = false
     var selectedPaletteItem: String? = nil
 
-    // FIXME: THIS
-    //    override func activate() {
-//        createHandles()
-//    }
-//
-//    override func deactivate() {
-//        removeHandles()
-//    }
-//
-    
     func makeInteraction(context: ToolContext) -> any ToolInteraction {
         return SelectionInteraction(context: context)
+    }
+
+    func makeInteraction(grip: CanvasGripHit, context: ToolContext) -> (any ToolInteraction)? {
+        guard case .connectorMidpoint(_) = grip.grip.key
+        else { return nil }
+
+        return MidpointGripInteraction(context: context, grip: grip.runtimeID)
     }
 }

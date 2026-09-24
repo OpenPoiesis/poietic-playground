@@ -40,12 +40,12 @@ protocol ApplicationEnvironment: Reporter {
     func requestQuit()
 }
 
+// TODO: Rename to Session
 @MainActor
 class Workspace {
     // TODO: Add multi-document support later
     private(set) var currentDocument: Document?
     private var bound: [any WorkspaceBound] = []
-    private var workspaceBound: [any WorkspaceBound] = []
 
     weak var environment: any ApplicationEnvironment? = nil
 
@@ -260,7 +260,7 @@ class Workspace {
         // modals.removeAll(scope: .document)
         // flows.discardAll()
         // old.flushOpenTransaction()
-        
+        currentDocument?.removeAllObservers()
         currentDocument = newDocument
         for object in bound {
             object.bind(workspace: self, document: newDocument)
@@ -276,6 +276,7 @@ class Workspace {
         document.addObserver(inspector.onSelectionChanged, on: .designPlaneChanged)
         document.addObserver(inspector.onSelectionChanged, on: .selectionChanged)
         document.addObserver(inspector.onSimulationFinished, on: .simulationFinished)
+        
         document.addObserver(canvas.onDesignPlaneChanged, on: .designPlaneChanged)
         document.addObserver(canvas.onSelectionChanged, on: .selectionChanged)
         document.addObserver(canvas.onSimulationPlayerStep, on: .simulationPlayerStep)

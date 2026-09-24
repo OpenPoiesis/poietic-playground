@@ -65,7 +65,7 @@ struct ToolEvent: CustomDebugStringConvertible {
     let scale: Float
 
     var debugDescription: String {
-        var desc = "\(type) P:\(screenPos) ∆:\(delta) B:\(buttonsDown) M:\(modifiers) T:\(triggerButton, default:"-")"
+        let desc = "\(type) P:\(screenPos) ∆:\(delta) B:\(buttonsDown) M:\(modifiers) T:\(triggerButton, default:"-")"
         return desc
     }
     

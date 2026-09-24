@@ -15,25 +15,26 @@ import PoieticCore
 ///     - geometry
 ///     - action
 
-struct CanvasHitTarget {
-    /// The scene node entity that was hit.
-    let sceneNode: RuntimeID
-    
-    enum Kind {
-        enum ObjectPart {
-            /// Direct object body hit. For blocks, the pictogram's collision shape is used. For
-            /// connectors a practical distance from the connector wire (center curve) is used.
-            case body
-            case primaryLabel
-            case secondaryLabel
-            case issueIndicator
-        }
-        
-        /// A design object or its label/indicator was hit. First associated value is represented
-        /// object entity ID.
-        case object(RuntimeID, ObjectPart)
-        /// A handle was hit. Associated value is handle entity ID.
-        case handle(RuntimeID)
+struct CanvasObjectHit {
+    enum ObjectPart {
+        /// Direct object body hit. For blocks, the pictogram's collision shape is used. For
+        /// connectors a practical distance from the connector wire (center curve) is used.
+        case body
+        case primaryLabel
+        case secondaryLabel
+        case issueIndicator
     }
-    let kind: Kind
+
+    let sceneNode: RuntimeID
+    /// Design entity that was hit, either directly or its part.
+    ///
+    /// - Note: If a label or an indicator was hit, the `object` is the design object entity that
+    ///         the label or the indicator belongs to.
+    let designObject: RuntimeID
+    let part: ObjectPart
+}
+
+struct CanvasGripHit {
+    let runtimeID: RuntimeID
+    let grip: Grip
 }

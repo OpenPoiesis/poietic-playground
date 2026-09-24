@@ -27,12 +27,8 @@ class SelectionInteraction: ToolInteraction {
         case objectSelect
         /// Dragging selection around.
         case objectMove
-        /// Handle that can be moved was hit.
-        case handleEngaged(RuntimeID)
-        /// Dragging handle around.
-        case handleMove(RuntimeID)
         /// Object part was hit, such as label or issue indicator.
-        case objectPartHit(RuntimeID, CanvasHitTarget.Kind.ObjectPart)
+        case objectPartHit(RuntimeID, CanvasObjectHit.ObjectPart)
     }
     
     var state: State = .idle
@@ -71,18 +67,17 @@ class SelectionInteraction: ToolInteraction {
         dragStartScreenPos = event.screenPos
         
         // TODO: Close inline popup
-        let target = canvas.hitTarget(screenPosition: event.screenPos)
         let selection = document.selection
-
-        switch target?.kind {
-        case .none:
+        guard let target = canvas.hitObject(screenPosition: event.screenPos) else {
             document.changeSelection(.removeAll)
             state = .objectSelect
-            removeHandles()
+            return .handled
+        }
 
-        case .object(let runtimeID, .body):
+        switch target.part {
+        case .body:
             // TODO: Defer opening of context menu on inputEnded or move context menu out of the tool
-            guard let objectID = world.entity(runtimeID)?.objectID
+            guard let objectID = world.entity(target.designObject)?.objectID
             else { return .handled } // Not a design object
             
             if event.modifiers.contains(.shift) {
@@ -97,23 +92,15 @@ class SelectionInteraction: ToolInteraction {
                     document.changeSelection(.replaceAllWithOne(objectID))
                 }
             }
-            self.removeHandles()
-            self.createHandles()
-
             state = .objectHit
 
-        case .object(let runtimeID, .issueIndicator):
-            self.removeHandles()
+        case .issueIndicator:
             state = .idle
-            guard let objectID = world.entity(runtimeID)?.objectID else { break }
+            guard let objectID = world.entity(target.designObject)?.objectID else { break }
             context.openIssues(for: objectID)
 
-        case .object(let runtimeID, let part):
-            self.removeHandles()
-            state = .objectPartHit(runtimeID, part)
-
-        case .handle(let runtimeID):
-            state = .handleEngaged(runtimeID)
+        case .primaryLabel, .secondaryLabel:
+            state = .objectPartHit(target.designObject, target.part)
         }
         
         return .handled
@@ -128,12 +115,6 @@ class SelectionInteraction: ToolInteraction {
             previewSelectionMove(screenDelta: event.delta)
             state = .objectMove
             return .engaged
-            
-        case .handleEngaged(let handleID), .handleMove(let handleID):
-            document.beginInteractivePreview()
-            dragHandle(handleID, screenDelta: event.delta)
-            state = .handleMove(handleID)
-            return .engaged
         }
     }
 
@@ -146,13 +127,7 @@ class SelectionInteraction: ToolInteraction {
 
         case .objectHit, .objectMove, .objectPartHit:
             previewSelectionMove(screenDelta: event.delta)
-            syncHandlesToPreview()
             state = .objectMove
-            return .engaged
-
-        case .handleEngaged(let handleID), .handleMove(let handleID):
-            dragHandle(handleID, screenDelta: event.delta)
-            state = .handleMove(handleID)
             return .engaged
         }
     }
@@ -171,16 +146,7 @@ class SelectionInteraction: ToolInteraction {
             finalizeSelectionMove(document.selection, by: worldDelta)
             return .handled
 
-        case .handleMove(let handleID):
-            guard let handle = document.world.entity(handleID) else {
-                return .ignored
-            }
-            let worldPosition: Vector2D = canvas.screenToWorld(event.screenPos)
-            finalizeHandleMove(handle, finalPosition: worldPosition, totalDelta: worldDelta)
-            state = .handleMove(handleID)
-            return .handled
-
-        case .idle, .objectHit, .objectSelect, .handleEngaged:
+        case .idle, .objectHit, .objectSelect:
             return .ignored
 
         case .objectPartHit:
@@ -283,188 +249,10 @@ class SelectionInteraction: ToolInteraction {
         }
     }
     
-
-    // MARK: - Handle Drag
-    /// Create handles for selected object.
-    ///
-    /// - Note: Currently handles are supported only for selection of one object.
-    func createHandles() {
-        guard let objectID = document.selection.selectionOfOne(),
-              let entity = world.entity(objectID)
-        else { return }
-
-        // Dispatch by handle type
-        if entity.contains(DiagramConnector.self) {
-            createMidpointHandles(entity)
-        }
-        // ... create other handle types
-    }
-    
-    func createMidpointHandles(_ entity: RuntimeEntity) {
-        guard let connector: DiagramConnector = entity.component(),
-              let scene = canvas.scene
-        else { return }
-        
-        let style = canvas.style
-        let handleSize = style.metric(.handleSize, default: CanvasHandle.DefaultSize)
-        
-        let preview: PreviewMidpoints? = entity.component()
-        let midpoints = preview?.midpoints ?? connector.midpoints
-        
-        if midpoints.isEmpty {
-            guard let origin = world.entity(connector.originID),
-                  let originBlock: DiagramBlock = origin.component(),
-                  let target = world.entity(connector.targetID),
-                  let targetBlock: DiagramBlock = target.component()
-            else { return }
-
-            let segment = LineSegment(from: originBlock.position, to: targetBlock.position)
-            let midpoint = segment.midpoint
-
-            createMidpointHandle(worldPosition: midpoint,
-                                 scenePosition: canvas.worldToScene(midpoint),
-                                 index: 0,
-                                 handles: entity,
-                                 parent: scene,
-                                 size: handleSize)
-        }
-        else {
-            for (index, point) in midpoints.enumerated() {
-                createMidpointHandle(worldPosition: point,
-                                     scenePosition: canvas.worldToScene(point),
-                                     index: index,
-                                     handles: entity,
-                                     parent: scene,
-                                     size: handleSize)
-            }
-        }
-    }
-    
-    func createMidpointHandle(worldPosition: Vector2D,
-                              scenePosition: Vector2D,
-                              index: Int,
-                              handles handledEntity: RuntimeEntity,
-                              parent: RuntimeEntity,
-                              size: Double)
-    {
-        let handle = world.spawn(
-            SceneNode(),
-            CanvasHandle(position: worldPosition, kind: .midpoint(index)),
-            CollisionShape(position: .zero, shape: .circle(size / 2.0)),
-            PositionComponent(position: scenePosition),
-            CanvasNodeStyle(class: .handle),
-            Interactivity.interactive,
-        )
-        handle.relate(Handles(), to: handledEntity)
-        handle.relate(ChildOf(), to: parent)
-    }
-    
-    func syncHandlesToPreview() {
-        for (entity, var handle) in world.query(CanvasHandle.self) {
-            guard let target = entity.target(Handles.self),
-                  let preview: PreviewMidpoints = target.component(),
-                  case .midpoint(let index) = handle.kind,
-                  index < preview.midpoints.count
-            else { continue }
-            
-            let pos = preview.midpoints[index]
-            handle.worldPosition = pos
-            entity.setComponent(handle)
-            entity.setComponent(PositionComponent(position: canvas.worldToScene(pos)))
-        }
-    }
-
-    func dragHandle(_ handleRuntimeID: RuntimeID, screenDelta: Vector2D) {
-        guard let handle = document.world.entity(handleRuntimeID),
-              var component: CanvasHandle = handle.component()
-        else { return }
-        let worldDelta = screenDelta / canvas.zoomLevel
-        component.worldPosition += worldDelta
-        handle.setComponent(component)
-        handle.setComponent(PositionComponent(position: canvas.worldToScene(component.worldPosition)))
-
-        switch component.kind {
-        case .midpoint(let index):
-            guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
-            dragMidpointHandle(target, index: index, currentPosition: component.worldPosition, currentDelta: worldDelta)
-            target.setComponent(DirtyContent.geometry)
-        }
-        
-        document.queueInteractivePreviewUpdate()
-    }
-    
-    /// Reflect handle position to connector preview.
-    ///
-    func dragMidpointHandle(_ target: RuntimeEntity, index: Int, currentPosition: Vector2D, currentDelta: Vector2D) {
-        var midpoints: [Vector2D]
-        
-        if let preview: PreviewMidpoints = target.component() {
-            if preview.midpoints.isEmpty {
-                midpoints = [currentPosition]
-            }
-            else {
-                midpoints = preview.midpoints
-
-                if index >= 0 && index < preview.midpoints.count {
-                    midpoints[index] = currentPosition
-                }
-            }
-        }
-        else {
-            midpoints = [currentPosition]
-        }
-        
-        let newPreview = PreviewMidpoints(midpoints: midpoints)
-        target.setComponent(newPreview)
-    }
-
-    /// Parameters:
-    ///     - handleRuntimeID:
-    
-    func finalizeHandleMove(_ handle: RuntimeEntity, finalPosition: Vector2D, totalDelta: Vector2D) {
-        guard let component: CanvasHandle = handle.component()
-        else { return }
-
-        switch component.kind {
-        case .midpoint(let index):
-            guard let target: RuntimeEntity = handle.target(Handles.self) else { break }
-            finalizeMidpointMove(target: target, index: index, finalPosition: finalPosition)
-        }
-        document.queueInteractivePreviewUpdate()
-    }
-
-    func finalizeMidpointMove(target: RuntimeEntity, index: Int, finalPosition: Vector2D) {
-        guard let objectID = target.objectID
-        else { return }
-        
-        let trans = document.createOrReuseTransaction()
-        guard trans.contains(objectID) else { return }
-        
-        let object = trans.mutate(objectID)
-        guard object.type.hasTrait(DiagramDomain.Traits.DiagramConnector) else { return }
-        
-        if var midpoints: [Point] = object["midpoints"] {
-            guard index < midpoints.count else { return }
-            midpoints[index] = finalPosition
-            object["midpoints"] = Variant(midpoints)
-        }
-        else {
-            object["midpoints"] = Variant([finalPosition])
-        }
-
-    }
     // MARK: - Clean-up
     
     func cleanUp() {
         world.removeComponentForAll(PreviewPositionComponent.self)
         world.removeComponentForAll(PreviewMidpoints.self)
     }
-    
-    func removeHandles() {
-        for (runtimeID, _) in world.query(CanvasHandle.self) {
-            world.despawn(runtimeID)
-        }
-    }
-
-    
 }

@@ -45,6 +45,8 @@ class DiagramCanvas: View, WorkspaceBound {
     /// - SeeAlso: ``diagram`` – source for the scene.
     var scene: RuntimeEntity?
 
+    let gripController: GripController
+    
     var style: CanvasStyle
     var showValueIndicators: Bool = true {
         didSet { self.indicatorOverlay.setNeedsRender() }
@@ -108,6 +110,7 @@ class DiagramCanvas: View, WorkspaceBound {
         self.overlays.add(self.highlightOverlay)
 
         self.editorManager = InlineEditorManager()
+        self.gripController = GripController()
     }
     
     func bind(workspace: any WorkspaceServices, document: Document) {
@@ -115,12 +118,14 @@ class DiagramCanvas: View, WorkspaceBound {
         self.diagram = nil
         self.document = document
         self.editorManager?.bind(document: document, canvas: self)
+        self.gripController.bind(canvas: self, world: document.world)
     }
     func unbindWorkspace() {
         self.scene = nil
         self.diagram = nil
         self.document = nil
         self.editorManager?.unbind()
+        self.gripController.unbind()
     }
     
     /// Convert screen coordinates to world coordinates
@@ -157,10 +162,12 @@ class DiagramCanvas: View, WorkspaceBound {
         // TODO: Move to bind(), once we are sure we have diagram at that time.
         if scene == nil {
             createScene()
+            gripController.createAll()
         }
     }
 
     func onSelectionChanged(_ document: Document) {
+        gripController.createAll()
         highlightOverlay.setNeedsRender()
     }
 
@@ -170,6 +177,7 @@ class DiagramCanvas: View, WorkspaceBound {
         self.diagram = document.mainDiagram
         updateScene()
         self.scene?.setComponent(LayoutDirty())
+        gripController.createAll()
     }
     
     func onSimulationPlayerStep(_ document: Document) {
@@ -185,6 +193,8 @@ class DiagramCanvas: View, WorkspaceBound {
         mainOverlay.setNeedsRender()
         highlightOverlay.setNeedsRender()
         indicatorOverlay.setNeedsRender()
+
+        gripController.syncAll()
     }
     
     func onPreviewEnded(_ document: Document) {
@@ -192,6 +202,8 @@ class DiagramCanvas: View, WorkspaceBound {
         self.mainOverlay.setNeedsRender()
         self.highlightOverlay   .setNeedsRender()
         self.previewOverlay.setNeedsRender()
+
+        gripController.createAll()
     }
 
     // MARK: - Scene
@@ -392,73 +404,6 @@ class DiagramCanvas: View, WorkspaceBound {
         centerView(at: visibleWorldRect.center, zoom: 1.0)
     }
     
-    func hitTarget(screenPosition: Vector2D) -> CanvasHitTarget? {
-        guard let scene else { return nil }
-        
-        let scenePosition = worldToScene(screenToWorld(screenPosition))
-        let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
-        
-        guard let hitEntity = hitTest(node: scene, scenePosition: scenePosition, radius: radius),
-              let parent: RuntimeEntity = hitEntity.target(ChildOf.self)
-        else { return nil }
-
-        // Determine hit target type
-        //
-        if hitEntity.contains(CanvasHandle.self) {
-            return CanvasHitTarget(sceneNode: hitEntity.runtimeID,
-                                   kind: .handle(hitEntity.runtimeID))
-        }
-        
-        // Resolve the design entity: for blocks/connectors it's the hit entity itself;
-        // for labels/indicators it is the parent block.
-        let designEntity: RuntimeEntity?
-        if hitEntity.contains(BlockSceneNode.self) || hitEntity.contains(ConnectorSceneNode.self) {
-            designEntity = hitEntity.target(RepresentationOf.self)
-        }
-        else {  // Label, indicator, etc. — parent is the block scene node
-            designEntity = parent.target(RepresentationOf.self)
-        }
-        let designRuntimeID = designEntity?.runtimeID ?? hitEntity.runtimeID
-        
-        let kind: CanvasHitTarget.Kind
-        
-        if parent.relates(SceneNode.PrimaryLabel.self, to: hitEntity) {
-            kind = .object(designRuntimeID, .primaryLabel)
-        } else if parent.relates(SceneNode.SecondaryLabel.self, to: hitEntity) {
-            kind = .object(designRuntimeID, .secondaryLabel)
-        } else if hitEntity.contains(IssueIndicatorSceneNode.self) {
-            kind = .object(designRuntimeID, .issueIndicator)
-        } else if hitEntity.contains(BlockSceneNode.self) || hitEntity.contains(ConnectorSceneNode.self) {
-            kind = .object(designRuntimeID, .body)
-        }
-        else {
-            return nil
-        }
-        
-        return CanvasHitTarget(sceneNode: hitEntity.runtimeID, kind: kind)
-    }
-    func hitTest(node: RuntimeEntity, scenePosition: Vector2D, radius: Double) -> RuntimeEntity? {
-        // FIXME: This is temporary solution. We need z-index ordering
-        for handle in node.children where handle.contains(CanvasHandle.self) {
-            guard let region: TouchRegion = handle.component(),
-                  region.isHit(at: scenePosition, radius: radius)
-            else { continue }
-
-            return handle
-        }
-
-        for child in node.children {
-            if let region: TouchRegion = child.component(),
-               region.isHit(at: scenePosition, radius: radius)
-            {
-                return child
-            }
-            if let found = hitTest(node: child, scenePosition: scenePosition, radius: radius) {
-                return found
-            }
-        }
-        return nil
-    }
     
     // MARK: - Inline Editors
     func openInlineEditorForSelection(_ editorName: String) {

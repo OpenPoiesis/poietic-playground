@@ -91,10 +91,12 @@ protocol CanvasTool: AnyObject {
     
     func paletteItems(in context: ToolContext) -> [PaletteItem]
     func makeInteraction(context: ToolContext) -> any ToolInteraction
+    func makeInteraction(grip: CanvasGripHit, context: ToolContext) -> (any ToolInteraction)?
 }
 
 extension CanvasTool {
     func paletteItems(in context: ToolContext) -> [PaletteItem] {
         return [] // Empty default
     }
+    func makeInteraction(grip: CanvasGripHit, context: ToolContext) -> (any ToolInteraction)? { nil }
 }

@@ -86,7 +86,14 @@ class ToolManager {
         
     }
 
+    func releaseCapture() {
+        guard let capture else { return }
+        capture.interaction.end()
+        self.capture = nil
+    }
+    
     func deactivate() {
+        releaseCapture()
         activeInteraction?.end()
         activeInteraction = nil
     }
@@ -106,29 +113,54 @@ class ToolManager {
         }
     }
     
+    /// Dispatches the tool event to an tool/grip interaction.
+    ///
+    /// The dispatch tries the following in given order:
+    ///
+    /// 1. Try captured interaction, and keep captured if still engaged.
+    /// 2. If a grip was hit, then try to dispatch to an interaction that was made by active tool
+    ///    for that grip. Capture the grip interaction.
+    /// 3. Try active interaction, and keep captured if still engaged.
+    /// 4. If none of the above handled or did engage, then try to forward to navigation.
+    ///
     @discardableResult
     func dispatch(_ event: ToolEvent, canvas: DiagramCanvas) -> EventDisposition {
-
+        var skip: Bool = false
         // FIXME: We are using capture here, but the interaction might be bound to other canvas on init (through tool's makeInteraction())
         if let capture, capture.canvas === canvas {
             let disposition = capture.interaction.handleEvent(event)
             switch disposition {
-            case .ignored:
-                break // navigation handles it
-            case .handled:
-                self.capture = nil
-                return .handled
+            case .ignored: skip = true
+            case .handled: releaseCapture(); return .handled
+            case .engaged: return .engaged
+            }
+        }
+        else if let context,
+                let tool = activeTool,
+                event.type == .pointerDown,
+                let target = canvas.hitGrip(screenPosition: event.screenPos),
+                let interaction = tool.makeInteraction(grip: target, context: context)
+        {
+            interaction.begin()
+            let disposition = interaction.handleEvent(event)
+
+            switch disposition {
+            case .ignored: break
+            case .handled: releaseCapture(); return .handled
             case .engaged:
+                capture = (interaction: interaction, canvas: canvas)
                 return .engaged
             }
         }
         
-        if let activeInteraction {
+        if !skip, let activeInteraction {
             let disposition = activeInteraction.handleEvent(event)
             switch disposition {
             case .ignored: break // navigation handles it
             case .handled: return .handled
-            case .engaged: capture = (interaction: activeInteraction, canvas: canvas)
+            case .engaged:
+                capture = (interaction: activeInteraction, canvas: canvas)
+                return .engaged
             }
         }
         

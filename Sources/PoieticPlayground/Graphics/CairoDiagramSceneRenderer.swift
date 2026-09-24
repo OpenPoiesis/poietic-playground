@@ -350,17 +350,16 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     
     // MARK: - Application Specific
     func renderUnknown(_ entity: RuntimeEntity, context: Context) {
-        if entity.contains(CanvasHandle.self) {
-            renderHandle(entity, context: context)
+        if entity.contains(Grip.self) {
+            renderGrip(entity, context: context)
         }
     }
 
-    func renderHandle(_ entity: RuntimeEntity, context: Context) {
-        guard context.overlay == .highlight,
-              let handle: CanvasHandle = entity.component()
+    func renderGrip(_ entity: RuntimeEntity, context: Context) {
+        guard context.overlay == .highlight
         else { return }
         
-        let size = style.metric(.handleSize, default: CanvasHandle.DefaultSize)
+        let size = style.metric(.handleSize, default: Grip.DefaultSize)
 
         if let style = style.shapeStyle(class: .handle) {
             if let color = style.stroke {

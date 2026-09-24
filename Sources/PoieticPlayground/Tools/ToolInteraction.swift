@@ -36,6 +36,10 @@ protocol ToolInteraction: AnyObject {
     ///
     /// Called by ``ToolManager`` when a tool is deactivated or when a palette item selection
     /// changed.
+    ///
+    /// Objects conforming to the protocol should to call ``Document/endInteractivePreview()`` here
+    /// if they started an interactive preview.
+    ///
     func end()
     
     /// Main function that performs the actual tool interaction based on given event.
