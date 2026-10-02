@@ -1,15 +1,19 @@
+# macOS
 .DS_Store
-/.build
-/Packages
-xcuserdata/
-DerivedData/
-.swiftpm
-.swiftpm/configuration/registries.json
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-.netrc
-imgui.ini
-/Sandbox
-# Distribution build output (Distribution/package-macos.sh)
-/dist/
-# Generated app icon; commit the .icns, ignore intermediate artwork only if desired
 
+# Xcode/Swift Package Manager 
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+UserInterfaceState.xcuserstate
+*.xcodeproj
+Packages/
+
+# Other
+/out/
+/Sandbox/
+/gh-pages/
+imgui.ini
+
+Package.resolved

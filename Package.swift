@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.4
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -34,6 +34,7 @@ let package = Package(
             resources: [
               .copy("Resources/icons/"),
               .copy("Resources/designs/"),
+              .copy("Resources/fonts/"),
               .copy("Resources/stock_flow_pictograms.json"),
               .copy("Resources/stock_flow_pictograms-jolly.json"),
             ],
