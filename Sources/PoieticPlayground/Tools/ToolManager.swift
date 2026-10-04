@@ -39,9 +39,16 @@ class ToolManager {
     
     /// Bind to an editing context.
     ///
-    func bind(workspace: any WorkspaceServices, document: Document, canvas: DiagramCanvas) {
+    func bind(workspace: any WorkspaceServices,
+              document: Document,
+              canvas: DiagramCanvas,
+              traitEnvironment: TraitEnvironment)
+    {
         deactivate()
-        context = ToolContext(workspace: workspace, document: document, canvas: canvas)
+        context = ToolContext(workspace: workspace,
+                              document: document,
+                              canvas: canvas,
+                              traitEnvironment: traitEnvironment)
         navigation = NavigationInteraction(canvas: canvas)
         activateCurrentTool()
     }

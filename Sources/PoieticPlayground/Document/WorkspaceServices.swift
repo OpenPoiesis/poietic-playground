@@ -10,6 +10,7 @@ import Diagramming
 
 @MainActor
 protocol WorkspaceServices: AnyObject {
+    var traitEnvironment: TraitEnvironment { get }
     func switchTool(_ tool: CanvasToolType)
     func openIssues(for objectID: ObjectID?)
     func centerView(at position: Vector2D, zoom: Double?)
@@ -17,6 +18,8 @@ protocol WorkspaceServices: AnyObject {
 }
 
 extension Workspace: WorkspaceServices {
+    var traitEnvironment: TraitEnvironment { environment }
+
     func openIssues(for objectID: ObjectID?) {
         self.issuesPanel.isVisible = true
         self.issuesPanel.setSelectedObject(objectID)

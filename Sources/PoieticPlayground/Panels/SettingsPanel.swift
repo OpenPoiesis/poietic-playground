@@ -9,6 +9,7 @@ import CIimgui
 
 class SettingsPanel: Panel {
     weak var app: Application? = nil
+    var interfaceStyle: InterfaceStyle? { app?.interfaceStyle }
     var isVisible: Bool = false
     var interfaceStyleSelection: Int32 = 0
     
@@ -19,20 +20,28 @@ class SettingsPanel: Panel {
     func draw() {
         guard isVisible else { return }
         ImGui.Begin("Settings", &isVisible, ImGuiWindowFlags_None | ImGuiWindowFlags_NoCollapse)
-        drawInterfaceStyleSettings()
+        drawInterfaceAppearanceSettings()
 //        drawNotationSettings()
         ImGui.End()
     }
    
-    func drawInterfaceStyleSettings() {
-        ImGui.TextUnformatted("Interface Style")
+    func drawInterfaceAppearanceSettings() {
+        let appearance: InterfaceStyle.Appearance
+        if let app {
+            appearance = app.interfaceStyle.appearance
+        }
+        else {
+            appearance = .dark
+        }
+        
+        ImGui.TextUnformatted("Appearance")
         ImGui.SameLine()
-        if ImGui.RadioButton("Dark", InterfaceStyle.current.scheme == .dark) {
-            app?.setInterfaceColorScheme(.dark)
+        if ImGui.RadioButton("Dark", appearance == .dark) {
+            app?.setInterfaceAppearance(.dark)
         }
         ImGui.SameLine()
-        if ImGui.RadioButton("Light", InterfaceStyle.current.scheme == .light) {
-            app?.setInterfaceColorScheme(.light)
+        if ImGui.RadioButton("Light", appearance == .light) {
+            app?.setInterfaceAppearance(.light)
         }
 
     }
@@ -41,12 +50,6 @@ class SettingsPanel: Panel {
         ImGui.SeparatorText("Notation")
     }
     
-    func setInterfaceColorScheme(_ scheme: InterfaceStyle.ColorScheme) {
-        guard scheme != InterfaceStyle.current.scheme else { return }
-        let style = InterfaceStyle(scheme: scheme)
-        InterfaceStyle.current = style
-    }
-
     func update(_ timeDelta: Double) {
     }
 }

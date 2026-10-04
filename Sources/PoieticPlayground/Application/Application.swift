@@ -22,7 +22,7 @@ import Foundation
 /// - Resource management
 /// - Glue between Document and UI
 @MainActor
-class Application {
+class Application: @MainActor TraitEnvironment {
     // Dumping ground of globals (for now)
     //    static let NewDesignTemplatePath = "designs/new_canvas.json"
     static let NewDesignTemplatePath = "designs/design-capital.poietic"
@@ -70,8 +70,20 @@ class Application {
     
     var currentDocument: Document? { workspace?.currentDocument }
     
-    init() {
+    let resourceDirectory: ResourceDirectory
+    let resourceManager: ResourceManager
+    let backend: any GraphicsBackendProtocol
+    let interfaceStyle: InterfaceStyle
+    let displayScale: DisplayScale = .hiDPI // TODO: Use this
+    
+    
+    init(resources: ResourceDirectory, backend: any GraphicsBackendProtocol) {
+        self.resourceDirectory = resources
+        self.backend = backend
+        self.resourceManager = ResourceManager(resources.rootURL.path(), backend: backend)
         self.notation = Notation.DefaultNotation
+
+        self.interfaceStyle = InterfaceStyle(resourceManager: resourceManager)
         
         // Document
         self.workspace = nil

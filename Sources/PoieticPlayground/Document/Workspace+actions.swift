@@ -92,19 +92,19 @@ extension Workspace {
     
     func copyToPasteboard(_ ids: [ObjectID], from document: Document) {
         guard let text = document.serialiseForTextExport(ids: ids) else  {
-            environment?.report(title: "Internal Error",
+            environment.report(title: "Internal Error",
                                 message: "Object serialisation failed",
                                 style: .error)
             return
         }
-        _ = environment?.setPasteboardText(text)
+        _ = environment.setPasteboardText(text)
     }
     
     // TODO: Move to Document as rawDesignFromText/deserializeFromText
     func rawDesignFromPasteboard() -> RawDesign? {
-        guard let text = environment?.getPasteboardText() else { return nil }
+        guard let text = environment.getPasteboardText() else { return nil }
         guard let data = text.data(using: .utf8) else {
-            environment?.report(title: "Error",
+            environment.report(title: "Error",
                                 message: "Can not get pasteboard data",
                                 style: .error)
             return nil
@@ -116,7 +116,7 @@ extension Workspace {
             rawDesign = try reader.read(data: data)
         }
         catch {
-            environment?.report(title: "Error",
+            environment.report(title: "Error",
                                 message: "Unable to process pasteboard content: \(error.description)",
                                 style: .error)
 

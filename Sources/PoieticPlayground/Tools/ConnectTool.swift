@@ -18,11 +18,8 @@ class ConnectTool: CanvasTool {
 
     var isLocked: Bool = false
     var selectedPaletteItem: String? = nil
-
+    
     func paletteItems(in context: ToolContext) -> [PaletteItem] {
-        let document = context.document
-        let world = document.world
-
         var items: [PaletteItem] = []
         
         // TODO: Read from metamodel
@@ -31,19 +28,20 @@ class ConnectTool: CanvasTool {
             StockFlowDomain.Types.Parameter,
             StockFlowDomain.Types.Flow
         ]
-
+        let style = context.traitEnvironment.interfaceStyle
+        
         for type in connectableTypes {
             var texture: TextureHandle? = nil
             switch type.name {
             case "Parameter":
-                texture = InterfaceStyle.current.texture(forIcon: .arrowParameter)
+                texture = style.texture(forIcon: .arrowParameter)
             case "Flow":
-                texture = InterfaceStyle.current.texture(forIcon: .arrowOutlined)
+                texture = style.texture(forIcon: .arrowOutlined)
             default:
                 texture = nil
             }
             guard let texture else {
-                print("NO TEXTURE FOR: \(type.name)")
+                debugPrint("ERROR: No texture for connector type: \(type.name)")
                 continue
             }
             let item = PaletteItem(identifier: type.name, image: .texture(texture), label: type.label)

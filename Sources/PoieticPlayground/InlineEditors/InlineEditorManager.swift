@@ -13,7 +13,8 @@ import Diagramming
 class InlineEditorManager {
     weak var canvas: DiagramCanvas?
     weak var document: Document?
-    
+    weak var traitEnvironment: any TraitEnvironment? = nil
+
     private var editors: [String:InlineEditor] = [:]
     private(set) var currentEditor: (InlineEditor)? = nil
     private(set) var currentEntity: RuntimeEntity? = nil
@@ -22,17 +23,19 @@ class InlineEditorManager {
         self.editors[name] = editor
     }
     
-    func bind(document: Document, canvas: DiagramCanvas) {
+    func bind(document: Document, canvas: DiagramCanvas, traitEnvironment: TraitEnvironment) {
         self.document = document
         self.canvas = canvas
+        self.traitEnvironment = traitEnvironment
     }
     func unbind() {
         self.document = nil
         self.canvas = nil
+        self.traitEnvironment = nil
     }
     
-    func openEditor(_ editorName: String,
-                    for entity: RuntimeEntity) {
+    func openEditor(_ editorName: String, for entity: RuntimeEntity) {
+        guard let traitEnvironment else { return }
         close()
         
         guard let editor = editors[editorName],
@@ -41,7 +44,7 @@ class InlineEditorManager {
         else { return }
         
         let rect = editor.preferredBox(for: entity)
-        editor.bind(canvas: canvas, document: document)
+        editor.bind(document: document, canvas: canvas, traitEnvironment: traitEnvironment)
         
         if editor.open(for: entity) {
             currentEditor = editor
@@ -69,10 +72,12 @@ class InlineEditorManager {
 class InlineEditor {
     weak var canvas: DiagramCanvas?
     weak var document: Document?
+    weak var traitEnvironment: any TraitEnvironment? = nil
 
-    final func bind(canvas: DiagramCanvas, document: Document) {
+    func bind(document: Document, canvas: DiagramCanvas, traitEnvironment: TraitEnvironment) {
         self.document = document
         self.canvas = canvas
+        self.traitEnvironment = traitEnvironment
     }
 
     func open(for entity: RuntimeEntity) -> Bool {

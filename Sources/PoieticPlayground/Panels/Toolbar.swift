@@ -14,8 +14,11 @@ class Toolbar: @MainActor Panel {
     private weak var toolManager: ToolManager?
     private let palette: ObjectPalette
 
-    init(toolManager: ToolManager) {
+    var traitEnvironment: TraitEnvironment
+    
+    init(toolManager: ToolManager, traitEnvironment: TraitEnvironment) {
         self.toolManager = toolManager
+        self.traitEnvironment = traitEnvironment
         self.palette = ObjectPalette(columns: 3, items: [])
     }
     
@@ -23,7 +26,7 @@ class Toolbar: @MainActor Panel {
     
     func draw() {
         guard let toolManager else { return }
-        let style = InterfaceStyle.current
+        let style = traitEnvironment.interfaceStyle
         
         let buttonSize = ImVec2(32, 32)
         ImGui.Begin("Tools", &isVisible, ImGuiWindowFlags_NoResize
@@ -35,6 +38,7 @@ class Toolbar: @MainActor Panel {
             let isActive = toolManager.isActive(tool)
             
             if isActive {
+                // TODO: Put these colors to interface style or use some imgui style colors
                 ImGui.PushStyleColor(ImGuiCol(ImGuiCol_Button.rawValue), ImVec4(0.7, 0.7, 0.7, 1.0))
                 ImGui.PushStyleColor(ImGuiCol(ImGuiCol_ButtonHovered.rawValue), ImVec4(0.9, 0.9, 0.9, 1.0))
                 ImGui.PushStyleColor(ImGuiCol(ImGuiCol_ButtonActive.rawValue), ImVec4(0.6, 0.6, 0.1, 1.0))
@@ -44,7 +48,14 @@ class Toolbar: @MainActor Panel {
 
             let texture = style.texture(forIcon: toolClass.iconKey)
             let ref = ImTextureRef(texture.textureID)
-            if ImGui.ImageButton("##\(toolClass.type.name)", ref, buttonSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 0), ImVec4(1, 1, 1, 1)) {
+            if ImGui.ImageButton("##\(toolClass.type.name)",
+                                 ref,
+                                 buttonSize,
+                                 ImVec2(0, 0), // uv0
+                                 ImVec2(1, 1), // uv1
+                                 ImVec4(1, 1, 1, 0), // bg_col
+                                 style.primaryTint.imVecValue) // tint_col
+            {
                 toolManager.select(toolClass.type)
             }
             ImGui.PopID()

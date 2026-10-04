@@ -12,9 +12,7 @@ import Foundation
 
 extension Application {
     func loadResources() {
-        let manager = ResourceManager.shared
-        
-        let notationURL = manager.resourceURL(Self.DefaultStockFlowPictogramsPath)
+        let notationURL = resourceManager.resourceURL(Self.DefaultStockFlowPictogramsPath)
         self.loadNotation(url: notationURL)
     }
 

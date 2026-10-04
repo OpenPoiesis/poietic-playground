@@ -25,13 +25,13 @@ extension Workspace {
         let context = CommandContext(document: document, canvas: canvas)
 
         do {
-            environment?.log("Running command '\(command.name)'")
+            environment.log("Running command '\(command.name)'")
             try command.run(context)
         }
         catch {
-            environment?.logError("Command '\(command.name)' failed: \(error.message)")
+            environment.logError("Command '\(command.name)' failed: \(error.message)")
             if let underlyingError = error.underlyingError {
-                environment?.logError("Underlying error: \(String(describing: underlyingError))")
+                environment.logError("Underlying error: \(String(describing: underlyingError))")
             }
             let message: String
             
@@ -46,7 +46,7 @@ extension Workspace {
                 
             }
             
-            environment?.report(title: title, message: error.message, style: .error)
+            environment.report(title: title, message: message, style: .error)
         }
     }
 

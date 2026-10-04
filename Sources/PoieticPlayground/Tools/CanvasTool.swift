@@ -54,10 +54,16 @@ struct ToolContext {
     ///
     unowned let canvas: DiagramCanvas
     
-    public init(workspace: any WorkspaceServices, document: Document, canvas: DiagramCanvas) {
+    unowned let traitEnvironment: any TraitEnvironment
+    
+    public init(workspace: any WorkspaceServices,
+                document: Document,
+                canvas: DiagramCanvas,
+                traitEnvironment: TraitEnvironment) {
         self.workspace = workspace
         self.document = document
         self.canvas = canvas
+        self.traitEnvironment = traitEnvironment
     }
     
     func switchTool(_ tool: CanvasToolType) {

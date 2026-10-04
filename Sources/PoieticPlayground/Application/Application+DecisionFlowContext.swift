@@ -6,7 +6,7 @@
 //
 
 @MainActor
-extension Application: ApplicationEnvironment {
+extension Application: @MainActor ApplicationEnvironment {
     
 }
 

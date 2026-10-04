@@ -117,7 +117,9 @@ class DiagramCanvas: View, WorkspaceBound {
         self.scene = nil
         self.diagram = nil
         self.document = document
-        self.editorManager?.bind(document: document, canvas: self)
+        self.editorManager?.bind(document: document,
+                                 canvas: self,
+                                 traitEnvironment: workspace.traitEnvironment)
         self.gripController.bind(canvas: self, world: document.world)
     }
     func unbindWorkspace() {

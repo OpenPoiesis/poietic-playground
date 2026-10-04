@@ -108,6 +108,7 @@ class SelectionInteraction: ToolInteraction {
     func dragStart(_ event: ToolEvent) -> EventDisposition {
 //        TODO: popupManager?.closeInlinePopup()
         switch state {
+            
         case .idle, .objectSelect:
             return .ignored
         case .objectHit, .objectPartHit, .objectMove:

@@ -23,7 +23,8 @@ class FormulaInlineEditor: InlineEditor {
     private var grabFocus: Bool = false
     
     override func open(for entity: RuntimeEntity) -> Bool {
-        guard let object = entity.designObject,
+        guard let interfaceStyle = traitEnvironment?.interfaceStyle,
+              let object = entity.designObject,
               object.type.hasTrait(SimulationDomain.Traits.Formula),
               let block: DiagramBlock = entity.component()
         else { return false }
@@ -37,8 +38,7 @@ class FormulaInlineEditor: InlineEditor {
         let text = object["formula"] ?? ""
         self.formulaBuffer = InputTextBuffer(text)
         
-        let style = InterfaceStyle.current
-        self.formulaIcon = style.texture(forIcon: .formula)
+        self.formulaIcon = interfaceStyle.texture(forIcon: .formula)
         
         return true
     }

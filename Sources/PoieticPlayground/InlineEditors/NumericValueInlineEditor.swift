@@ -50,17 +50,20 @@ class NumericValueInlineEditor: InlineEditor {
         self.value = object[attributeName] ?? defaultValue
         self.initialValue = self.value
         
-        let style = InterfaceStyle.current
-        self.icon = style.texture(forIcon: self.iconKey)
+        if let style = traitEnvironment?.interfaceStyle {
+            self.icon = style.texture(forIcon: self.iconKey)
+        }
         
         return true
     }
     
     override func draw() -> Bool {
+        guard let traitEnvironment else { return false }
         guard currentObjectID != nil,
               let canvas
         else { return false } // Cancelled
-        
+        let style = traitEnvironment.interfaceStyle
+
         let screenPos = canvas.worldToScreen(worldPosition)
         
         ImGui.SetNextWindowPos(screenPos, 0, ImVec2(0.5, 0))
@@ -82,7 +85,9 @@ class NumericValueInlineEditor: InlineEditor {
             }
 
             if let icon {
-                ImGui.Image(icon.imTextureRef, ImVec2(20, 20), ImVec2(0,0), ImVec2(1,1))
+                ImGui.ImageWithBg(icon.imTextureRef, ImVec2(20, 20),
+                                  ImVec2(0,0), ImVec2(1,1),
+                                  ImVec4(1, 1, 1, 0), style.primaryTint.imVecValue)
                 ImGui.SameLine()
             }
             if grabFocus {

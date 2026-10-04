@@ -45,54 +45,53 @@ enum IconKey: CaseIterable, Hashable {
     }
 }
 
-class InterfaceStyle {
-    @MainActor
-    static var current: InterfaceStyle {
-        get {
-            guard let style = self._current else {
-                fatalError("Interface style not initialised")
-            }
-            return style
-        }
-        set(newValue) {
-            _current = newValue
-        }
+enum DisplayScale {
+    case standard
+    case hiDPI
+    init(displayScale: Float) {
+        self = displayScale >= 1.5 ? .hiDPI : .standard
     }
-    @MainActor
-    static var _current: InterfaceStyle?
-    
-    enum ColorScheme {
+}
+
+// TODO: This is not 100% clean, as InterfaceStyle is bound to resource manager here
+protocol TraitEnvironment: AnyObject {
+    var interfaceStyle: InterfaceStyle { get }
+    var displayScale: DisplayScale { get }
+//    var userLevel: AudienceLevel { get }
+}
+
+class InterfaceStyle {
+    enum Appearance {
         case light
         case dark
     }
-    enum Scale {
-        case standard
-        case hiDPI
-        init(displayScale: Float) {
-            self = displayScale >= 1.5 ? .hiDPI : .standard
+    
+    var appearance: Appearance
+    var icons: [IconKey:TextureHandle]
+
+    var primaryTint: Color {
+        switch appearance {
+        case .dark: .white
+        case .light: .black
         }
     }
-    let scheme: ColorScheme
-    let scale: Scale
-    var icons: [IconKey:TextureHandle]
     
-    init(scheme: ColorScheme = .dark, scale: Scale = .standard) {
-        self.scheme = scheme
-        self.scale = scale
+    let resourceManager: ResourceManager
+    
+    init(resourceManager: ResourceManager, appearance: Appearance = .dark) {
+        self.resourceManager = resourceManager
+        self.appearance = appearance
         self.icons = [:]
     }
+    
+    /// Get a texture of an icon mask that will be tinted using primaryTint colour.
     @MainActor
     func texture(forIcon iconKey: IconKey) -> TextureHandle {
         if let texture = icons[iconKey] {
             return texture
         }
-        let schemeDir: String = switch scheme {
-        case .light: "black"
-        case .dark: "white"
-        }
-        let manager = ResourceManager.shared
-        let path = "icons/" + schemeDir + "/" + iconKey.name + ".png"
-        let texture = manager.loadTexture(path)
+        let path = "icons/white/" + iconKey.name + ".png"
+        let texture = resourceManager.loadTexture(path)
         return texture
     }
 }

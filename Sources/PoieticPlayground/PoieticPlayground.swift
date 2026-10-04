@@ -6,6 +6,10 @@ import CIimgui
 @main
 struct PoieticPlayground {
     static func main() {
+        guard let resourceDir = ResourceDirectory.find() else {
+            fatalError("Unable to find resources")
+        }
+        
         let backend: any GraphicsBackendProtocol
         
         do {
@@ -15,12 +19,8 @@ struct PoieticPlayground {
         } catch {
             fatalError("Initialisation failed: \(error)")
         }
-        // Initialise Application Context (Globals)
-        let style = InterfaceStyle(scheme: .light)
-        InterfaceStyle.current = style
-        let manager = ResourceManager(ResourceManager.DefaultResourcesPath, backend: backend)
-        ResourceManager.registerShared(manager)
-        let app: Application = Application()
+        
+        let app: Application = Application(resources: resourceDir, backend: backend)
         
         app.run()
         

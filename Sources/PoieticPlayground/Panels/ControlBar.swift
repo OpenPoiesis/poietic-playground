@@ -16,6 +16,7 @@ class ControlBar: @MainActor Panel {
     static let StepDisplayWidth: Float = 100.0
     
     var player: ResultPlayer? = nil
+    var traitEnvironment: TraitEnvironment?
     var isEnabled: Bool = true
     var isVisible: Bool = true
     var currentStep: Int32 = 0
@@ -31,13 +32,14 @@ class ControlBar: @MainActor Panel {
         currentStepBuffer = InputTextBuffer("0")
     }
 
-    func bind(_ player: ResultPlayer) {
+    func bind(_ player: ResultPlayer, traitEnvironment: TraitEnvironment) {
         self.player = player
+        self.traitEnvironment = traitEnvironment
     }
+    
     func unbind() {
         self.player = nil
     }
-    
    
     func onDesignPlaneChanged(_ document: Document) {
         // We are assuming that simulation planning schedule was run.
@@ -67,8 +69,6 @@ class ControlBar: @MainActor Panel {
     }
     
     func draw() {
-        let style = InterfaceStyle.current
-
         ImGui.Begin("Simulation", &isVisible,
                                         ImGuiWindowFlags_NoResize
                                         | ImGuiWindowFlags_NoScrollbar
@@ -178,12 +178,15 @@ class ControlBar: @MainActor Panel {
     }
 
     func controlButton(_ label: String, iconKey: IconKey, isEnabled: inout Bool) -> Bool {
-        let style = InterfaceStyle.current
+        guard let style = traitEnvironment?.interfaceStyle else { return false }
+        // TODO: Use style tint here
         let result: Bool
 
         let icon = style.texture(forIcon: iconKey)
 
-        result = ImGui.ImageButton(label, icon.imTextureRef, Self.ButtonSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 0), ImVec4(1, 1, 1, 1))
+        result = ImGui.ImageButton(label, icon.imTextureRef, Self.ButtonSize,
+                                   ImVec2(0, 0), ImVec2(1, 1),
+                                   ImVec4(1, 1, 1, 0), style.primaryTint.imVecValue)
             
         if ImGui.IsItemHovered(ImGuiHoveredFlags(ImGuiHoveredFlags_DelayShort.rawValue)) {
             ImGui.BeginTooltip()

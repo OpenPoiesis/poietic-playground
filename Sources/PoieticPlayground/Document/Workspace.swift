@@ -26,7 +26,7 @@ protocol Reporter: AnyObject {
 // Group information that we want to request from the app.
 // TODO: This is just a placeholder during refactoring
 @MainActor
-protocol ApplicationEnvironment: Reporter {
+protocol ApplicationEnvironment: Reporter, TraitEnvironment {
     func setPasteboardText(_ text: String) -> Bool
     func getPasteboardText() -> String?
 
@@ -47,7 +47,7 @@ class Workspace {
     private(set) var currentDocument: Document?
     private var bound: [any WorkspaceBound] = []
 
-    weak var environment: any ApplicationEnvironment? = nil
+    unowned var environment: any ApplicationEnvironment
 
     var notation: Notation
     
@@ -107,11 +107,11 @@ class Workspace {
         panels.append(self.metamodelPanel)
 
         self.player = ResultPlayer()
-        self.controlBar.bind(player)
+        self.controlBar.bind(player, traitEnvironment: environment)
 
         
         self.toolManager = ToolManager()
-        self.toolbar = Toolbar(toolManager: self.toolManager)
+        self.toolbar = Toolbar(toolManager: self.toolManager, traitEnvironment: environment)
         
         // FIXME: Use enum instead of names
         // Register inline editors
@@ -152,9 +152,9 @@ class Workspace {
                                                       time: player.currentTime)
             }
             catch {
-                environment?.report(title: "Player Schedule Failed",
-                                    message: "Please file an issue with developers",
-                                    style: .error)
+                environment.report(title: "Player Schedule Failed",
+                                   message: "Please file an issue with developers",
+                                   style: .error)
             }
             player.worldUpdated()
         }
@@ -170,8 +170,8 @@ class Workspace {
             try currentDocument?.world.run(schedule: DocumentCleanupSchedule.self)
         }
         catch {
-            environment?.report(title: "Internal System Error", message: String(describing: error), style: .error)
-            environment?.logError("Internal system error:" + String(describing: error))
+            environment.report(title: "Internal System Error", message: String(describing: error), style: .error)
+            environment.logError("Internal system error:" + String(describing: error))
         }
     }
     
@@ -218,8 +218,7 @@ class Workspace {
     ///     - runs `InteractivePreviewSchedule` if interactive preview is active.
     ///
     func updateDocument(_ timeDelta: Double) {
-        guard let environment,
-              let document = currentDocument
+        guard let document = currentDocument
         else { return }
         guard !environment.isInteractionBlocked else { return }
         
@@ -266,7 +265,10 @@ class Workspace {
             object.bind(workspace: self, document: newDocument)
         }
 
-        toolManager.bind(workspace: self, document: newDocument, canvas: canvas)
+        toolManager.bind(workspace: self,
+                         document: newDocument,
+                         canvas: canvas,
+                         traitEnvironment: environment)
         
         canvas.setView(offset: .zero, zoom: 1)
         connectObservers(to: newDocument)

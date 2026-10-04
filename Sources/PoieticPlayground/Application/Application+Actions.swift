@@ -54,10 +54,8 @@ extension Application {
         settingsPanel.isVisible = true
     }
 
-    func setInterfaceColorScheme(_ scheme: InterfaceStyle.ColorScheme) {
-        guard scheme != InterfaceStyle.current.scheme else { return }
-        let style = InterfaceStyle(scheme: scheme)
-        InterfaceStyle.current = style
+    func setInterfaceAppearance(_ scheme: InterfaceStyle.Appearance) {
+        self.interfaceStyle.appearance = scheme
         
         switch scheme {
         case .light: ImGui.StyleColorsLight()

@@ -22,7 +22,7 @@ extension Application {
         let workspace = Workspace(environment: self, notation: notation)
 
         // New template design
-        let templateURL = ResourceManager.shared.resourceURL(Self.NewDesignTemplatePath)
+        let templateURL = resourceManager.resourceURL(Self.NewDesignTemplatePath)
         do {
             try workspace.openDesign(url: templateURL)
         }
@@ -35,6 +35,7 @@ extension Application {
         
         self.workspace = workspace
         
+        setInterfaceAppearance(interfaceStyle.appearance)
         mainLoop()
     }
 
