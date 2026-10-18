@@ -8,12 +8,6 @@ import CIimgui
 import Diagramming
 
 extension ImGui {
-    //    static func PushID(_ idString: String) {
-    //        idString.withCString { cString in
-    //            ImGui.PushID(cString)
-    //        }
-    //    }
-    
     static func GetStyleColor(_ index: ImGuiCol) -> Color {
         let color = ImGui.GetStyleColorVec4(index)
         return Color(color.pointee)

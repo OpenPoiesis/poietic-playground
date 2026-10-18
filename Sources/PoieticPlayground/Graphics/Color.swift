@@ -71,6 +71,8 @@ struct Color {
 }
 
 extension Color {
+    var vectorValue: SIMD4<Float> { value }
+    
     var imVecValue: ImVec4 {
         ImVec4(value.x, value.y, value.z, value.w)
     }

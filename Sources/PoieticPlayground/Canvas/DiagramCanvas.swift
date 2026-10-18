@@ -48,6 +48,8 @@ class DiagramCanvas: View, WorkspaceBound {
     let gripController: GripController
     
     var style: CanvasStyle
+    var queuedStyle: CanvasStyle?
+    
     var showValueIndicators: Bool = true {
         didSet { self.indicatorOverlay.setNeedsRender() }
     }
@@ -130,6 +132,10 @@ class DiagramCanvas: View, WorkspaceBound {
         self.gripController.unbind()
     }
     
+    func queueCanvasStyle(_ style: CanvasStyle) {
+        self.queuedStyle = style
+    }
+    
     /// Convert screen coordinates to world coordinates
     func screenToWorld(_ screenPos: Vector2D) -> Vector2D {
         let worldPos = Vector2D(screenPos - Vector2D(canvasPos)) / Double(zoomLevel) + viewOffset
@@ -166,11 +172,24 @@ class DiagramCanvas: View, WorkspaceBound {
             createScene()
             gripController.createAll()
         }
+        // TODO: Should this be here or on an event?
+        if let queuedStyle {
+            self.style = queuedStyle
+            self.scene?.setComponent(LayoutDirty())
+            self.overlays.setAllNeedsRender()
+            self.queuedStyle = nil
+        }
     }
 
     func onSelectionChanged(_ document: Document) {
         gripController.createAll()
         highlightOverlay.setNeedsRender()
+    }
+    
+    func onNotationChanged(_ document: Document) {
+        updateScene()
+        self.scene?.setComponent(LayoutDirty())
+        gripController.createAll()
     }
 
     /// Update renderable scene and mark the whole canvas as needing to be rendered.

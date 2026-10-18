@@ -17,7 +17,6 @@ class FormulaInlineEditor: InlineEditor {
     var currentEntity: RuntimeEntity?
     var currentObjectID: ObjectID?
     
-    var formulaIcon: TextureHandle?
     var formulaBuffer: InputTextBuffer?
 
     private var grabFocus: Bool = false
@@ -37,8 +36,6 @@ class FormulaInlineEditor: InlineEditor {
         
         let text = object["formula"] ?? ""
         self.formulaBuffer = InputTextBuffer(text)
-        
-        self.formulaIcon = interfaceStyle.texture(forIcon: .formula)
         
         return true
     }
@@ -71,10 +68,10 @@ class FormulaInlineEditor: InlineEditor {
                 grabFocus = false
             }
 
-            if let formulaIcon {
-                ImGui.Image(formulaIcon.imTextureRef, ImVec2(20, 20), ImVec2(0,0), ImVec2(1,1))
-                ImGui.SameLine()
-            }
+            ImGui.InvisibleButton("##icon", ImVec2(20.0, 20.0))
+            ImGui.DrawIconInItem(.formula)
+            ImGui.SameLine()
+
             if grabFocus {
                 ImGui.SetKeyboardFocusHere()
             }

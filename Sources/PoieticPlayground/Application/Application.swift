@@ -25,12 +25,30 @@ import Foundation
 class Application: @MainActor TraitEnvironment {
     // Dumping ground of globals (for now)
     //    static let NewDesignTemplatePath = "designs/new_canvas.json"
+    static let IconFontPath = "fonts/poietic-icons.ttf"
+    static let LoadFontNames = [
+        "IBMPlexSansCondensed-Regular.otf",
+        "IBMPlexSansCondensed-Bold.otf",
+        "IBMPlexSansSC-Regular.otf",
+        "IBMPlexSansTC-Regular.otf",
+    ]
+    
     static let NewDesignTemplatePath = "designs/design-capital.poietic"
-    static let DefaultStockFlowPictogramsPath = "stock_flow_pictograms.json"
+    static let DefaultStockFlowPictogramsPath = "notations/StockFlow-Standard.json"
     static let MainWindowName = "Poietic Playground"
     static let DefaultWindowWidth = 1280
     static let DefaultWindowHeight = 800
     static let PictogramAdjustmentScale = 0.5
+    
+    static let KnownNotations = NotationCatalog([
+        .init(name: "Standard", path: "notations/StockFlow-Standard.json"),
+        .init(name: "Jolly", path: "notations/StockFlow-Jolly.json"),
+    ])
+    /// Current notation name
+    ///
+    /// Must exist in the KnownNotations catalog.
+    // TODO: Make this per-document
+    var notationName: String = "Standard"
     
     var pendingBackendGestures: [GestureEvent] = []
     
@@ -75,7 +93,7 @@ class Application: @MainActor TraitEnvironment {
     let backend: any GraphicsBackendProtocol
     let interfaceStyle: InterfaceStyle
     let displayScale: DisplayScale = .hiDPI // TODO: Use this
-    
+    var defaultCanvasStyle: CanvasStyle
     
     init(resources: ResourceDirectory, backend: any GraphicsBackendProtocol) {
         self.resourceDirectory = resources
@@ -84,7 +102,8 @@ class Application: @MainActor TraitEnvironment {
         self.notation = Notation.DefaultNotation
 
         self.interfaceStyle = InterfaceStyle(resourceManager: resourceManager)
-        
+        self.defaultCanvasStyle = CanvasStyle.Default
+
         // Document
         self.workspace = nil
         

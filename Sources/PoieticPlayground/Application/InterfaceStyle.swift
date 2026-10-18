@@ -83,15 +83,4 @@ class InterfaceStyle {
         self.appearance = appearance
         self.icons = [:]
     }
-    
-    /// Get a texture of an icon mask that will be tinted using primaryTint colour.
-    @MainActor
-    func texture(forIcon iconKey: IconKey) -> TextureHandle {
-        if let texture = icons[iconKey] {
-            return texture
-        }
-        let path = "icons/white/" + iconKey.name + ".png"
-        let texture = resourceManager.loadTexture(path)
-        return texture
-    }
 }

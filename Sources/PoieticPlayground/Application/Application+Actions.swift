@@ -58,8 +58,17 @@ extension Application {
         self.interfaceStyle.appearance = scheme
         
         switch scheme {
-        case .light: ImGui.StyleColorsLight()
-        case .dark: ImGui.StyleColorsDark()
+        case .light:
+            ImGui.StyleColorsLight()
+            setCanvasStyle(CanvasStyle.Light)
+        case .dark:
+            ImGui.StyleColorsDark()
+            setCanvasStyle(CanvasStyle.Dark)
         }
+    }
+    func setCanvasStyle(_ style: CanvasStyle) {
+        self.defaultCanvasStyle = style
+        guard let workspace else { return }
+        workspace.canvas.queueCanvasStyle(style)
     }
 }

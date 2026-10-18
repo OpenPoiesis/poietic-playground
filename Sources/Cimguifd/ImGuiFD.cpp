@@ -822,7 +822,7 @@ namespace ImGuiFD {
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0,0 });
 		while (s < text + len && lineInd < maxLines) {
-			const char* wrap = g.Font->CalcWordWrapPositionA(g.FontBakedScale, s, text+len, maxWidth);
+			const char* wrap = g.Font->CalcWordWrapPosition(g.FontSize, s, text+len, maxWidth);
 			
 			ImVec2 lineSize;
 			if (wrap == s || lineInd+1 == maxLines) {

@@ -14,6 +14,9 @@ import PoieticFlows
 enum DocumentUpdateSchedule: ScheduleLabel { }
 enum DocumentCleanupSchedule: ScheduleLabel { }
 
+/// System run when diagram properties changed, such as notation.
+enum DiagramSchedule: ScheduleLabel { }
+
 /// Schedule run on simulation player set.
 ///
 /// - SeeAlso: ``ResultPlayer``
@@ -54,6 +57,15 @@ extension Document {
                         ChartResolutionSystem.self,
                         TraitsToDiagramObjectsSystem.self,
                         VisualMetadataSystem.self,
+                    ]
+            ),
+            Schedule(
+                label: DiagramSchedule.self,
+                systems:
+                    PoieticFlows.SimulationPlanningSystems
+                    + [
+                        TraitsToDiagramObjectsSystem.self,
+//                        VisualMetadataSystem.self,
                     ]
             ),
             Schedule(
@@ -109,7 +121,12 @@ extension Document {
         if needsWorldPlaneUpdate || design.currentPlane !== world.plane {
             try changeWorldPlaneAndSimulate()
         }
-        
+        else if needsDiagramObjectsUpdate {
+            try world.run(schedule: DiagramSchedule.self)
+            needsDiagramObjectsUpdate = false
+            trigger(.notationChanged)
+        }
+
         try world.run(schedule: DocumentUpdateSchedule.self)
         
         if requiresInteractivePreviewUpdate {

@@ -21,7 +21,7 @@ class SettingsPanel: Panel {
         guard isVisible else { return }
         ImGui.Begin("Settings", &isVisible, ImGuiWindowFlags_None | ImGuiWindowFlags_NoCollapse)
         drawInterfaceAppearanceSettings()
-//        drawNotationSettings()
+        drawNotationSettings()
         ImGui.End()
     }
    
@@ -45,9 +45,20 @@ class SettingsPanel: Panel {
         }
 
     }
-    
+
     func drawNotationSettings() {
-        ImGui.SeparatorText("Notation")
+        // TODO: Later, make this per-document setting.
+        
+        ImGui.TextUnformatted("Notation")
+        ImGui.SameLine()
+        if ImGui.RadioButton("Standard", app?.notationName == "Standard") {
+            app?.setNotation(named: "Standard")
+        }
+        ImGui.SameLine()
+        if ImGui.RadioButton("Jolly", app?.notationName == "Jolly") {
+            app?.setNotation(named: "Jolly")
+        }
+
     }
     
     func update(_ timeDelta: Double) {

@@ -31,20 +31,18 @@ class ConnectTool: CanvasTool {
         let style = context.traitEnvironment.interfaceStyle
         
         for type in connectableTypes {
-            var texture: TextureHandle? = nil
+            let iconKey: IconKey
             switch type.name {
             case "Parameter":
-                texture = style.texture(forIcon: .arrowParameter)
+                iconKey = .arrowParameter
             case "Flow":
-                texture = style.texture(forIcon: .arrowOutlined)
+                iconKey = .arrowOutlined
             default:
-                texture = nil
-            }
-            guard let texture else {
-                debugPrint("ERROR: No texture for connector type: \(type.name)")
+                debugPrint("ERROR: Unsupported connector type: \(type.name)")
                 continue
             }
-            let item = PaletteItem(identifier: type.name, image: .texture(texture), label: type.label)
+
+            let item = PaletteItem(identifier: type.name, image: .icon(iconKey), label: type.label)
             items.append(item)
         }
 

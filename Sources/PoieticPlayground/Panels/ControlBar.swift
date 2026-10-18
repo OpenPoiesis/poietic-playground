@@ -94,34 +94,34 @@ class ControlBar: @MainActor Panel {
     func drawControlButtons() {
         
         ImGui.BeginGroup()
-        var flag: Bool = true
-        if controlButton("Run", iconKey: .run, isEnabled: &flag) {
+
+        if controlButton("Run", iconKey: .run, isPressed: self.player?.isRunning ?? false) {
             self.player?.run()
         }
         ImGui.SameLine()
-        if controlButton("Stop", iconKey: .stop, isEnabled: &flag) {
+        if controlButton("Stop", iconKey: .stop) {
             self.player?.stop()
         }
         ImGui.SameLine(0, Self.ButtonGroupOffset)
 
-        if controlButton("Beginning", iconKey: .restart, isEnabled: &flag) {
+        if controlButton("Beginning", iconKey: .restart) {
             self.player?.toFirstStep()
         }
         ImGui.SameLine()
-        if controlButton("Previous", iconKey: .previousStep, isEnabled: &flag) {
+        if controlButton("Previous", iconKey: .previousStep) {
             self.player?.previousStep()
         }
         ImGui.SameLine()
-        if controlButton("Next", iconKey: .nextStep, isEnabled: &flag) {
+        if controlButton("Next", iconKey: .nextStep) {
             self.player?.nextStep()
         }
         ImGui.SameLine()
-        if controlButton("End", iconKey: .lastStep, isEnabled: &flag) {
+        if controlButton("End", iconKey: .lastStep) {
             self.player?.toLastStep()
         }
         ImGui.SameLine()
         ImGui.SameLine(0, Self.ButtonGroupOffset)
-        if controlButton("Loop", iconKey: .loop, isEnabled: &flag) {
+        if controlButton("Loop", iconKey: .loop) {
             
         }
 
@@ -177,22 +177,16 @@ class ControlBar: @MainActor Panel {
         ImGui.EndGroup()
     }
 
-    func controlButton(_ label: String, iconKey: IconKey, isEnabled: inout Bool) -> Bool {
-        guard let style = traitEnvironment?.interfaceStyle else { return false }
-        // TODO: Use style tint here
+    func controlButton(_ label: String, iconKey: IconKey, isPressed: Bool = false) -> Bool {
         let result: Bool
 
-        let icon = style.texture(forIcon: iconKey)
-
-        result = ImGui.ImageButton(label, icon.imTextureRef, Self.ButtonSize,
-                                   ImVec2(0, 0), ImVec2(1, 1),
-                                   ImVec4(1, 1, 1, 0), style.primaryTint.imVecValue)
-            
-        if ImGui.IsItemHovered(ImGuiHoveredFlags(ImGuiHoveredFlags_DelayShort.rawValue)) {
-            ImGui.BeginTooltip()
-            ImGui.TextUnformatted(label)
-            ImGui.EndTooltip()
-        }
+        ImGui.PushFont(nil, 28.0)
+        result = ImGui.IconButton(iconKey,
+                                  id: label,
+                                  tooltip: label,
+                                  size: Self.ButtonSize,
+                                  pressed: isPressed)
+        ImGui.PopFont()
         return result
     }
 }

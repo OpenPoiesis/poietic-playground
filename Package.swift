@@ -12,9 +12,9 @@ let package = Package(
             targets: ["PoieticPlayground"]),
     ],
     dependencies: [
-                .package(url: "https://github.com/openpoiesis/poietic-core", branch: "main"),
-                .package(url: "https://github.com/openpoiesis/poietic-flows", branch: "main"),
-                .package(url: "https://github.com/openpoiesis/poietic-diagram", branch: "main"),
+        .package(url: "https://github.com/openpoiesis/poietic-core", from: "0.10.0"),
+        .package(url: "https://github.com/openpoiesis/poietic-flows", from: "0.10.0"),
+        .package(url: "https://github.com/openpoiesis/poietic-diagram", from: "0.10.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -32,11 +32,11 @@ let package = Package(
                 "Ccairo",
             ],
             resources: [
-              .copy("Resources/icons/"),
-              .copy("Resources/designs/"),
-              .copy("Resources/fonts/"),
-              .copy("Resources/stock_flow_pictograms.json"),
-              .copy("Resources/stock_flow_pictograms-jolly.json"),
+                .copy("Resources/fonts/"),
+                .copy("Resources/notations/"),
+                .copy("Resources/designs/"),
+                .copy("Resources/stock_flow_pictograms.json"),
+                .copy("Resources/stock_flow_pictograms-jolly.json"),
             ],
             swiftSettings: [.unsafeFlags([
                 "-cxx-interoperability-mode=default",

@@ -15,3 +15,10 @@ void ImGui::TextWrappedUnformatted(const char* text) {
 void ImGui::TextDisabledUnformatted(const char* text) {
     TextDisabled("%s", text);
 }
+
+bool ImGui::AddFontFile(ImFontAtlas* atlas, const char* filename,
+                        const ImWchar* ranges, bool merge) {
+    ImFontConfig config;
+    config.MergeMode = merge;
+    return atlas->AddFontFromFileTTF(filename, 0.0f, &config, ranges) != nullptr;
+}

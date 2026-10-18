@@ -51,7 +51,7 @@ struct ResourceDirectory {
     // SwiftPM: <PackageName>_<TargetName>.bundle
     static let SwiftPMBundleName = "PoieticPlayground_PoieticPlayground.bundle"
     
-    static let Sentinel = "icons"
+    static let Sentinel = "fonts/poietic-icons.ttf"
     
     let rootURL: URL
     
@@ -111,15 +111,19 @@ struct ResourceDirectory {
     }
     
     private static func locationFromSwiftPM() -> URL? {
-        let root = Bundle.main.executableURL?.deletingLastPathComponent()
-                   ?? Bundle.main.bundleURL
-        let bundleURL = root.appendingPathComponent(Self.SwiftPMBundleName, isDirectory: true)
-        guard let resourceURL = Bundle(url: bundleURL)?.resourceURL else {
-            return nil
+        let candidates: [URL?] = [
+            Bundle.main.resourceURL,      // .app: Contents/Resources
+            Bundle.main.bundleURL,        // command-line tool / swift run: .build/<config>
+        ]
+        for candidate in candidates {
+            guard let bundleURL = candidate?.appending(path: Self.SwiftPMBundleName,
+                                                       directoryHint: .isDirectory),
+                  let bundle = Bundle(url: bundleURL)
+            else { continue }
+            return bundle.resourceURL
         }
-        return resourceURL
+        return nil
     }
-
     
     private static func platformLocations() -> [URL] {
         
@@ -213,6 +217,7 @@ class ResourceManager {
         return data
     }
     
+    // FIXME: Candidate for removal
     // FIXME: Return default texture instead of failing
     @MainActor
     func loadTexture(_ path: String) -> TextureHandle {

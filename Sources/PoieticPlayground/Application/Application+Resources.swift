@@ -10,6 +10,26 @@ import PoieticFlows
 import Diagramming
 import Foundation
 
+/// Makeshift notation catalog.
+///
+class NotationCatalog {
+    struct Entry {
+        let name: String
+        let path: String
+    }
+    var entries: [Entry]
+    
+    init(_ entries: [Entry]) {
+        self.entries = entries
+    }
+
+    func path(forNotationNamed name: String) -> String? {
+        guard let entry = entries.first(where: { $0.name == name })
+        else { return nil }
+        return entry.path
+    }
+}
+
 extension Application {
     func loadResources() {
         let notationURL = resourceManager.resourceURL(Self.DefaultStockFlowPictogramsPath)
@@ -53,6 +73,21 @@ extension Application {
         )
         self.log("Notation loaded. \(notation.pictograms.count) pictograms, \(notation.connectorGlyphs.count) connector glyphs.")
         self.notation = notation
-        // TODO: Update the world
+        
+        // TODO: Should belong to Document.
+        self.workspace?.currentDocument?.setNotation(notation)
+    }
+    
+    func setNotation(named name: String) {
+        // TODO: Later, make this per-document setting.
+        guard let path = Self.KnownNotations.path(forNotationNamed: name)
+        else {
+            self.logError("Unknown notation \(name). Notation change ignored.")
+            return
+        }
+        let url = resourceManager.resourceURL(path)
+        loadNotation(url: url)
+        self.notationName = name
+        
     }
 }

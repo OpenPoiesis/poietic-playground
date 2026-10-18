@@ -61,6 +61,7 @@ class Document {
 //        case simulationPlayerStarted
         case simulationPlayerStep
 //        case simulationPlayerStopped
+        case notationChanged
     }
 
     typealias EventObserver = ((Document) -> Void)
@@ -87,6 +88,10 @@ class Document {
     
     /// Flag whether we need to update the world plane on next call to update.
     var needsWorldPlaneUpdate: Bool = false
+
+    /// Flag whether diagram objects need to be re-derived on the next `update(_:)`,
+    /// for example after a notation change.
+    var needsDiagramObjectsUpdate: Bool = false
     
     var selection: Selection
     var selectionOverview: SelectionOverview
@@ -205,6 +210,15 @@ class Document {
         world.setSingleton(selection)
     }
 
+    // MARK: - Notation
+    /// Set the notation on next document update and re-create diagram objects.
+    ///
+    /// - SeeAlso: `DiagramSchedule`
+    ///
+    func setNotation(_ notation: Notation) {
+        self.needsDiagramObjectsUpdate = true
+        self.world.setSingleton(notation)
+    }
 
     // MARK: - Interactive Preview
 

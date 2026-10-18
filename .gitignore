@@ -10,10 +10,17 @@ UserInterfaceState.xcuserstate
 *.xcodeproj
 Packages/
 
+# Resources
+Sources/PoieticPlayground/Resources/fonts/*
+!Sources/PoieticPlayground/Resources/fonts/.gitkeep
+Sources/PoieticPlayground/Resources/notations/*
+!Sources/PoieticPlayground/Resources/notations/.gitkeep
+
 # Other
 /out/
 /Sandbox/
 /gh-pages/
 imgui.ini
+__pycache__/
 
 Package.resolved

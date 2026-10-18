@@ -199,7 +199,6 @@ class Workspace {
 
         for event in events {
             let disposition = toolManager.dispatch(event, canvas: canvas)
-            print("↩️ Disposition: \(disposition)")
         }
     }
 
@@ -283,6 +282,7 @@ class Workspace {
         document.addObserver(canvas.onSelectionChanged, on: .selectionChanged)
         document.addObserver(canvas.onSimulationPlayerStep, on: .simulationPlayerStep)
         document.addObserver(canvas.onSimulationPlayerStep, on: .simulationFinished)
+        document.addObserver(canvas.onNotationChanged, on: .notationChanged)
 
         document.addObserver(canvas.onInteractivePreviewChanged, on: .previewChanged)
         document.addObserver(canvas.onPreviewStarted, on: .previewStarted)

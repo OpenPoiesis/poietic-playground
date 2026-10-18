@@ -8,6 +8,25 @@
 import PoieticCore
 import Diagramming
 
+class CanvasStyleCatalog {
+    struct Entry {
+        let name: String
+        let path: String
+    }
+    var entries: [Entry]
+    
+    init(_ entries: [Entry]) {
+        self.entries = entries
+    }
+
+    func path(forNotationNamed name: String) -> String? {
+        guard let entry = entries.first(where: { $0.name == name })
+        else { return nil }
+        return entry.path
+    }
+
+}
+
 struct LabelStyle {
     let family: String
     let size: Double
@@ -81,54 +100,6 @@ final class CanvasStyle: Sendable {
     
     public static let DefaultFontSize: Double = 11.0
 
-    public static let Default = CanvasStyle(
-        shapeStyles: [
-            Key(.normal): ShapeStyle(stroke: .black, fill: .white, lineWidth: 1.0),
-            // Canvas background
-            Key(.canvas): ShapeStyle(fill: Color(red: 0.97, green: 0.96, blue: 0.93)),
-            Key(.grid): ShapeStyle(stroke: Color(red: 0.3, green: 0.3, blue: 0.3, alpha: 0.2)),
-            Key(.highlight, modifiers: .selected): ShapeStyle(stroke: Color(red: 0.25, green: 0.50, blue: 0.85), fill: Color(red: 0.35, green: 0.60, blue: 0.90, alpha: 0.18)),
-            Key(.highlight, modifiers: .allowed): ShapeStyle(stroke: Color(red: 0.18, green: 0.68, blue: 0.40), fill: Color.screenGreen.withTransparency(0.2)),
-            Key(.highlight, modifiers: .notAllowed): ShapeStyle(stroke: Color(red: 0.88, green: 0.28, blue: 0.15), fill: Color.screenRed.withTransparency(0.2)),
-            Key(.handle): ShapeStyle(stroke: Color(red: 0.90, green: 0.65, blue: 0.20)),
-            Key(.issueIndicator): ShapeStyle(stroke: .white, fill: ErrorRedColor),
-
-            Key(.valueIndicator): ShapeStyle(stroke: .black, fill: .white),
-            Key(.valueIndicator, modifiers: .positive): ShapeStyle(stroke: nil, fill: Color(red:0.22, green:0.62, blue:0.48)),
-            Key(.valueIndicator, modifiers: .negative): ShapeStyle(stroke: nil, fill: Color(red: 0.85, green: 0.55, blue: 0.10)),
-            Key(.valueIndicator, modifiers: .overflow): ShapeStyle(stroke: nil, fill: Color(red: 0.80, green: 0.22, blue: 0.10)),
-            Key(.valueIndicator, modifiers: .underflow): ShapeStyle(stroke: nil, fill: Color(red:0.25, green:0.48, blue:0.72)),
-            Key(.valueIndicator, modifiers: .empty): ShapeStyle(stroke: nil, fill: Color(red: 0.72, green: 0.70, blue: 0.67)),
-            Key(.valueIndicatorLine): ShapeStyle(stroke: .black),
-
-            // Content
-            Key(.pictogram):ShapeStyle(stroke: WarmSlateBlueColor),
-            
-            Key(.thinConnector):ShapeStyle(stroke: WarmSlateBlueColor),
-            Key(.fatConnector):ShapeStyle(stroke: WarmSlateBlueColor, fill: WarmSlateBlueColor.withTransparency(0.5)),
-
-            // Labels
-            Key(.primaryLabel): ShapeStyle(stroke: Color(red: 0.22, green: 0.20, blue: 0.18)),
-
-            // Previews and intents
-//            Key(.block, modifiers: .preview): ShapeStyle(stroke: .screenBlue, fill: .screenYellow, lineWidth: 1.0),
-            Key(.block, modifiers: .preview): ShapeStyle(stroke: Color(red: 0.25, green: 0.35, blue: 0.55, alpha: 0.3)),
-        ],
-        labelStyles: [
-            Key(.label):LabelStyle(family: "IBM Plex Sans", size: 11.0, color: .black),
-            Key(.primaryLabel):LabelStyle(family: "IBM Plex Sans", size: 12.0, color: Color(red: 0.22, green: 0.20, blue: 0.18)),
-            Key(.secondaryLabel):LabelStyle(family: "IBM Plex Sans", size: 11.0, slant: .italic, color: .screenBlue),
-            Key(.valueIndicator):LabelStyle(family: "IBM Plex Sans", size: 11.0, color: Color(gray: 0.5)),
-            // TODO: Invalid label style with color .screenRed
-        ],
-        metrics: [
-            .colorSwatchSize: 10.0,
-            .primaryLabelPadding: 2.0,
-            .secondaryLabelPadding: 4.0,
-            .handleSize: 10.0,
-            .valueIndicatorPadding: 10.0,
-        ]
-    )
 
     public let shapeStyles: [Key:ShapeStyle]
     public let labelStyles: [Key:LabelStyle]

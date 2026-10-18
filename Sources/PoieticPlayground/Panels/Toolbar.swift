@@ -26,10 +26,9 @@ class Toolbar: @MainActor Panel {
     
     func draw() {
         guard let toolManager else { return }
-        let style = traitEnvironment.interfaceStyle
         
         let buttonSize = ImVec2(32, 32)
-        ImGui.Begin("Tools", &isVisible, ImGuiWindowFlags_NoResize
+        ImGui.Begin("##Tools", &isVisible, ImGuiWindowFlags_NoResize
                                         | ImGuiWindowFlags_NoScrollbar
                                         | ImGuiWindowFlags_NoCollapse)
         
@@ -37,38 +36,19 @@ class Toolbar: @MainActor Panel {
             let toolClass = type(of: tool)
             let isActive = toolManager.isActive(tool)
             
-            if isActive {
-                // TODO: Put these colors to interface style or use some imgui style colors
-                ImGui.PushStyleColor(ImGuiCol(ImGuiCol_Button.rawValue), ImVec4(0.7, 0.7, 0.7, 1.0))
-                ImGui.PushStyleColor(ImGuiCol(ImGuiCol_ButtonHovered.rawValue), ImVec4(0.9, 0.9, 0.9, 1.0))
-                ImGui.PushStyleColor(ImGuiCol(ImGuiCol_ButtonActive.rawValue), ImVec4(0.6, 0.6, 0.1, 1.0))
-            }
-            
             ImGui.PushID(Int32(index))
 
-            let texture = style.texture(forIcon: toolClass.iconKey)
-            let ref = ImTextureRef(texture.textureID)
-            if ImGui.ImageButton("##\(toolClass.type.name)",
-                                 ref,
-                                 buttonSize,
-                                 ImVec2(0, 0), // uv0
-                                 ImVec2(1, 1), // uv1
-                                 ImVec4(1, 1, 1, 0), // bg_col
-                                 style.primaryTint.imVecValue) // tint_col
+            ImGui.PushFont(nil, 32.0)
+            if ImGui.IconButton(toolClass.iconKey,
+                                id: toolClass.type.name,
+                                tooltip: toolClass.type.name,
+                                size: buttonSize,
+                                pressed: isActive)
             {
                 toolManager.select(toolClass.type)
             }
+            ImGui.PopFont()
             ImGui.PopID()
-            
-            if ImGui.IsItemHovered(ImGuiHoveredFlags(ImGuiHoveredFlags_DelayShort.rawValue)) {
-                ImGui.BeginTooltip()
-                ImGui.TextUnformatted(toolClass.type.name)
-                ImGui.EndTooltip()
-            }
-            
-            if isActive {
-                ImGui.PopStyleColor(3)
-            }
             
             if index < toolManager.tools.count - 1 {
                 ImGui.Spacing()

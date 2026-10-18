@@ -1,0 +1,193 @@
+#!/bin/sh
+#
+#  fetch-resources – Install the application's derived resources.
+#
+#  Script Sections:
+#
+#  1. Init
+#  2. Parse Arguments
+#  3. Read the Lock File
+#  4. Fetch the resources
+#  5. Validate
+#  6. Install
+#
+
+set -eu
+
+# 1. Init
+# ----------------------------------------------------------------
+
+SCRIPTS=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PACKAGE=${PACKAGE:-$(pwd)}
+TARGET=${TARGET:-Sources/PoieticPlayground}
+RESOURCES_DIR="$PACKAGE/$TARGET/Resources"
+LOCK_FILE="$SCRIPTS/resources.lock"
+
+SOURCE_PATH=""
+SOURCE_ARCHIVE=""
+INSTALL_DIRS=""
+REQUIRED=""
+
+die() { printf 'fetch-resources: %s\n' "$*" >&2; exit 1; }
+
+usage() {
+    cat <<'EOF'
+Install the application derived resources from a distribution.
+
+    fetch-resources [--path DIR | --url URL]
+
+OPTIONS
+
+    --path DIR         Install from DIR/dist/contents/ — a poietic-assets checkout.
+                       (Requires running Scripts/build-dist.sh in poietic-assets)
+
+    --archive ARCHIVE  Install from a .tar.gz archive at local path or download from remote URL.
+
+    -h, --help         This message.
+
+EOF
+}
+
+# 2. Parse Arguments
+# ----------------------------------------------------------------
+
+FROM_COMMAND_LINE=
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --path)     [ -n "$SOURCE_ARCHIVE" ] && die "--path and --archive are mutually exclusive"
+                    [ $# -ge 2 ] || die "--path needs an argument"
+                    SOURCE_PATH="$2"; FROM_COMMAND_LINE=1; shift 2 ;;
+        --archive)  [ -n "$SOURCE_PATH" ] && die "--path and --archive are mutually exclusive"
+                    [ $# -ge 2 ] || die "--archive needs an argument"
+                    SOURCE_ARCHIVE="$2"; FROM_COMMAND_LINE=1; shift 2 ;;
+        -h|--help)  usage; exit 0 ;;
+        *)          die "unknown option: $1  (try --help)" ;;
+    esac
+done
+
+# 3. Read the Lock File
+# ----------------------------------------------------------------
+[ -f "$LOCK_FILE" ] || die "missing $LOCK_FILE"
+
+linenumber=0
+while IFS= read -r line || [ -n "$line" ]; do
+    linenumber=$((linenumber + 1))
+
+    # drop comments, collapse blanks and trim
+    line=${line%%#*}
+    line=$(printf '%s' "$line" | tr -s '[:blank:]' ' ')
+    line=${line# }
+    line=${line% }
+    [ -n "$line" ] || continue
+
+    key=${line%% *}
+    value=${line#* }
+    [ "$value" = "$line" ] && value=""
+
+    case "$key" in
+        URL)        [ "$FROM_COMMAND_LINE" = 1 ] || SOURCE_ARCHIVE="$value" ;;
+        DIR)        name="$value"
+                    [ -n "$name" ] || die "$LOCK_FILE:$linenumber: DIR needs a name"
+                    INSTALL_DIRS="$INSTALL_DIRS $name" ;;
+        REQUIRED)   [ -n "$value" ] || die "$LOCK_FILE:$linenumber: REQUIRED needs a path"
+                    REQUIRED="$REQUIRED $value" ;;
+        *)          die "$LOCK_FILE:$linenumber: unknown directive '$key'" ;;
+    esac
+done < "$LOCK_FILE"
+
+[ -n "$INSTALL_DIRS" ] || die "No DIRs – nothing to install"
+
+[ -n "$SOURCE_PATH" ] || [ -n "$SOURCE_ARCHIVE" ] || \
+    die "$LOCK_FILE has no URL — pass --path or --archive"
+
+# 4. Fetch the resources
+# ----------------------------------------------------------------
+
+STAGE=""
+cleanup() {
+    [ -n "$STAGE" ] && [ -d "$STAGE" ] && rm -rf "$STAGE"
+    return 0
+}
+trap cleanup EXIT INT TERM
+
+STAGE=$(mktemp -d "${TMPDIR:-/tmp}/poietic-resources.XXXXXX") \
+    || die "unable to create a temporary directory"
+
+
+if [ -n "$SOURCE_PATH" ]; then
+    # Local Directory
+    # --------------------------------
+
+    [ -d "$SOURCE_PATH" ] || die "$SOURCE_PATH: no such directory"
+    
+    # Convenience: Accept assets root, dist/ and full dist/contents/
+    if [ -d "$SOURCE_PATH/dist/contents/fonts" ]; then
+        DIST_ROOT="$SOURCE_PATH/dist/contents"
+    elif [ -d "$SOURCE_PATH/contents/fonts" ] ; then
+        DIST_ROOT="$SOURCE_PATH/contents"
+    elif [ -d "$SOURCE_PATH/fonts" ] ; then
+        DIST_ROOT="$SOURCE_PATH"
+    else
+        die "$SOURCE_PATH does not seem to contain expected resources. Run Scripts/build-dist.sh in poietic-assets first."
+    fi
+
+    echo "fetch-resources: installing from $DIST_ROOT"
+else
+    UNPACKED_ROOT="$STAGE/unpacked"
+    DIST_ROOT="$UNPACKED_ROOT/contents"
+    mkdir -p "$DIST_ROOT"
+
+    if [ -f "$SOURCE_ARCHIVE" ]; then
+        # Local Archive
+        # --------------------------------
+        ARCHIVE="$SOURCE_ARCHIVE"
+    else
+        # Remote Archive
+        # --------------------------------
+        command -v curl >/dev/null 2>&1 || die "curl is required"
+
+        ARCHIVE="$STAGE/archive.tar.gz"
+        mkdir -p "$(dirname "$ARCHIVE")"
+        
+        echo "fetch-resources: downloading archive from $SOURCE_ARCHIVE"
+        curl -fsSL --retry 2 -o "$ARCHIVE" "$SOURCE_ARCHIVE" \
+            || die "download failed: $SOURCE_ARCHIVE"
+    fi
+
+    tar -xzf "$ARCHIVE" -C "$UNPACKED_ROOT"
+    
+    if [ ! -d "$DIST_ROOT/fonts" ] && [ ! -d "$DIST_ROOT/notations" ]; then
+        die "the archive has neither fonts/ nor notations/ at its top level"
+    fi
+fi
+
+# 5. Validate
+# ----------------------------------------------------------------
+
+for item in ${INSTALL_DIRS:-}; do
+    source_dir="$DIST_ROOT/$item"
+    [ -d "$source_dir" ] || die "The source has no '$item'"
+done
+
+for path in $REQUIRED; do
+    [ -f "$DIST_ROOT/$path" ] \
+        || die "The source is missing required file: $path"
+done
+
+# 6. Install
+# ----------------------------------------------------------------
+
+for item in ${INSTALL_DIRS:-}; do
+    source_dir="$DIST_ROOT/$item"
+    dest_dir="$RESOURCES_DIR/$item"
+    file_count=$(find "$source_dir" -type f | wc -l | tr -d ' ')
+
+    echo "fetch-resources: installing Resources/$item ($file_count files)"
+
+    # Replace the contents, keeping the tracked .gitkeep.
+    # We need to keep the .gitkeep to keep the directory for SwiftPM resources
+    find "$dest_dir" -mindepth 1 -maxdepth 1 -not -name .gitkeep -exec rm -rf -- {} +
+    mkdir -p "$dest_dir"
+    cp -R "$source_dir"/. "$dest_dir"/
+done

@@ -2,6 +2,7 @@
 // https://docs.swift.org/swift-book
 
 import CIimgui
+import Foundation
 
 @main
 struct PoieticPlayground {
@@ -15,11 +16,11 @@ struct PoieticPlayground {
         do {
             backend = try Self.initializeBackend()
             GraphicsBackend.register(backend)
-            try Self.initializeImGui(backend)
+            try Self.initializeImGui(backend, resources: resourceDir)
         } catch {
             fatalError("Initialisation failed: \(error)")
         }
-        
+
         let app: Application = Application(resources: resourceDir, backend: backend)
         
         app.run()
@@ -39,7 +40,8 @@ struct PoieticPlayground {
         return backend
     }
    
-    static func initializeImGui(_ backend: any GraphicsBackendProtocol) throws (GraphicsBackendError) {
+    @MainActor
+    static func initializeImGui(_ backend: any GraphicsBackendProtocol, resources: ResourceDirectory) throws (GraphicsBackendError) {
         let scale = backend.displayScale
 
         _ = ImGui.CreateContext()
@@ -52,8 +54,23 @@ struct PoieticPlayground {
         style.pointee.ScaleAllSizes(scale)
         style.pointee.FontScaleDpi = scale
 
-        // TODO: Load Fonts
+        // -- Fonts
 
+        let atlas = io.pointee.Fonts
+
+        for (index, name) in Application.LoadFontNames.enumerated() {
+            let url = resources.url(forPath: "fonts/" + name)
+            if !ImGui.AddFontFile(atlas, url.path(), nil, index > 0) {
+                fatalError("Unable to add font '\(name)' to font atlas")
+            }
+        }
+
+        let iconFontURL = resources.url(forPath: Application.IconFontPath)
+        print("LOADING ICONS FROM: \(iconFontURL.path())")
+        if !ImGui.AddFontFile(atlas, iconFontURL.path(), IconKey.glyphRanges, true) {
+            fatalError("Unable to add icon font file to font atlas")
+        }
+        
         try backend.initializeImGuiBackend()
     }
 

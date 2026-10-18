@@ -12,7 +12,9 @@ struct PaletteItem {
     // TODO: Use only texture, render pictograms into textures
     enum Image {
         case pictogram(Pictogram)
+        case icon(IconKey)
         case texture(TextureHandle)
+        
     }
     
     let identifier: String
@@ -42,6 +44,9 @@ struct PaletteItem {
                                                   size: iconSize,
                                                   color: .white,
                                                   lineWidth: 1.0)
+        case .icon(let iconKey):
+            ImGui.DrawIconInItem(iconKey)
+            
         case .texture(let texture):
             let scale = min(iconSize.x / Float(texture.width),
                             iconSize.y / Float(texture.height))

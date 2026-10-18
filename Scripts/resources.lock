@@ -1,0 +1,21 @@
+# fetch-resources — which assets release the application expects, and what it
+# needs from it.
+#
+# This file is the contract between poietic-playground and poietic-assets.
+#
+# Directives
+#
+#   URL       <url>             Location of the released poietic-assets archive.
+#   DIR       <name>            A resource directory to install from the archive.
+#                               It is read from ARCHIVE/<name>/ and written to
+#                               application's Resources/<name>
+#   REQUIRED  <path>            A file that must exist after installation,
+#                               relative to Resources/
+#
+
+URL https://github.com/OpenPoiesis/poietic-assets/releases/download/v0.10/poietic-assets-v0.10.tar.gz
+
+DIR  fonts
+DIR  notations
+
+REQUIRED  fonts/poietic-icons.ttf

@@ -20,7 +20,6 @@ class NumericValueInlineEditor: InlineEditor {
     var iconKey: IconKey
     var attributeName: String
 
-    var icon: TextureHandle?
     var value: Double
     var initialValue: Double
 
@@ -49,10 +48,6 @@ class NumericValueInlineEditor: InlineEditor {
         let defaultValue = (try? attribute.defaultValue?.doubleValue()) ?? 0
         self.value = object[attributeName] ?? defaultValue
         self.initialValue = self.value
-        
-        if let style = traitEnvironment?.interfaceStyle {
-            self.icon = style.texture(forIcon: self.iconKey)
-        }
         
         return true
     }
@@ -84,12 +79,10 @@ class NumericValueInlineEditor: InlineEditor {
                 grabFocus = false
             }
 
-            if let icon {
-                ImGui.ImageWithBg(icon.imTextureRef, ImVec2(20, 20),
-                                  ImVec2(0,0), ImVec2(1,1),
-                                  ImVec4(1, 1, 1, 0), style.primaryTint.imVecValue)
-                ImGui.SameLine()
-            }
+            ImGui.InvisibleButton("##icon", ImVec2(20.0, 20.0))
+            ImGui.DrawIconInItem(iconKey)
+            ImGui.SameLine()
+
             if grabFocus {
                 ImGui.SetKeyboardFocusHere()
             }
