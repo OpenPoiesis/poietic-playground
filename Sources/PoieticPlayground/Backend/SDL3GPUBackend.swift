@@ -163,7 +163,13 @@ final class SDL3GPUBackend: GraphicsBackendProtocol {
         case .premultiplied:
             drawList.pointee.AddCallback(switchToPremultipliedBlendCallback, nil)
             result = block()
-            drawList.pointee.AddCallback(ImGui.ImDrawCallback_ResetRenderState_D, nil)
+            if let resetRenderState = ImGui.GetPlatformIO().pointee.DrawCallback_ResetRenderState {
+                drawList.pointee.AddCallback(resetRenderState, nil)
+            }
+            else {
+                assertionFailure("Backend does not implement DrawCallback_ResetRenderState")
+            }
+
         case .straight:
             result = block()
         }
@@ -342,11 +348,12 @@ final class SDL3GPUBackend: GraphicsBackendProtocol {
 // FIXME: [IMPORTANT] This is bypassing backend. Used currently in DiagramCanvas.drawOverlayTextures
 /// Callback for AddImage(...) to switch pipeline for textures with pre-multiplied alpha.
 ///
-/// Requires pipeline reset with:
+/// Requires pipeline reset with the backend's standard reset callback:
 ///
 /// ```swift
 /// let drawList = ImGui.GetWindowDrawList()
-/// drawList.pointee.AddCallback(ImGui.ImDrawCallback_ResetRenderState_D, nil)
+/// let reset = ImGui.GetPlatformIO().pointee.DrawCallback_ResetRenderState
+/// drawList.pointee.AddCallback(reset, nil)
 /// ```
 func switchToPremultipliedBlendCallback(ptr: UnsafePointer<ImDrawList>?,
                                         cmd: UnsafePointer<ImDrawCmd>?)

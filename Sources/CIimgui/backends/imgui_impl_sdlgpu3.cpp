@@ -5,6 +5,7 @@
 //  [X] Renderer: User texture binding. Use 'SDL_GPUTexture*' as texture identifier. Read the FAQ about ImTextureID/ImTextureRef! **IMPORTANT** Before 2025/08/08, ImTextureID was a reference to a SDL_GPUTextureSamplerBinding struct.
 //  [X] Renderer: Large meshes support (64k+ vertices) even with 16-bit indices (ImGuiBackendFlags_RendererHasVtxOffset).
 //  [X] Renderer: Texture updates support for dynamic font atlas (ImGuiBackendFlags_RendererHasTextures).
+//  [X] Renderer: Expose selected render state for draw callbacks to use. Access with ImGui_ImplSDLGPU3_GetRenderState().
 
 // The aim of imgui_impl_sdlgpu3.h/.cpp is to be usable in your engine without any modification.
 // IF YOU FEEL YOU NEED TO MAKE ANY CHANGE TO THIS CODE, please share them and your feedback at https://github.com/ocornut/imgui/
@@ -22,6 +23,10 @@
 //   Calling the function is MANDATORY, otherwise the ImGui will not upload neither the vertex nor the index buffer for the GPU. See imgui_impl_sdlgpu3.cpp for more info.
 
 // CHANGELOG
+//  2026-09-07: Round framebuffer dimensions to the nearest integer instead of truncating them. (#9538, 9515, #8628)
+//  2026-04-23: Added support for standard draw callbacks (in platform_io): DrawCallback_ResetRenderState, DrawCallback_SetSamplerLinear, DrawCallback_SetSamplerNearest. Obsoleting samplers from ImGui_ImplSDLGPU3_RenderState. (#9378)
+//  2026-03-19: Fixed issue in ImGui_ImplSDLGPU3_DestroyTexture() if ImTextureID_Invalid is defined to be != 0, which became the default since 2026-03-12. (#9295, #9310)
+//  2026-02-25: Removed unnecessary call to SDL_WaitForGPUIdle when releasing vertex/index buffers. (#9262)
 //  2025-11-26: macOS version can use MSL shaders in order to support macOS 10.14+ (vs Metallib shaders requiring macOS 14+). Requires calling SDL_CreateGPUDevice() with SDL_GPU_SHADERFORMAT_MSL.
 //  2025-09-18: Call platform_io.ClearRendererHandlers() on shutdown.
 //  2025-08-20: Added ImGui_ImplSDLGPU3_InitInfo::SwapchainComposition and ImGui_ImplSDLGPU3_InitInfo::PresentMode to configure how secondary viewports are created.
@@ -57,11 +62,15 @@ struct ImGui_ImplSDLGPU3_Data
 {
     ImGui_ImplSDLGPU3_InitInfo   InitInfo;
 
+    // Render state
+    ImGui_ImplSDLGPU3_RenderState*  RenderState         = nullptr; // == ImGui::GetPlatformIO().Renderer_RenderState during rendering.
+    SDL_GPUSampler*                 CurrentSampler      = nullptr;
+
     // Graphics pipeline & shaders
     SDL_GPUShader*               VertexShader           = nullptr;
     SDL_GPUShader*               FragmentShader         = nullptr;
     SDL_GPUGraphicsPipeline*     Pipeline               = nullptr;
-    SDL_GPUGraphicsPipeline*     PipelineSecondary      = nullptr;
+    SDL_GPUGraphicsPipeline*     PipelineSecondary      = nullptr; // [LOCAL] Alternative pipeline for premultiplied alpha textures.
     SDL_GPUSampler*              TexSamplerLinear       = nullptr;
     SDL_GPUSampler*              TexSamplerNearest      = nullptr;
     SDL_GPUTransferBuffer*       TexTransferBuffer      = nullptr;
@@ -86,10 +95,15 @@ static ImGui_ImplSDLGPU3_Data* ImGui_ImplSDLGPU3_GetBackendData()
     return ImGui::GetCurrentContext() ? (ImGui_ImplSDLGPU3_Data*)ImGui::GetIO().BackendRendererUserData : nullptr;
 }
 
-static void ImGui_ImplSDLGPU3_SetupRenderState(ImDrawData* draw_data, ImGui_ImplSDLGPU3_RenderState* render_state, SDL_GPUGraphicsPipeline* pipeline, SDL_GPUCommandBuffer* command_buffer, SDL_GPURenderPass* render_pass, ImGui_ImplSDLGPU3_FrameData* fd, uint32_t fb_width, uint32_t fb_height)
+ImGui_ImplSDLGPU3_RenderState* ImGui_ImplSDLGPU3_GetRenderState()
+{
+    return (ImGui_ImplSDLGPU3_RenderState*)ImGui::GetPlatformIO().Renderer_RenderState;
+}
+
+static void ImGui_ImplSDLGPU3_SetupRenderState(ImDrawData* draw_data, SDL_GPUGraphicsPipeline* pipeline, SDL_GPUCommandBuffer* command_buffer, SDL_GPURenderPass* render_pass, ImGui_ImplSDLGPU3_FrameData* fd, uint32_t fb_width, uint32_t fb_height)
 {
     ImGui_ImplSDLGPU3_Data* bd = ImGui_ImplSDLGPU3_GetBackendData();
-    render_state->SamplerCurrent = bd->TexSamplerLinear;
+    bd->CurrentSampler = bd->TexSamplerLinear;
 
     // Bind graphics pipeline
     SDL_BindGPUGraphicsPipeline(render_pass, pipeline);
@@ -132,8 +146,7 @@ static void CreateOrResizeBuffers(SDL_GPUBuffer** buffer, SDL_GPUTransferBuffer*
     ImGui_ImplSDLGPU3_Data* bd = ImGui_ImplSDLGPU3_GetBackendData();
     ImGui_ImplSDLGPU3_InitInfo* v = &bd->InitInfo;
 
-    // FIXME-OPT: Not optimal, but this is fairly rarely called.
-    SDL_WaitForGPUIdle(v->Device);
+    // There is no need for calling SDL_WaitForGPUIdle here, as SDL3 will handle deferred buffer deletion automatically.
     SDL_ReleaseGPUBuffer(v->Device, *buffer);
     SDL_ReleaseGPUTransferBuffer(v->Device, *transferbuffer);
 
@@ -158,8 +171,8 @@ static void CreateOrResizeBuffers(SDL_GPUBuffer** buffer, SDL_GPUTransferBuffer*
 void ImGui_ImplSDLGPU3_PrepareDrawData(ImDrawData* draw_data, SDL_GPUCommandBuffer* command_buffer)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-    int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-    int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+    int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x + 0.5f);
+    int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y + 0.5f);
     if (fb_width <= 0 || fb_height <= 0 || draw_data->TotalVtxCount <= 0)
         return;
 
@@ -174,8 +187,8 @@ void ImGui_ImplSDLGPU3_PrepareDrawData(ImDrawData* draw_data, SDL_GPUCommandBuff
     ImGui_ImplSDLGPU3_InitInfo* v = &bd->InitInfo;
     ImGui_ImplSDLGPU3_FrameData* fd = &bd->MainWindowFrameData;
 
-    uint32_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
-    uint32_t index_size  = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
+    uint32_t vertex_size = (uint32_t)draw_data->TotalVtxCount * sizeof(ImDrawVert);
+    uint32_t index_size  = (uint32_t)draw_data->TotalIdxCount * sizeof(ImDrawIdx);
     if (fd->VertexBuffer == nullptr || fd->VertexBufferSize < vertex_size)
         CreateOrResizeBuffers(&fd->VertexBuffer, &fd->VertexTransferBuffer, &fd->VertexBufferSize, vertex_size, SDL_GPU_BUFFERUSAGE_VERTEX);
     if (fd->IndexBuffer == nullptr || fd->IndexBufferSize < index_size)
@@ -216,11 +229,16 @@ void ImGui_ImplSDLGPU3_PrepareDrawData(ImDrawData* draw_data, SDL_GPUCommandBuff
     SDL_EndGPUCopyPass(copy_pass);
 }
 
+// Draw callbacks
+static void ImGui_ImplSDLGPU3_DrawCallback_ResetRenderState(const ImDrawList*, const ImDrawCmd*)    {} // Intentionally empty. Used as an identifier for rendering loop to call its code. Simpler to implement this way.
+static void ImGui_ImplSDLGPU3_DrawCallback_SetSamplerLinear(const ImDrawList*, const ImDrawCmd*)    { ImGui_ImplSDLGPU3_Data* bd = ImGui_ImplSDLGPU3_GetBackendData(); bd->CurrentSampler = bd->TexSamplerLinear; }
+static void ImGui_ImplSDLGPU3_DrawCallback_SetSamplerNearest(const ImDrawList*, const ImDrawCmd*)   { ImGui_ImplSDLGPU3_Data* bd = ImGui_ImplSDLGPU3_GetBackendData(); bd->CurrentSampler = bd->TexSamplerNearest; }
+
 void ImGui_ImplSDLGPU3_RenderDrawData(ImDrawData* draw_data, SDL_GPUCommandBuffer* command_buffer, SDL_GPURenderPass* render_pass, SDL_GPUGraphicsPipeline* pipeline)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-    int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-    int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+    int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x + 0.5f);
+    int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y + 0.5f);
     if (fb_width <= 0 || fb_height <= 0)
         return;
 
@@ -238,14 +256,11 @@ void ImGui_ImplSDLGPU3_RenderDrawData(ImDrawData* draw_data, SDL_GPUCommandBuffe
     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
     ImGui_ImplSDLGPU3_RenderState render_state;
     render_state.Device = bd->InitInfo.Device;
-    render_state.SamplerLinear = render_state.SamplerCurrent = bd->TexSamplerLinear;
-    render_state.SamplerNearest = bd->TexSamplerNearest;
-    render_state.PipelinePrimary = bd->Pipeline;
-    render_state.PipelineSecondary = bd->PipelineSecondary;
-    render_state.RenderPass = render_pass;
-    platform_io.Renderer_RenderState = &render_state;
-    
-    ImGui_ImplSDLGPU3_SetupRenderState(draw_data, &render_state, pipeline, command_buffer, render_pass, fd, fb_width, fb_height);
+    render_state.PipelineSecondary = bd->PipelineSecondary; // [LOCAL]
+    render_state.RenderPass = render_pass;                  // [LOCAL]
+    platform_io.Renderer_RenderState = bd->RenderState = &render_state;
+
+    ImGui_ImplSDLGPU3_SetupRenderState(draw_data, pipeline, command_buffer, render_pass, fd, fb_width, fb_height);
 
     // Render command lists
     // (Because we merged all buffers into a single one, we maintain our own offset into them)
@@ -259,9 +274,8 @@ void ImGui_ImplSDLGPU3_RenderDrawData(ImDrawData* draw_data, SDL_GPUCommandBuffe
             if (pcmd->UserCallback != nullptr)
             {
                 // User callback, registered via ImDrawList::AddCallback()
-                // (ImDrawCallback_ResetRenderState is a special callback value used by the user to request the renderer to reset render state.)
-                if (pcmd->UserCallback == ImDrawCallback_ResetRenderState)
-                    ImGui_ImplSDLGPU3_SetupRenderState(draw_data, &render_state, pipeline, command_buffer, render_pass, fd, fb_width, fb_height);
+                if (pcmd->UserCallback == ImGui_ImplSDLGPU3_DrawCallback_ResetRenderState)
+                    ImGui_ImplSDLGPU3_SetupRenderState(draw_data, pipeline, command_buffer, render_pass, fd, fb_width, fb_height);
                 else
                     pcmd->UserCallback(draw_list, pcmd);
             }
@@ -274,8 +288,8 @@ void ImGui_ImplSDLGPU3_RenderDrawData(ImDrawData* draw_data, SDL_GPUCommandBuffe
                 // Clamp to viewport as SDL_SetGPUScissor() won't accept values that are off bounds
                 if (clip_min.x < 0.0f) { clip_min.x = 0.0f; }
                 if (clip_min.y < 0.0f) { clip_min.y = 0.0f; }
-                if (clip_max.x > fb_width) { clip_max.x = (float)fb_width; }
-                if (clip_max.y > fb_height) { clip_max.y = (float)fb_height; }
+                if (clip_max.x > (float)fb_width) { clip_max.x = (float)fb_width; }
+                if (clip_max.y > (float)fb_height) { clip_max.y = (float)fb_height; }
                 if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y)
                     continue;
 
@@ -290,7 +304,7 @@ void ImGui_ImplSDLGPU3_RenderDrawData(ImDrawData* draw_data, SDL_GPUCommandBuffe
                 // Bind DescriptorSet with font or user texture
                 SDL_GPUTextureSamplerBinding texture_sampler_binding;
                 texture_sampler_binding.texture = (SDL_GPUTexture*)(intptr_t)pcmd->GetTexID();
-                texture_sampler_binding.sampler = render_state.SamplerCurrent;
+                texture_sampler_binding.sampler = bd->CurrentSampler;
                 SDL_BindGPUFragmentSamplers(render_pass, 0, &texture_sampler_binding, 1);
 
                 // Draw
@@ -309,13 +323,16 @@ void ImGui_ImplSDLGPU3_RenderDrawData(ImDrawData* draw_data, SDL_GPUCommandBuffe
     // We perform a call to SDL_SetGPUScissor() to set back a full viewport which is likely to fix things for 99% users but technically this is not perfect. (See github #4644)
     SDL_Rect scissor_rect { 0, 0, fb_width, fb_height };
     SDL_SetGPUScissor(render_pass, &scissor_rect);
+
+    platform_io.Renderer_RenderState = bd->RenderState = nullptr;
 }
 
 static void ImGui_ImplSDLGPU3_DestroyTexture(ImTextureData* tex)
 {
     ImGui_ImplSDLGPU3_Data* bd = ImGui_ImplSDLGPU3_GetBackendData();
-    if (SDL_GPUTexture* raw_tex = (SDL_GPUTexture*)(intptr_t)tex->GetTexID())
-        SDL_ReleaseGPUTexture(bd->InitInfo.Device, raw_tex);
+    if (tex->GetTexID() != ImTextureID_Invalid)
+        if (SDL_GPUTexture* raw_tex = (SDL_GPUTexture*)(intptr_t)tex->GetTexID())
+            SDL_ReleaseGPUTexture(bd->InitInfo.Device, raw_tex);
 
     // Clear identifiers and mark as destroyed (in order to allow e.g. calling InvalidateDeviceObjects while running)
     tex->SetTexID(ImTextureID_Invalid);
@@ -492,12 +509,10 @@ static void ImGui_ImplSDLGPU3_CreateShaders()
     IM_ASSERT(bd->FragmentShader != nullptr && "Failed to create fragment shader, call SDL_GetError() for more information");
 }
 
-static SDL_GPUGraphicsPipeline* ImGui_ImplSDLGPU3_CreateGraphicsPipelineEx(
-    SDL_GPUColorTargetBlendState* custom_blend)
+static SDL_GPUGraphicsPipeline* ImGui_ImplSDLGPU3_CreateGraphicsPipelineEx(SDL_GPUColorTargetBlendState* custom_blend)
 {
     ImGui_ImplSDLGPU3_Data* bd = ImGui_ImplSDLGPU3_GetBackendData();
     ImGui_ImplSDLGPU3_InitInfo* v = &bd->InitInfo;
-    ImGui_ImplSDLGPU3_CreateShaders();
 
     SDL_GPUVertexBufferDescription vertex_buffer_desc[1];
     vertex_buffer_desc[0].slot = 0;
@@ -544,7 +559,11 @@ static SDL_GPUGraphicsPipeline* ImGui_ImplSDLGPU3_CreateGraphicsPipelineEx(
     depth_stencil_state.enable_stencil_test = false;
 
     SDL_GPUColorTargetBlendState blend_state = {};
-    if (custom_blend == NULL)
+    if (custom_blend != nullptr)
+    {
+        blend_state = *custom_blend;
+    }
+    else
     {
         blend_state.enable_blend = true;
         blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
@@ -555,10 +574,7 @@ static SDL_GPUGraphicsPipeline* ImGui_ImplSDLGPU3_CreateGraphicsPipelineEx(
         blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
         blend_state.color_write_mask = SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B | SDL_GPU_COLORCOMPONENT_A;
     }
-    else {
-        blend_state = *custom_blend;
-    }
-    
+
     SDL_GPUColorTargetDescription color_target_desc[1];
     color_target_desc[0].format = v->ColorTargetFormat;
     color_target_desc[0].blend_state = blend_state;
@@ -577,18 +593,27 @@ static SDL_GPUGraphicsPipeline* ImGui_ImplSDLGPU3_CreateGraphicsPipelineEx(
     pipeline_info.multisample_state = multisample_state;
     pipeline_info.depth_stencil_state = depth_stencil_state;
     pipeline_info.target_info = target_info;
-    
-    SDL_GPUGraphicsPipeline *pipeline = SDL_CreateGPUGraphicsPipeline(v->Device, &pipeline_info);
+
+    SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(v->Device, &pipeline_info);
     return pipeline;
 }
 
 static void ImGui_ImplSDLGPU3_CreateGraphicsPipeline()
 {
     ImGui_ImplSDLGPU3_Data* bd = ImGui_ImplSDLGPU3_GetBackendData();
+    ImGui_ImplSDLGPU3_InitInfo* v = &bd->InitInfo;
+    ImGui_ImplSDLGPU3_CreateShaders();
+
     bd->Pipeline = ImGui_ImplSDLGPU3_CreateGraphicsPipelineEx(nullptr);
     IM_ASSERT(bd->Pipeline != nullptr && "Failed to create graphics pipeline, call SDL_GetError() for more information");
-}
 
+    // [LOCAL] Optional second pipeline with a custom blend state.
+    if (v->SecondaryBlendState != nullptr)
+    {
+        bd->PipelineSecondary = ImGui_ImplSDLGPU3_CreateGraphicsPipelineEx(v->SecondaryBlendState);
+        IM_ASSERT(bd->PipelineSecondary != nullptr && "Failed to create secondary graphics pipeline, call SDL_GetError() for more information");
+    }
+}
 
 void ImGui_ImplSDLGPU3_CreateDeviceObjects()
 {
@@ -599,7 +624,7 @@ void ImGui_ImplSDLGPU3_CreateDeviceObjects()
 
     if (bd->TexSamplerLinear == nullptr)
     {
-        // Bilinear sampling is required by default. Set 'io.Fonts->Flags |= ImFontAtlasFlags_NoBakedLines' or 'style.AntiAliasedLinesUseTex = false' to allow point/nearest sampling.
+        // Bilinear sampling is required.
         SDL_GPUSamplerCreateInfo sampler_info = {};
         sampler_info.min_filter = SDL_GPU_FILTER_LINEAR;
         sampler_info.mag_filter = SDL_GPU_FILTER_LINEAR;
@@ -624,11 +649,6 @@ void ImGui_ImplSDLGPU3_CreateDeviceObjects()
     }
 
     ImGui_ImplSDLGPU3_CreateGraphicsPipeline();
-    if (v->SecondaryBlendState)
-    {
-        bd->PipelineSecondary = ImGui_ImplSDLGPU3_CreateGraphicsPipelineEx(v->SecondaryBlendState);
-        IM_ASSERT(bd->PipelineSecondary != nullptr && "Failed to create secondary graphics pipeline, call SDL_GetError() for more information");
-    }
 }
 
 void ImGui_ImplSDLGPU3_DestroyFrameData()
@@ -663,7 +683,7 @@ void ImGui_ImplSDLGPU3_DestroyDeviceObjects()
     if (bd->TexSamplerLinear)   { SDL_ReleaseGPUSampler(v->Device, bd->TexSamplerLinear); bd->TexSamplerLinear = nullptr; }
     if (bd->TexSamplerNearest)  { SDL_ReleaseGPUSampler(v->Device, bd->TexSamplerNearest); bd->TexSamplerNearest = nullptr; }
     if (bd->Pipeline)           { SDL_ReleaseGPUGraphicsPipeline(v->Device, bd->Pipeline); bd->Pipeline = nullptr; }
-    if (bd->PipelineSecondary)  { SDL_ReleaseGPUGraphicsPipeline(v->Device, bd->PipelineSecondary); bd->PipelineSecondary = nullptr; }
+    if (bd->PipelineSecondary)  { SDL_ReleaseGPUGraphicsPipeline(v->Device, bd->PipelineSecondary); bd->PipelineSecondary = nullptr; } // [LOCAL]
 }
 
 bool ImGui_ImplSDLGPU3_Init(ImGui_ImplSDLGPU3_InitInfo* info)
@@ -678,6 +698,11 @@ bool ImGui_ImplSDLGPU3_Init(ImGui_ImplSDLGPU3_InitInfo* info)
     io.BackendRendererName = "imgui_impl_sdlgpu3";
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
     io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;   // We can honor ImGuiPlatformIO::Textures[] requests during render.
+
+    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+    platform_io.DrawCallback_ResetRenderState = ImGui_ImplSDLGPU3_DrawCallback_ResetRenderState;
+    platform_io.DrawCallback_SetSamplerLinear = ImGui_ImplSDLGPU3_DrawCallback_SetSamplerLinear;
+    platform_io.DrawCallback_SetSamplerNearest = ImGui_ImplSDLGPU3_DrawCallback_SetSamplerNearest;
 
     IM_ASSERT(info->Device != nullptr);
     IM_ASSERT(info->ColorTargetFormat != SDL_GPU_TEXTUREFORMAT_INVALID);
@@ -707,7 +732,7 @@ void ImGui_ImplSDLGPU3_NewFrame()
 {
     ImGui_ImplSDLGPU3_Data* bd = ImGui_ImplSDLGPU3_GetBackendData();
     IM_ASSERT(bd != nullptr && "Context or backend not initialized! Did you call ImGui_ImplSDLGPU3_Init()?");
-    
+
     if (!bd->TexSamplerLinear)
         ImGui_ImplSDLGPU3_CreateDeviceObjects();
 }

@@ -27,7 +27,7 @@ extension ImDrawList {
             switch element {
             case .moveTo(let point):
                 if hadStroke {
-                    self.PathStroke(strokeColor, 0, lineWidth)
+                    self.PathStroke(strokeColor, lineWidth)
                 }
                 self.PathClear()
                 self.PathLineTo(ImVec2(point))
@@ -50,13 +50,13 @@ extension ImDrawList {
                 wasClosed = false
 
             case .closePath:
-                self.PathStroke(strokeColor, 0, lineWidth)
+                self.PathStroke(strokeColor, lineWidth)
                 wasClosed = true
                 hadStroke = false
             }
         }
         if hadStroke && !wasClosed {
-            self.PathStroke(strokeColor, 0, lineWidth)
+            self.PathStroke(strokeColor, lineWidth)
         }
     }
     
