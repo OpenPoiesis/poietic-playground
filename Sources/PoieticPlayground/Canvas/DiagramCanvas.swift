@@ -54,14 +54,12 @@ class DiagramCanvas: View, WorkspaceBound {
         didSet { self.indicatorOverlay.setNeedsRender() }
     }
 
-    // TODO: Not fully implemented, only one overlay at the moment
     var overlays: OverlayStack
     /// Overlay for the main content – diagram blocks, connectors, labels.
     var mainOverlay: Overlay
-    /// Interactive preview of connection, placement or other operations.
-    var previewOverlay: Overlay
     var indicatorOverlay: Overlay
     var highlightOverlay: Overlay
+    private var layoutContext: OpaquePointer?
 
     var isPointerOver: Bool = false
     var inputState: InputState = InputState()
@@ -104,8 +102,6 @@ class DiagramCanvas: View, WorkspaceBound {
         
         self.mainOverlay = Overlay(name: "main", type: .main)
         self.overlays.add(self.mainOverlay)
-        self.previewOverlay = Overlay(name: "preview", type: .preview)
-        self.overlays.add(self.previewOverlay)
         self.indicatorOverlay = Overlay(name: "indicator", type: .indicator)
         self.overlays.add(self.indicatorOverlay)
         self.highlightOverlay = Overlay(name: "highlight", type: .highlight)
@@ -175,6 +171,7 @@ class DiagramCanvas: View, WorkspaceBound {
         // TODO: Should this be here or on an event?
         if let queuedStyle {
             self.style = queuedStyle
+            refreshLayoutProvider(force: true)
             self.scene?.setComponent(LayoutDirty())
             self.overlays.setAllNeedsRender()
             self.queuedStyle = nil
@@ -207,7 +204,6 @@ class DiagramCanvas: View, WorkspaceBound {
 
     func onPreviewStarted(_ document: Document) {
         self.mainOverlay.setNeedsRender()
-        self.previewOverlay.setNeedsRender()
     }
 
     func onInteractivePreviewChanged(_ document: Document) {
@@ -222,9 +218,20 @@ class DiagramCanvas: View, WorkspaceBound {
 //        self.overlays.setAllNeedsRender()
         self.mainOverlay.setNeedsRender()
         self.highlightOverlay   .setNeedsRender()
-        self.previewOverlay.setNeedsRender()
 
         gripController.createAll()
+    }
+
+    private func makeLayoutProvider() -> CairoLayoutProvider {
+        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
+        layoutContext = mainOverlay.context
+        return provider
+    }
+
+    private func refreshLayoutProvider(force: Bool = false) {
+        guard let scene else { return }
+        guard force || mainOverlay.context != layoutContext else { return }
+        scene.setComponent(SceneLayoutProvider(provider: makeLayoutProvider()))
     }
 
     // MARK: - Scene
@@ -239,7 +246,7 @@ class DiagramCanvas: View, WorkspaceBound {
 
         let scene = composer.createScene(diagram: diagram, viewport: viewportState)
 
-        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
+        let provider = makeLayoutProvider()
         scene.setComponent(SceneLayoutProvider(provider: provider))
         composer.layout(scene: scene, layout: provider)
         
@@ -252,7 +259,7 @@ class DiagramCanvas: View, WorkspaceBound {
 
         composer.syncScene(scene)
 
-        let provider = CairoLayoutProvider(context: mainOverlay.context!, style: style)
+        let provider = makeLayoutProvider()
         scene.setComponent(SceneLayoutProvider(provider: provider))
         composer.layout(scene: scene, layout: provider)
         
@@ -302,7 +309,11 @@ class DiagramCanvas: View, WorkspaceBound {
 
         canvasPos = ImGui.GetCursorScreenPos()
         canvasSize = ImGui.GetContentRegionAvail()
-        overlays.ensureSize(width: Int32(canvasSize.x), height: Int32(canvasSize.y))
+        let pixelDensity = ImGui.GetIO().pointee.DisplayFramebufferScale.x
+        overlays.ensureSize(width: canvasSize.x,
+                            height: canvasSize.y,
+                            pixelDensity: pixelDensity)
+        refreshLayoutProvider()
 
         drawOverlays()
         do {
@@ -330,11 +341,6 @@ class DiagramCanvas: View, WorkspaceBound {
         if mainOverlay.needsRender {
             mainOverlay.render { context in
                 drawGrid(context)
-                renderer.render(scene, context: context)
-            }
-        }
-        if previewOverlay.needsRender {
-            previewOverlay.render { context in
                 renderer.render(scene, context: context)
             }
         }

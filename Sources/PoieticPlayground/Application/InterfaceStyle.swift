@@ -45,18 +45,9 @@ enum IconKey: CaseIterable, Hashable {
     }
 }
 
-enum DisplayScale {
-    case standard
-    case hiDPI
-    init(displayScale: Float) {
-        self = displayScale >= 1.5 ? .hiDPI : .standard
-    }
-}
-
 // TODO: This is not 100% clean, as InterfaceStyle is bound to resource manager here
 protocol TraitEnvironment: AnyObject {
     var interfaceStyle: InterfaceStyle { get }
-    var displayScale: DisplayScale { get }
 //    var userLevel: AudienceLevel { get }
 }
 

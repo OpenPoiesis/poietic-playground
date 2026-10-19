@@ -21,8 +21,6 @@ enum OverlayType {
     case indicator
     /// Selection and other highlights
     case highlight
-    /// Interactive preview
-    case preview
 }
 
 /// Canvas visual overlay.
@@ -57,15 +55,16 @@ class Overlay {
     /// Texture handle, if successfully created by a graphic backend.
     private(set) var texture: TextureHandle?
 
-    private var width: Int32 = 0
-    private var height: Int32 = 0
+    private var pixelWidth: Int32 = 0
+    private var pixelHeight: Int32 = 0
+    private var pixelDensity: Float = 1.0
     
     private(set) var state: State = .needsRender
     
     init(name: String, type: OverlayType) {
         self.name = name
         self.type = type
-        create(width: 1, height: 1)
+        create(width: 1, height: 1, pixelDensity: 1.0)
     }
 
     var needsRender: Bool {
@@ -86,26 +85,35 @@ class Overlay {
     func setNeedsUpload() { self.state = .needsUpload }
 
     @MainActor
-    func ensureSize(width: Int32, height: Int32) {
-        guard width > 0 && height > 0 else { return }
-        
-        if width != self.width || height != self.height {
+    func ensureSize(width: Float, height: Float, pixelDensity: Float) {
+        guard width > 0, height > 0, pixelDensity > 0 else { return }
+
+        let width = Int32((width * pixelDensity).rounded(.up))
+        let height = Int32((height * pixelDensity).rounded(.up))
+        guard width > 0, height > 0 else { return }
+
+        if width != pixelWidth
+            || height != pixelHeight
+            || pixelDensity != self.pixelDensity
+        {
             if let texture {
                 GraphicsBackend.shared.destroyTexture(texture)
                 self.texture = nil
             }
             destroy()
-            create(width: width, height: height)
+            create(width: width, height: height, pixelDensity: pixelDensity)
             self.state = .needsRender
         }
     }
 
-    private func create(width: Int32, height: Int32) {
+    private func create(width: Int32, height: Int32, pixelDensity: Float) {
         self.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height)
+        cairo_surface_set_device_scale(self.surface, Double(pixelDensity), Double(pixelDensity))
 
         self.context = cairo_create(surface)
-        self.width = width
-        self.height = height
+        self.pixelWidth = width
+        self.pixelHeight = height
+        self.pixelDensity = pixelDensity
         self.state = .needsRender
     }
     
@@ -116,8 +124,9 @@ class Overlay {
         if let context {
             cairo_destroy(context)
         }
-        self.width = 0
-        self.height = 0
+        self.pixelWidth = 0
+        self.pixelHeight = 0
+        self.pixelDensity = 1.0
         self.state = .uninitialized
     }
     
@@ -185,9 +194,9 @@ class OverlayStack {
     
     /// Ensure all layers match given size
     @MainActor
-    func ensureSize(width: Int32, height: Int32) {
+    func ensureSize(width: Float, height: Float, pixelDensity: Float) {
         for layer in layers {
-            layer.ensureSize(width: width, height: height)
+            layer.ensureSize(width: width, height: height, pixelDensity: pixelDensity)
         }
     }
     

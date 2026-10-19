@@ -92,7 +92,6 @@ class Application: @MainActor TraitEnvironment {
     let resourceManager: ResourceManager
     let backend: any GraphicsBackendProtocol
     let interfaceStyle: InterfaceStyle
-    let displayScale: DisplayScale = .hiDPI // TODO: Use this
     var defaultCanvasStyle: CanvasStyle
     
     init(resources: ResourceDirectory, backend: any GraphicsBackendProtocol) {
