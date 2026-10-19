@@ -10,6 +10,8 @@ methodology.
 
 Part of the [Open Poiesis](https://www.poietic.org) project.
 
+![Poietic Playground prototype screenshot](Docs/images/poietic-playground-demo-screenshot.png?raw=true)
+
 ## Primers
 
 The following literature is a good start with the methodology used in the playground:
