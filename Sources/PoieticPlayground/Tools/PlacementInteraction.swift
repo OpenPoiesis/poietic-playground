@@ -33,37 +33,37 @@ class PlacementInteraction: ToolInteraction {
     }
 
     func createBlockIntent(position: Vector2D, typeName: String) {
-        guard let scene = canvas.scene,
+        guard let presentation = canvas.presentation,
               let notation: Notation = world.singleton(),
               let type = document.design.metamodel.objectType(name: typeName)
         else { return }
 
-        let scenePos = canvas.worldToScene(position)
+        let localPosition = canvas.worldToPresentation(position)
                                                                                                                                                                                                                 
         removeBlockIntent()
                                                                                                                                                                                                                 
         let blockNode = world.spawn(
             BlockIntent(type: type),
-            SceneNode(),
-            BlockSceneNode(),
-            PositionComponent(position: scenePos),
-            CanvasNodeStyle(class: .block, modifiers: .preview),
+            PresentationNode(),
+            BlockNode(),
+            LocalPosition(position: localPosition),
+            NodeStyle(class: .block, modifiers: .preview),
             DirtyContent.geometry,
             Visibility.visible,
         )
-        blockNode.relate(ChildOf(), to: scene)
-        blockNode.relate(MemberOf(), to: scene)
+        blockNode.relate(ChildOf(), to: presentation)
+        blockNode.relate(MemberOf(), to: presentation)
 
         let pictogram = notation.pictogram(type.name)
 
         let pictogramNode = world.spawn(
-            SceneNode(),
-            PictogramSceneNode(pictogram: pictogram),
-            PositionComponent(position: .zero),
+            PresentationNode(),
+            PictogramNode(pictogram: pictogram),
+            LocalPosition(position: .zero),
             Visibility.visible,
         )
         pictogramNode.relate(ChildOf(), to: blockNode)
-        blockNode.relate(SceneNode.Pictogram(), to: pictogramNode)
+        blockNode.relate(PresentationNode.Pictogram(), to: pictogramNode)
 
         self.blockIntent = blockNode
     }
@@ -107,9 +107,9 @@ class PlacementInteraction: ToolInteraction {
         else { return .ignored }
         
         let worldPos: Vector2D = canvas.screenToWorld(event.screenPos)
-        let canvasPos: Vector2D = canvas.worldToScene(worldPos)
+        let canvasPos: Vector2D = canvas.worldToPresentation(worldPos)
 
-        blockIntent.setComponent(PositionComponent(position: canvasPos))
+        blockIntent.setComponent(LocalPosition(position: canvasPos))
         blockIntent.setComponent(DirtyContent.geometry)
         
         document.queueInteractivePreviewUpdate()

@@ -167,7 +167,7 @@ class SelectionInteraction: ToolInteraction {
     // MARK: - Object Move
     
     func previewSelectionMove(screenDelta: Vector2D) {
-        guard let scene = canvas.scene,
+        guard let presentation = canvas.presentation,
               let plane = document.world.plane
         else { return }
         let selection = document.selection
@@ -182,8 +182,8 @@ class SelectionInteraction: ToolInteraction {
             
             entity.setComponent(DirtyContent.geometry)
             
-            var preview: PreviewPositionComponent
-            preview = entity.component() ?? PreviewPositionComponent(position: block.position)
+            var preview: PreviewPosition
+            preview = entity.component() ?? PreviewPosition(position: block.position)
             preview.position += worldDelta
             entity.setComponent(preview)
             entity.modifyOrSet(default: DirtyContent.geometry) {
@@ -217,7 +217,7 @@ class SelectionInteraction: ToolInteraction {
             }
         }
         
-        scene.modifyOrSet(default: DirtyContent.geometry) {
+        presentation.modifyOrSet(default: DirtyContent.geometry) {
             $0.insert(.geometry)
         }
         
@@ -253,7 +253,7 @@ class SelectionInteraction: ToolInteraction {
     // MARK: - Clean-up
     
     func cleanUp() {
-        world.removeComponentForAll(PreviewPositionComponent.self)
+        world.removeComponentForAll(PreviewPosition.self)
         world.removeComponentForAll(PreviewMidpoints.self)
     }
 }

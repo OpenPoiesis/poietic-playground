@@ -1,5 +1,5 @@
 //
-//  CairoDiagramSceneRenderer.swift
+//  CairoDiagramRenderer.swift
 //  PoieticPlayground
 //
 //  Created by Stefan Urbanek on 12/07/2026.
@@ -9,7 +9,7 @@ import PoieticCore
 import Diagramming
 import Foundation
 
-class CairoDiagramSceneRenderer: DiagramSceneRenderer {
+class CairoDiagramRenderer: DiagramRenderer {
     static let DebugColor = Color.screenRed.withTransparency(0.5)
 
     typealias Context = CairoRenderingContext
@@ -26,10 +26,10 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     
     func renderBlock(_ entity: RuntimeEntity, context: Context) {
         // TODO: [REFACTORING] Separate pictogram rendering into renderPictogram(...)
-        guard let pictogramNode: RuntimeEntity = entity.target(SceneNode.Pictogram.self),
-              let pictComp: PictogramSceneNode = pictogramNode.component()
+        guard let pictogramNode: RuntimeEntity = entity.target(PresentationNode.Pictogram.self),
+              let pictComp: PictogramNode = pictogramNode.component()
         else { return }
-        let nodeStyle: CanvasNodeStyle? = entity.component()
+        let nodeStyle: NodeStyle? = entity.component()
         
         let pictogram = pictComp.pictogram
         
@@ -72,7 +72,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
         guard let stroke: ConnectorStroke = entity.component()
         else { return }
         
-        let nodeStyle: CanvasNodeStyle? = entity.component()
+        let nodeStyle: NodeStyle? = entity.component()
         
         switch context.overlay {
         case .main:
@@ -101,7 +101,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
         case .highlight:
             // No node style  - we do not know what highlight to draw
             // No wire - we do not know how to draw the highlight
-            guard let nodeStyle: CanvasNodeStyle = entity.component(),
+            guard let nodeStyle: NodeStyle = entity.component(),
                   let wire: ConnectorWire = entity.component()
             else { break }
             
@@ -135,10 +135,10 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     }
     func renderLabel(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .main,
-              let label: LabelSceneNode = entity.component()
+              let label: LabelNode = entity.component()
         else { return }
         
-        let nodeStyle: CanvasNodeStyle? = entity.component()
+        let nodeStyle: NodeStyle? = entity.component()
         let labelStyle = style.labelStyle(class: nodeStyle?.class ?? .label)
         let offset: Vector2D
         if let renderingOffset: RenderingOffset = entity.component() {
@@ -160,7 +160,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
               context.overlay == .indicator,
               let visibility: Visibility = entity.component(),
               visibility == .visible,
-              let indicator: ValueIndicatorSceneNode = entity.component()
+              let indicator: ValueIndicatorNode = entity.component()
         else { return }
 
         // Get probed value and value bounds from the probed entity
@@ -175,8 +175,8 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
             bounds = ValueBounds(min: 0.0, max: 1.0)
         }
         
-        let nodeStyle: CanvasNodeStyle = entity.component()
-                                            ?? CanvasNodeStyle(class: .valueIndicator)
+        let nodeStyle: NodeStyle = entity.component()
+                                            ?? NodeStyle(class: .valueIndicator)
 
         let indicatorLabel: String
         if let value {
@@ -213,7 +213,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
                                frame: Rect2D,
                                value: Double?,
                                bounds: ValueBounds,
-                               orientation: ValueIndicatorSceneNode.Orientation)
+                               orientation: ValueIndicatorNode.Orientation)
     {
         let ValueIndicatorBarPadding: Double = 2.0
 //        let fullRect = Rect2D(position: -rect.size / 2, size: rect.size)
@@ -321,12 +321,12 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
     
     func renderColorSwatch(_ entity: RuntimeEntity, context: Context) {
         guard context.overlay == .main,
-              let swatch: ColorSwatchSceneNode = entity.component()
+              let swatch: ColorSwatchNode = entity.component()
         else { return }
         
         let color = style.adaptableColor(swatch.colorKey,
                                          default: DefaultAdaptableColors[swatch.colorKey] ?? Color.init(gray: 0.5))
-        let size = style.metric(.colorSwatchSize, default: ColorSwatchSceneNode.DefaultSize)
+        let size = style.metric(.colorSwatchSize, default: ColorSwatchNode.DefaultSize)
         context.setColor(color)
         let rect = Rect2D(center: .zero, size: Vector2D(size, size))
         context.fillRect(origin: rect.origin, size: rect.size)
@@ -343,7 +343,7 @@ class CairoDiagramSceneRenderer: DiagramSceneRenderer {
             let path = shape.toPath()
             context.strokePath(path)
         }
-        if let region: TouchRegion = entity.component() {
+        if let region: HitRegion = entity.component() {
             // draw touch region outline
         }
     }

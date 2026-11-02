@@ -134,7 +134,7 @@ class MidpointGripInteraction: ToolInteraction {
         let worldDelta = screenDelta / canvas.zoomLevel
         component.worldPosition += worldDelta
         grip.setComponent(component)
-        grip.setComponent(PositionComponent(position: canvas.worldToScene(component.worldPosition)))
+        grip.setComponent(LocalPosition(position: canvas.worldToPresentation(component.worldPosition)))
 
         switch component.key {
         case .connectorMidpoint(let index):

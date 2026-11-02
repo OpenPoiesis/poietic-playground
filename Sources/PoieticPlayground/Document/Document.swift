@@ -99,7 +99,6 @@ class Document {
     
     // Known entities
     var mainDiagram: RuntimeEntity? = nil
-    var mainDiagramScene: RuntimeEntity? = nil
     
     /// Flag whether ``InteractivePreviewSchedule`` is run at the end of the update.
     /// The flag is reset each application plane.
@@ -238,7 +237,7 @@ class Document {
     func endInteractivePreview() {
         self.isPreviewing = false
         
-        world.removeComponentForAll(PreviewPositionComponent.self)
+        world.removeComponentForAll(PreviewPosition.self)
         world.removeComponentForAll(PreviewMidpoints.self)
         self.trigger(.previewEnded)
     }

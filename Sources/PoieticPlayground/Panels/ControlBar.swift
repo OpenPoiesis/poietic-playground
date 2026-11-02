@@ -11,7 +11,7 @@ import PoieticCore
 
 @MainActor
 class ControlBar: @MainActor Panel {
-    static let ButtonSize = ImVec2(32, 32)
+    static let ButtonSize = ImVec2(40, 40)
     static let ButtonGroupOffset: Float = 20.0
     static let StepDisplayWidth: Float = 100.0
     
@@ -136,7 +136,7 @@ class ControlBar: @MainActor Panel {
                             | ImGuiInputTextFlags_CharsNoBlank
 
         let imStyle = ImGui.GetStyle().pointee
-        let titleFontSize = imStyle.FontSizeBase * 2
+        let titleFontSize = imStyle.FontSizeBase * 1
         ImGui.SameLine()
         ImGui.BeginGroup()
         ImGui.PushFont(nil, titleFontSize)
@@ -159,7 +159,7 @@ class ControlBar: @MainActor Panel {
                             | ImGuiInputTextFlags_CharsNoBlank
 
         let imStyle = ImGui.GetStyle().pointee
-        let titleFontSize = imStyle.FontSizeBase * 2
+        let titleFontSize = imStyle.FontSizeBase * 1
         ImGui.SameLine()
         ImGui.BeginGroup()
         ImGui.PushFont(nil, titleFontSize)

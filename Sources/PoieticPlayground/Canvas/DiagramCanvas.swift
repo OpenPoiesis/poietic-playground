@@ -14,9 +14,9 @@ import PoieticFlows
 ///
 /// Responsibilities:
 /// - Owns overlays and Cairo drawing contexts
-/// - Performs diagram scene rendering
+/// - Performs diagram presentation rendering
 ///
-/// The canvas draws a scene rooted in ``/Diagramming/DiagramCanvas``.
+/// The canvas draws a presentation rooted in `DiagramPresentation`.
 ///
 class DiagramCanvas: View, WorkspaceBound {
     static let DefaultHitRadius: Double = 5.0
@@ -32,18 +32,18 @@ class DiagramCanvas: View, WorkspaceBound {
     ///
     /// Owned and managed by the ``Document``.
     ///
-    /// - SeeAlso: ``scene`` – renderable representation of the diagram.
+    /// - SeeAlso: ``presentation`` – renderable representation of the diagram.
     var diagram: RuntimeEntity?
 
-    /// Root entity for diagram canvas scene hierarchy presented in this canvas.
+    /// Root entity for diagram canvas presentation hierarchy presented in this canvas.
     ///
     /// Owned and managed by this diagram canvas view.
     ///
-    /// When there is no canvas scene, it is created on the next ``update(_:)`` from
+    /// When there is no canvas presentation, it is created on the next ``update(_:)`` from
     /// the ``diagram``.
     ///
-    /// - SeeAlso: ``diagram`` – source for the scene.
-    var scene: RuntimeEntity?
+    /// - SeeAlso: ``diagram`` – source for the presentation.
+    var presentation: RuntimeEntity?
 
     let gripController: GripController
     
@@ -79,8 +79,8 @@ class DiagramCanvas: View, WorkspaceBound {
     ///
     private(set) var zoomLevel: Double = 1.0
     
-    // TODO: Replace the viewOffset and zoomLevel variables with viewportState
-    var viewportState: ViewportState { ViewportState(offset: viewOffset, zoom: zoomLevel)}
+    // TODO: Replace the viewOffset and zoomLevel variables with camera
+    var camera: Camera { Camera(offset: viewOffset, zoom: zoomLevel)}
     
     /// Transformation from world coordinates to the drawing context/surface coordinates.
     ///
@@ -112,7 +112,7 @@ class DiagramCanvas: View, WorkspaceBound {
     }
     
     func bind(workspace: any WorkspaceServices, document: Document) {
-        self.scene = nil
+        self.presentation = nil
         self.diagram = nil
         self.document = document
         self.editorManager?.bind(document: document,
@@ -121,7 +121,7 @@ class DiagramCanvas: View, WorkspaceBound {
         self.gripController.bind(canvas: self, world: document.world)
     }
     func unbindWorkspace() {
-        self.scene = nil
+        self.presentation = nil
         self.diagram = nil
         self.document = nil
         self.editorManager?.unbind()
@@ -147,12 +147,12 @@ class DiagramCanvas: View, WorkspaceBound {
         return ImVec2(screenPos) + canvasPos
     }
    
-    /// Convert world coordinates to scene coordinates.
-    func worldToScene(_ worldPos: Vector2D) -> Vector2D {
+    /// Convert world coordinates to presentation coordinates.
+    func worldToPresentation(_ worldPos: Vector2D) -> Vector2D {
         return toOverlayTransform.apply(to: worldPos)
     }
-    func sceneToWorld(_ scenePos: Vector2D) -> Vector2D {
-        let worldPos = scenePos / zoomLevel + viewOffset
+    func presentationToWorld(_ presPos: Vector2D) -> Vector2D {
+        let worldPos = presPos / zoomLevel + viewOffset
         return worldPos
     }
     
@@ -164,15 +164,15 @@ class DiagramCanvas: View, WorkspaceBound {
     
     func update(_ timeDelta: Double) {
         // TODO: Move to bind(), once we are sure we have diagram at that time.
-        if scene == nil {
-            createScene()
+        if presentation == nil {
+            createPresentation()
             gripController.createAll()
         }
         // TODO: Should this be here or on an event?
         if let queuedStyle {
             self.style = queuedStyle
             refreshLayoutProvider(force: true)
-            self.scene?.setComponent(LayoutDirty())
+            self.presentation?.setComponent(LayoutDirty())
             self.overlays.setAllNeedsRender()
             self.queuedStyle = nil
         }
@@ -184,17 +184,17 @@ class DiagramCanvas: View, WorkspaceBound {
     }
     
     func onNotationChanged(_ document: Document) {
-        updateScene()
-        self.scene?.setComponent(LayoutDirty())
+        updatePresentation()
+        self.presentation?.setComponent(LayoutDirty())
         gripController.createAll()
     }
 
-    /// Update renderable scene and mark the whole canvas as needing to be rendered.
+    /// Update presentation and mark the whole canvas as needing to be rendered.
     ///
     func onDesignPlaneChanged(_ document: Document) {
         self.diagram = document.mainDiagram
-        updateScene()
-        self.scene?.setComponent(LayoutDirty())
+        updatePresentation()
+        self.presentation?.setComponent(LayoutDirty())
         gripController.createAll()
     }
     
@@ -229,41 +229,41 @@ class DiagramCanvas: View, WorkspaceBound {
     }
 
     private func refreshLayoutProvider(force: Bool = false) {
-        guard let scene else { return }
+        guard let presentation else { return }
         guard force || mainOverlay.context != layoutContext else { return }
-        scene.setComponent(SceneLayoutProvider(provider: makeLayoutProvider()))
+        presentation.setComponent(LayoutEnvironment(provider: makeLayoutProvider()))
     }
 
-    // MARK: - Scene
+    // MARK: - Presentation
     
-    private func createScene() {
+    private func createPresentation() {
         guard let diagram else {
-            self.scene = nil
+            self.presentation = nil
             return
         }
 
-        let composer = DiagramSceneComposer(world: world)
+        let builder = PresentationBuilder(world: world)
 
-        let scene = composer.createScene(diagram: diagram, viewport: viewportState)
+        let presentation = builder.createPresentation(diagram: diagram, camera: camera)
 
         let provider = makeLayoutProvider()
-        scene.setComponent(SceneLayoutProvider(provider: provider))
-        composer.layout(scene: scene, layout: provider)
+        presentation.setComponent(LayoutEnvironment(provider: provider))
+        builder.layout(presentation: presentation, layout: provider)
         
-        self.scene = scene
+        self.presentation = presentation
         overlays.setAllNeedsRender()
     }
-    private func updateScene() {
-        guard let scene else { return }
-        let composer = DiagramSceneComposer(world: world)
+    private func updatePresentation() {
+        guard let presentation else { return }
+        let builder = PresentationBuilder(world: world)
 
-        composer.syncScene(scene)
+        builder.syncPresentation(presentation)
 
         let provider = makeLayoutProvider()
-        scene.setComponent(SceneLayoutProvider(provider: provider))
-        composer.layout(scene: scene, layout: provider)
+        presentation.setComponent(LayoutEnvironment(provider: provider))
+        builder.layout(presentation: presentation, layout: provider)
         
-        self.scene = scene
+        self.presentation = presentation
         overlays.setAllNeedsRender()
     }
 
@@ -331,27 +331,27 @@ class DiagramCanvas: View, WorkspaceBound {
     }
     
     func drawOverlays() {
-        guard let scene else { return }
-        assert(scene.contains(DiagramScene.self))
+        guard let presentation else { return }
+        assert(presentation.contains(DiagramPresentation.self))
 
-        let renderer = CairoDiagramSceneRenderer(style: style,
+        let renderer = CairoDiagramRenderer(style: style,
                                                  showValueIndicators: showValueIndicators,
                                                  debug: debugRendering)
         
         if mainOverlay.needsRender {
             mainOverlay.render { context in
                 drawGrid(context)
-                renderer.render(scene, context: context)
+                renderer.render(presentation, context: context)
             }
         }
         if highlightOverlay.needsRender {
             highlightOverlay.render { context in
-                renderer.render(scene, context: context)
+                renderer.render(presentation, context: context)
             }
         }
         if indicatorOverlay.needsRender {
             indicatorOverlay.render { context in
-                renderer.render(scene, context: context)
+                renderer.render(presentation, context: context)
             }
         }
     }
@@ -404,12 +404,12 @@ class DiagramCanvas: View, WorkspaceBound {
                                 .scaled(Vector2D(zoomLevel, zoomLevel))
 
         // Viewport Changed
-        if let scene {
-            scene.setComponent(self.viewportState)
-            scene.setComponent(ViewportDirty())
+        if let presentation {
+            presentation.setComponent(self.camera)
+            presentation.setComponent(ProjectionDirty())
             
-            let composer = DiagramSceneComposer(world: self.world)
-            composer.updateGeometry(scene: scene)
+            let builder = PresentationBuilder(world: self.world)
+            builder.updateGeometry(presentation: presentation)
         }
         overlays.setAllNeedsRender()
     }

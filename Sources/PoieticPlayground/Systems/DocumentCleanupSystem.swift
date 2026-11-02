@@ -14,11 +14,11 @@ import Diagramming
 /// - **Input:** Design object entities
 /// - **Change:**
 ///     - Removes all of the following components:
-///         - ``PreviewPositionComponent``
+///         - ``PreviewPosition``
 ///         - ``PreviewMidpoints``
-///         - ``Diagram/DirtyContent``
-///         - ``InteractionDirty``
-///         - ``LayoutDirty``
+///         - ``ObjectTouched``
+///         - `DirtyContent`
+///         - `ProjectionDirty`
 /// - **Output:** No output.
 /// - **Forgiveness:** Nothing to be forgiven.
 ///
@@ -27,8 +27,7 @@ struct DocumentCleanupSystem: System {
     
     static func update(_ world: PoieticCore.World) throws(PoieticCore.InternalSystemError) {
         world.removeComponentForAll(DirtyContent.self)
-        world.removeComponentForAll(ViewportDirty.self)
-//        world.removeComponentForAll(InteractionDirty.self)
+        world.removeComponentForAll(ProjectionDirty.self)
         world.removeComponentForAll(ObjectTouched.self)
     }
 }

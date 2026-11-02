@@ -10,7 +10,7 @@ import PoieticCore
 /// Hit targets:
 /// - object directly
 /// - primary/secondary label of object
-/// - error indicator of object
+/// - issue indicator of object
 /// - handle of object
 ///     - geometry
 ///     - action
@@ -25,7 +25,7 @@ struct CanvasObjectHit {
         case issueIndicator
     }
 
-    let sceneNode: RuntimeID
+    let presentationNode: RuntimeID
     /// Design entity that was hit, either directly or its part.
     ///
     /// - Note: If a label or an indicator was hit, the `object` is the design object entity that

@@ -36,11 +36,11 @@ extension Document {
             Schedule(
                 label: DocumentUpdateSchedule.self,
                 systems: [
-                        SceneCompositionSystem.self,
-                        SceneInteractionSystem.self,
+                        PresentationUpdateSystem.self,
+                        HitRegionSystem.self,
                     ],
                 order: [
-                    (SceneCompositionSystem.self, before: SceneInteractionSystem.self),
+                    (PresentationUpdateSystem.self, before: HitRegionSystem.self),
                 ]
             ),
             Schedule(
@@ -161,7 +161,7 @@ extension Document {
         needsWorldPlaneUpdate = false
     }
     func createOrUpdateMainDiagram() {
-        let diagram = DiagramSceneComposer.createDiagramFromAll(world: world, diagram: mainDiagram)
+        let diagram = PresentationBuilder.createDiagramFromAll(world: world, diagram: mainDiagram)
         self.mainDiagram = diagram
     }
     

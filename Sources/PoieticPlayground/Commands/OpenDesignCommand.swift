@@ -36,23 +36,23 @@ class ExportSVGCommand: Command {
             throw CommandError("No main diagram found", kind: .internal)
         }
         
-        let composer = DiagramSceneComposer(world: world)
-        let scene = composer.createScene(diagram: diagram)
+        let builder = PresentationBuilder(world: world)
+        let presentation = builder.createPresentation(diagram: diagram)
         // TODO: Make user pick a SVG style
         let style = SVGDiagramStyle.Default
-        scene.setComponent(SceneLayoutProvider(provider: style))
+        presentation.setComponent(LayoutEnvironment(provider: style))
 
         do {
-            try SceneCompositionSystem.update(world)
+            try PresentationUpdateSystem.update(world)
         }
         catch {
             throw CommandError(String(describing: error), underlyingError: error)
         }
 
-        let renderer = SVGDiagramSceneRenderer(world: world)
+        let renderer = SVGDiagramRenderer(world: world)
 
         do {
-            try renderer.render(scene, style: style, to: url.path())
+            try renderer.render(presentation, style: style, to: url.path())
         }
         catch {
             throw CommandError(String(describing: error), underlyingError: error)

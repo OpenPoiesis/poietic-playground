@@ -128,7 +128,7 @@ final class CanvasStyle: Sendable {
             return shapeStyles[Key(styleClass)]
         }
     }
-    func shapeStyle(_ nodeStyle: CanvasNodeStyle) -> ShapeStyle? {
+    func shapeStyle(_ nodeStyle: NodeStyle) -> ShapeStyle? {
         return shapeStyle(class: nodeStyle.class, modifiers: nodeStyle.modifiers)
     }
 

@@ -16,11 +16,11 @@ class GripController {
     unowned var world: World?
 
     var selection: Selection? { world?.singleton() }
-    var scene: RuntimeEntity? { canvas?.scene }
+    var presentation: RuntimeEntity? { canvas?.presentation }
     var grips: [(RuntimeEntity, Grip)] {
-        guard let scene else { return [] }
+        guard let presentation else { return [] }
         
-        return scene.children.compactMap {
+        return presentation.children.compactMap {
             guard let grip: Grip = $0.component()
             else { return nil }
             return ($0, grip)
@@ -69,7 +69,7 @@ extension GripController {
         guard let canvas,
               let world,
               let connector: DiagramConnector = entity.component(),
-              let scene = canvas.scene
+              let presentation = canvas.presentation
         else { return }
         
         let style = canvas.style
@@ -89,26 +89,26 @@ extension GripController {
             let midpoint = segment.midpoint
 
             createMidpointGrip(worldPosition: midpoint,
-                               scenePosition: canvas.worldToScene(midpoint),
+                               localPosition: canvas.worldToPresentation(midpoint),
                                index: 0,
                                target: entity,
-                               parent: scene,
+                               parent: presentation,
                                size: handleSize)
         }
         else {
             for (index, point) in midpoints.enumerated() {
                 createMidpointGrip(worldPosition: point,
-                                   scenePosition: canvas.worldToScene(point),
+                                   localPosition: canvas.worldToPresentation(point),
                                    index: index,
                                    target: entity,
-                                   parent: scene,
+                                   parent: presentation,
                                    size: handleSize)
             }
         }
     }
     
     func createMidpointGrip(worldPosition: Vector2D,
-                            scenePosition: Vector2D,
+                            localPosition: Vector2D,
                             index: Int,
                             target: RuntimeEntity,
                             parent: RuntimeEntity,
@@ -116,11 +116,11 @@ extension GripController {
     {
         guard let world else { return }
         let handle = world.spawn(
-            SceneNode(),
+            PresentationNode(),
             Grip(position: worldPosition, key: .connectorMidpoint(index)),
             CollisionShape(position: .zero, shape: .circle(size / 2.0)),
-            PositionComponent(position: scenePosition),
-            CanvasNodeStyle(class: .handle),
+            LocalPosition(position: localPosition),
+            NodeStyle(class: .handle),
             Interactivity.interactive,
             InteractionDirty(),
         )
@@ -142,7 +142,7 @@ extension GripController {
             let pos = preview.midpoints[index]
             grip.worldPosition = pos
             entity.setComponent(grip)
-            entity.setComponent(PositionComponent(position: canvas.worldToScene(pos)))
+            entity.setComponent(LocalPosition(position: canvas.worldToPresentation(pos)))
             entity.setComponent(InteractionDirty())
         }
     }

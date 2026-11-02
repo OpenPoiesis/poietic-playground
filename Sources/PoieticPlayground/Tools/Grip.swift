@@ -24,9 +24,9 @@ enum GripKey {
 /// - `GripOf`: Object that the grip manipulates. When the target of the relationship is
 ///   despawned, the grip is despawned as well.
 ///
-/// Grip is a diagram scene node with a position.
+/// Grip is a diagram presentation node with a position.
 ///
-/// - Important: Grip must be a direct child of a scene.
+/// - Important: Grip must be a direct child of a presentation.
 ///
 struct Grip: Component {
     static let DefaultSize = 8.0
@@ -38,7 +38,7 @@ struct Grip: Component {
     /// Use this position for drawing the grip and for creating a transaction when dragging
     /// operation is concluded.
     ///
-    /// - Note: Grip position in the scene is determined by the ``PositionComponent`` on the
+    /// - Note: Grip position in the presentation is determined by the ``LocalPosition`` on the
     /// grip entity.
     ///
     var worldPosition: Vector2D

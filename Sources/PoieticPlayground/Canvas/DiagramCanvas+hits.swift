@@ -10,12 +10,12 @@ import Diagramming
 
 extension DiagramCanvas {
     func hitObject(screenPosition: Vector2D) -> CanvasObjectHit? {
-        guard let scene else { return nil }
+        guard let presentation else { return nil }
         
-        let scenePosition = worldToScene(screenToWorld(screenPosition))
+        let localPosition = worldToPresentation(screenToWorld(screenPosition))
         let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
         
-        guard let hitEntity = hitTest(node: scene, scenePosition: scenePosition, radius: radius),
+        guard let hitEntity = hitTest(node: presentation, presentationPosition: localPosition, radius: radius),
               let parent: RuntimeEntity = hitEntity.target(ChildOf.self)
         else { return nil }
 
@@ -23,10 +23,10 @@ extension DiagramCanvas {
         // for labels/indicators it is the parent block.
         let designEntity: RuntimeEntity?
 
-        if hitEntity.contains(BlockSceneNode.self) || hitEntity.contains(ConnectorSceneNode.self) {
+        if hitEntity.contains(BlockNode.self) || hitEntity.contains(ConnectorNode.self) {
             designEntity = hitEntity.target(RepresentationOf.self)
         }
-        else {  // Label, indicator, etc. — parent is the block scene node
+        else {  // Label, indicator, etc. — parent is the block presentation node
             designEntity = parent.target(RepresentationOf.self)
         }
 
@@ -34,31 +34,31 @@ extension DiagramCanvas {
         
         let part: CanvasObjectHit.ObjectPart
         
-        if parent.relates(SceneNode.PrimaryLabel.self, to: hitEntity) {
+        if parent.relates(PresentationNode.PrimaryLabel.self, to: hitEntity) {
             part = .primaryLabel
-        } else if parent.relates(SceneNode.SecondaryLabel.self, to: hitEntity) {
+        } else if parent.relates(PresentationNode.SecondaryLabel.self, to: hitEntity) {
             part = .secondaryLabel
-        } else if hitEntity.contains(IssueIndicatorSceneNode.self) {
+        } else if hitEntity.contains(IssueIndicatorNode.self) {
             part = .issueIndicator
-        } else if hitEntity.contains(BlockSceneNode.self) || hitEntity.contains(ConnectorSceneNode.self) {
+        } else if hitEntity.contains(BlockNode.self) || hitEntity.contains(ConnectorNode.self) {
             part = .body
         }
         else {
             return nil
         }
         
-        return CanvasObjectHit(sceneNode: hitEntity.runtimeID , designObject: designEntity.runtimeID, part: part)
+        return CanvasObjectHit(presentationNode: hitEntity.runtimeID , designObject: designEntity.runtimeID, part: part)
     }
     
-    func hitTest(node: RuntimeEntity, scenePosition: Vector2D, radius: Double) -> RuntimeEntity? {
+    func hitTest(node: RuntimeEntity, presentationPosition: Vector2D, radius: Double) -> RuntimeEntity? {
         // FIXME: We need z-index ordering
         for child in node.children where !child.contains(Grip.self) {
-            if let region: TouchRegion = child.component(),
-               region.isHit(at: scenePosition, radius: radius)
+            if let region: HitRegion = child.component(),
+               region.isHit(at: presentationPosition, radius: radius)
             {
                 return child
             }
-            if let found = hitTest(node: child, scenePosition: scenePosition, radius: radius) {
+            if let found = hitTest(node: child, presentationPosition: presentationPosition, radius: radius) {
                 return found
             }
         }
@@ -66,14 +66,14 @@ extension DiagramCanvas {
     }
 
     func hitGrip(screenPosition: Vector2D) -> CanvasGripHit? {
-        guard let scene else { return nil }
+        guard let presentation else { return nil }
         
-        let scenePosition = worldToScene(screenToWorld(screenPosition))
+        let localPosition = worldToPresentation(screenToWorld(screenPosition))
         let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
 
-        for grip in scene.children where grip.contains(Grip.self) {
-            guard let region: TouchRegion = grip.component(),
-                  region.isHit(at: scenePosition, radius: radius),
+        for grip in presentation.children where grip.contains(Grip.self) {
+            guard let region: HitRegion = grip.component(),
+                  region.isHit(at: localPosition, radius: radius),
                   let component: Grip = grip.component()
             else { continue }
 

@@ -24,7 +24,7 @@ class ConnectInteraction: ToolInteraction {
 
     var state: State = .idle
     var intendedConnector: RuntimeEntity? = nil
-    /// Invisible scene node to serve as a connector target.
+    /// Invisible presentation node to serve as a connector target.
     ///
     /// Required to make connector intent valid so that we can compute connector geometry.
     var connectorHandle: RuntimeEntity? = nil
@@ -59,9 +59,9 @@ class ConnectInteraction: ToolInteraction {
 
     func dragStart(_ event: ToolEvent) -> EventDisposition{
         guard event.triggerButton == .left else { return .ignored }
-        guard let scene = canvas.scene,
+        guard let presentation = canvas.presentation,
               let hitObject = canvas.hitObject(screenPosition: event.screenPos),
-              world.contains(hitObject.sceneNode),
+              world.contains(hitObject.presentationNode),
               let typeName = selectedType,
               let type = document.design.metamodel.objectType(name: typeName)
         else {
@@ -69,7 +69,7 @@ class ConnectInteraction: ToolInteraction {
             return .ignored
         }
         let worldPosition: Vector2D = canvas.screenToWorld(event.screenPos)
-        let scenePosition: Vector2D = canvas.worldToScene(worldPosition)
+        let localPosition: Vector2D = canvas.worldToPresentation(worldPosition)
         
         // Clean-up, just to be safe
         self.removeDragConnector()
@@ -81,25 +81,25 @@ class ConnectInteraction: ToolInteraction {
 
         // -- Handle --
         let handle = world.spawn(
-            SceneNode(),
-            PositionComponent(position: scenePosition)
+            PresentationNode(),
+            LocalPosition(position: localPosition)
         )
-        handle.relate(ChildOf(), to: scene)
+        handle.relate(ChildOf(), to: presentation)
         self.connectorHandle = handle
         
         // -- Connector --
         let connector = world.spawn(
-            SceneNode(),
-            ConnectorSceneNode(),
+            PresentationNode(),
+            ConnectorNode(),
             glyph,
             ConnectorIntent(type:type),
-            CanvasNodeStyle(class: .connector, modifiers: .preview),
+            NodeStyle(class: .connector, modifiers: .preview),
             DirtyContent.geometry,
         )
-        connector.relate(ChildOf(), to: scene)
-        connector.relate(MemberOf(), to: scene)
-        connector.relate(ConnectorSceneNode.Origin(),to: hitObject.sceneNode)
-        connector.relate(ConnectorSceneNode.Target(),to: handle)
+        connector.relate(ChildOf(), to: presentation)
+        connector.relate(MemberOf(), to: presentation)
+        connector.relate(ConnectorNode.Origin(),to: hitObject.presentationNode)
+        connector.relate(ConnectorNode.Target(),to: handle)
 
         self.intendedConnector = connector
 
@@ -119,9 +119,9 @@ class ConnectInteraction: ToolInteraction {
         
         // -- Handle --
         let worldPosition: Vector2D = canvas.screenToWorld(event.screenPos)
-        let scenePosition: Vector2D = canvas.worldToScene(worldPosition)
+        let localPosition: Vector2D = canvas.worldToPresentation(worldPosition)
 
-        connectorHandle.setComponent(PositionComponent(position: scenePosition))
+        connectorHandle.setComponent(LocalPosition(position: localPosition))
         connectorHandle.setComponent(DirtyContent.geometry)
         intendedConnector.setComponent(DirtyContent.geometry)
 
@@ -129,24 +129,24 @@ class ConnectInteraction: ToolInteraction {
         let newTargetID: RuntimeID?
 
         if let target = canvas.hitObject(screenPosition: event.screenPos),
-           isValidTarget(target.sceneNode)
+           isValidTarget(target.presentationNode)
         {
-            newTargetID = target.sceneNode
+            newTargetID = target.presentationNode
         }
         else {
             newTargetID = nil
         }
 
-        let oldTarget: RuntimeEntity? = intendedConnector.target(ConnectorSceneNode.Target.self)
+        let oldTarget: RuntimeEntity? = intendedConnector.target(ConnectorNode.Target.self)
         if let newTargetID {
-            intendedConnector.relate(ConnectorSceneNode.Target(), to: newTargetID)
+            intendedConnector.relate(ConnectorNode.Target(), to: newTargetID)
         }
         else {
-            intendedConnector.relate(ConnectorSceneNode.Target(), to: connectorHandle)
+            intendedConnector.relate(ConnectorNode.Target(), to: connectorHandle)
         }
 
         if let oldTarget {
-            oldTarget.modify(CanvasNodeStyle.self) {
+            oldTarget.modify(NodeStyle.self) {
                 $0.modifiers.subtract(.allowedMask)
             }
         }
@@ -155,7 +155,7 @@ class ConnectInteraction: ToolInteraction {
            let newTarget = world.entity(newTargetID)
         {
             let targetAllowed = canConnect(type: intent.type)
-            newTarget.modify(CanvasNodeStyle.self) {
+            newTarget.modify(NodeStyle.self) {
                 if targetAllowed {
                     $0.modifiers.insert(.allowed)
                     $0.modifiers.remove(.notAllowed)
@@ -180,7 +180,7 @@ class ConnectInteraction: ToolInteraction {
 
         guard let intendedConnector,
               let intent: ConnectorIntent = intendedConnector.component(),
-              let origin: RuntimeEntity = intendedConnector.target(ConnectorSceneNode.Origin.self),
+              let origin: RuntimeEntity = intendedConnector.target(ConnectorNode.Origin.self),
               let hitObject = canvas.hitObject(screenPosition: event.screenPos)
         else { return .ignored }
         
@@ -207,16 +207,16 @@ class ConnectInteraction: ToolInteraction {
         guard let entity = world.entity(runtimeID)
         else { return false }
         
-        return entity.contains(BlockSceneNode.self)
+        return entity.contains(BlockNode.self)
     }
     
     func representedObjectsOfIntent() -> (origin: ObjectID, target: ObjectID)? {
         guard let intent = self.intendedConnector,
-              let originSceneNode: RuntimeEntity = intent.target(ConnectorSceneNode.Origin.self),
-              let origin = originSceneNode.target(RepresentationOf.self),
+              let originNode: RuntimeEntity = intent.target(ConnectorNode.Origin.self),
+              let origin = originNode.target(RepresentationOf.self),
               let originID = origin.objectID,
-              let targetSceneNode: RuntimeEntity = intent.target(ConnectorSceneNode.Target.self),
-              let target = targetSceneNode.target(RepresentationOf.self),
+              let targetNode: RuntimeEntity = intent.target(ConnectorNode.Target.self),
+              let target = targetNode.target(RepresentationOf.self),
               let targetID = target.objectID
         else {
             return nil
@@ -243,8 +243,8 @@ class ConnectInteraction: ToolInteraction {
 
     func removeDragConnector() {
         if let intendedConnector {
-            if let target: RuntimeEntity = intendedConnector.target(ConnectorSceneNode.Target.self) {
-                target.modify(CanvasNodeStyle.self) {
+            if let target: RuntimeEntity = intendedConnector.target(ConnectorNode.Target.self) {
+                target.modify(NodeStyle.self) {
                     $0.modifiers.subtract(.allowedMask)
                 }
             }
