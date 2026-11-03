@@ -480,7 +480,7 @@ extension Predicate {
     func refersTo(type other: ObjectType) -> Bool {
         switch self {
         case .isType(let type):
-            if type.matches(other) { return true }
+            if other.matches(type) { return true }
         default: break
         }
         

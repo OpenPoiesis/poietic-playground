@@ -10,6 +10,7 @@ import PoieticFlows
 import Diagramming
 import Foundation
 
+
 /// Makeshift notation catalog.
 ///
 class NotationCatalog {
@@ -69,7 +70,8 @@ extension Application {
             pictograms: scaled,
             defaultPictogramName: "Unknown",
             connectorGlyphs: DefaultStockFlowConnectorGlyphs,
-            defaultConnectorGlyphName: "default"
+            defaultConnectorGlyphName: "default",
+            connectorRules: StockFlowDomain.GlyphRules
         )
         self.log("Notation loaded. \(notation.pictograms.count) pictograms, \(notation.connectorGlyphs.count) connector glyphs.")
         self.notation = notation
