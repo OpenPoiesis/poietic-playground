@@ -68,9 +68,9 @@ class NavigationInteraction: ToolInteraction {
         guard state == .panning else { return .ignored }
         
         let screenOffset = event.screenPos - self.previousScreenPos
-        let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
-        canvas.setView(offset: canvas.viewOffset - canvasOffset,
-                       zoom: canvas.zoomLevel)
+        let canvasOffset = Vector2D(screenOffset) / Double(canvas.camera.zoom)
+        canvas.setView(offset: canvas.camera.offset - canvasOffset,
+                       zoom: canvas.camera.zoom)
         
         self.previousScreenPos = event.screenPos
         
@@ -82,9 +82,9 @@ class NavigationInteraction: ToolInteraction {
         guard state == .panning else { return .ignored }
         
         let screenOffset = event.screenPos - self.previousScreenPos
-        let canvasOffset = Vector2D(screenOffset) / Double(canvas.zoomLevel)
-        canvas.setView(offset: canvas.viewOffset - canvasOffset,
-                       zoom: canvas.zoomLevel)
+        let canvasOffset = Vector2D(screenOffset) / Double(canvas.camera.zoom)
+        canvas.setView(offset: canvas.camera.offset - canvasOffset,
+                       zoom: canvas.camera.zoom)
         
         state = .idle
         cursor = ImGuiMouseCursor_Arrow
@@ -108,7 +108,7 @@ class NavigationInteraction: ToolInteraction {
         { return .ignored }
         
         let zoomFactor = Double(event.scale)
-        let newZoom = max(min((canvas.zoomLevel * zoomFactor), Self.MaxZoom), Self.MinZoom)
+        let newZoom = max(min((canvas.camera.zoom * zoomFactor), Self.MaxZoom), Self.MinZoom)
         
         zoom(to: newZoom, at: event.screenPos, canvas: canvas)
 
@@ -125,13 +125,13 @@ class NavigationInteraction: ToolInteraction {
         // Cmd/Ctrl + scroll zooms
         if event.modifiers.contains(.command) {
             let zoomFactor = 1.0 + (Double(event.scrollDelta.y) * Self.ZoomSensitivity)
-            let newZoom = max(min(canvas.zoomLevel * zoomFactor, Self.MaxZoom), Self.MinZoom)
+            let newZoom = max(min(canvas.camera.zoom * zoomFactor, Self.MaxZoom), Self.MinZoom)
             zoom(to: newZoom, at: event.screenPos, canvas: canvas)
         }
         else {
             let screenDelta = Vector2D(event.scrollDelta) * Self.ScrollSensitivity
-            let worldDelta = screenDelta / canvas.zoomLevel
-            canvas.setView(offset: canvas.viewOffset - worldDelta, zoom: canvas.zoomLevel)
+            let worldDelta = screenDelta / canvas.camera.zoom
+            canvas.setView(offset: canvas.camera.offset - worldDelta, zoom: canvas.camera.zoom)
         }
         
         return .handled

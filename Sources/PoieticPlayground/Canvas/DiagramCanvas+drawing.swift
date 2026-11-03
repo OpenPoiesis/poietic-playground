@@ -51,9 +51,9 @@ extension DiagramCanvas {
         guard showGrid else { return }
         context.save()
         
-        let worldViewSize = Vector2D(canvasSize) / zoomLevel
-        let worldTopLeft = viewOffset
-        let worldBottomRight = viewOffset + worldViewSize
+        let worldViewSize = Vector2D(canvasSize) / camera.zoom
+        let worldTopLeft = camera.offset
+        let worldBottomRight = camera.offset + worldViewSize
         
         let gridColor = style.shapeStyle(class: .grid)?.stroke ?? CanvasStyle.DefaultStrokeColor
         context.setColor(gridColor)
@@ -63,7 +63,7 @@ extension DiagramCanvas {
         let startX = floor(worldTopLeft.x / gridSize) * gridSize
         let endX = ceil(worldBottomRight.x / gridSize) * gridSize
         for x in stride(from: startX, through: endX, by: gridSize) {
-            let sx = (x - viewOffset.x) * zoomLevel
+            let sx = (x - camera.offset.x) * camera.zoom
             context.addLine(from: Vector2D(sx, 0), to: Vector2D(sx, Double(canvasSize.y)))
         }
         
@@ -71,7 +71,7 @@ extension DiagramCanvas {
         let startY = floor(worldTopLeft.y / gridSize) * gridSize
         let endY = ceil(worldBottomRight.y / gridSize) * gridSize
         for y in stride(from: startY, through: endY, by: gridSize) {
-            let sy = (y - viewOffset.y) * zoomLevel
+            let sy = (y - camera.offset.y) * camera.zoom
             context.addLine(from: Vector2D(0, sy), to: Vector2D(Double(canvasSize.x), sy))
         }
         

@@ -68,19 +68,12 @@ class DiagramCanvas: View, WorkspaceBound {
     var canvasPos = ImVec2(0.0, 0.0)          // Screen position of canvas
     var canvasSize = ImVec2(0.0, 0.0)         // Screen size of canvas
 
-    /// Canvas view offset in world coordinates.
+    /// Canvas view.
     ///
-    /// - SeeAlso: ``setView(offset:zoom:)``, ``zoomLevel``
-    private(set) var viewOffset: Vector2D = .zero
-
-    /// Canvas view scale.
+    /// - SeeAlso: ``setView(offset:zoom:)``
     ///
-    /// - SeeAlso: ``setView(offset:zoom:)``, ``viewOffset``
-    ///
-    private(set) var zoomLevel: Double = 1.0
+    private(set) var camera: Camera = Camera(offset: .zero, zoom: 1.0)
     
-    // TODO: Replace the viewOffset and zoomLevel variables with camera
-    var camera: Camera { Camera(offset: viewOffset, zoom: zoomLevel)}
     
     /// Transformation from world coordinates to the drawing context/surface coordinates.
     ///
@@ -134,7 +127,7 @@ class DiagramCanvas: View, WorkspaceBound {
     
     /// Convert screen coordinates to world coordinates
     func screenToWorld(_ screenPos: Vector2D) -> Vector2D {
-        let worldPos = Vector2D(screenPos - Vector2D(canvasPos)) / Double(zoomLevel) + viewOffset
+        let worldPos = Vector2D(screenPos - Vector2D(canvasPos)) / Double(camera.zoom) + camera.offset
         return worldPos
     }
 
@@ -143,7 +136,7 @@ class DiagramCanvas: View, WorkspaceBound {
     /// - Note: For drawing use the ``toOverlayTransform``.
     ///
     func worldToScreen(_ worldPos: Vector2D) -> ImVec2 {
-        let screenPos = (worldPos - viewOffset) * Double(zoomLevel)
+        let screenPos = (worldPos - camera.offset) * Double(camera.zoom)
         return ImVec2(screenPos) + canvasPos
     }
    
@@ -152,12 +145,12 @@ class DiagramCanvas: View, WorkspaceBound {
         return toOverlayTransform.apply(to: worldPos)
     }
     func presentationToWorld(_ presPos: Vector2D) -> Vector2D {
-        let worldPos = presPos / zoomLevel + viewOffset
+        let worldPos = presPos / camera.zoom + camera.offset
         return worldPos
     }
     
     var visibleWorldRect: Rect2D {
-        Rect2D(origin: viewOffset, size: (Vector2D(canvasSize) / zoomLevel))
+        Rect2D(origin: camera.offset, size: (Vector2D(canvasSize) / camera.zoom))
     }
     
     // MARK: - Update and Events
@@ -398,10 +391,9 @@ class DiagramCanvas: View, WorkspaceBound {
         return max(0.01, min(100.0, zoom))
     }
     func setView(offset: Vector2D, zoom: Double) {
-        viewOffset = offset
-        zoomLevel = Self.clampZoom(zoom)
-        toOverlayTransform = AffineTransform(translation: -viewOffset)
-                                .scaled(Vector2D(zoomLevel, zoomLevel))
+        self.camera = Camera(offset: offset, zoom: Self.clampZoom(zoom))
+        toOverlayTransform = AffineTransform(translation: -camera.offset)
+            .scaled(Vector2D(camera.zoom, camera.zoom))
 
         // Viewport Changed
         if let presentation {
@@ -420,7 +412,7 @@ class DiagramCanvas: View, WorkspaceBound {
             useZoom = Self.clampZoom(zoom)
         }
         else {
-            useZoom = self.zoomLevel
+            useZoom = camera.zoom
         }
         let canvasCenter = Vector2D(canvasSize) / 2.0
         let offset = worldPoint - (canvasCenter / useZoom)

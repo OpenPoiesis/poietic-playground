@@ -13,7 +13,7 @@ extension DiagramCanvas {
         guard let presentation else { return nil }
         
         let localPosition = worldToPresentation(screenToWorld(screenPosition))
-        let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
+        let radius = DiagramCanvas.DefaultHitRadius / camera.zoom
         
         guard let hitEntity = hitTest(node: presentation, presentationPosition: localPosition, radius: radius),
               let parent: RuntimeEntity = hitEntity.target(ChildOf.self)
@@ -69,7 +69,7 @@ extension DiagramCanvas {
         guard let presentation else { return nil }
         
         let localPosition = worldToPresentation(screenToWorld(screenPosition))
-        let radius = DiagramCanvas.DefaultHitRadius / zoomLevel
+        let radius = DiagramCanvas.DefaultHitRadius / camera.zoom
 
         for grip in presentation.children where grip.contains(Grip.self) {
             guard let region: HitRegion = grip.component(),

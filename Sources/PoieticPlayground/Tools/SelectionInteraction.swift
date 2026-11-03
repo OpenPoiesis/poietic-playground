@@ -140,7 +140,7 @@ class SelectionInteraction: ToolInteraction {
         }
         // TODO: Mouse cursors
         let screenDelta = event.screenPos - self.dragStartScreenPos
-        let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
+        let worldDelta = Vector2D(screenDelta) / canvas.camera.zoom
         
         switch state {
         case .objectMove:
@@ -173,7 +173,7 @@ class SelectionInteraction: ToolInteraction {
         let selection = document.selection
 
         var dependentEdges: Set<PoieticCore.ObjectID> = Set()
-        let worldDelta = screenDelta / canvas.zoomLevel
+        let worldDelta = screenDelta / canvas.camera.zoom
 
         for objectID in selection {
             guard let entity = world.entity(objectID),

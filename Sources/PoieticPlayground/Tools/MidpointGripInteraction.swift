@@ -99,7 +99,7 @@ class MidpointGripInteraction: ToolInteraction {
         }
         // TODO: Mouse cursors
         let screenDelta = event.screenPos - self.dragStartScreenPos
-        let worldDelta = Vector2D(screenDelta) / canvas.zoomLevel
+        let worldDelta = Vector2D(screenDelta) / canvas.camera.zoom
         
         switch state {
         case .idle, .engaged:
@@ -131,7 +131,7 @@ class MidpointGripInteraction: ToolInteraction {
               var component: Grip = grip.component()
         else { return }
         
-        let worldDelta = screenDelta / canvas.zoomLevel
+        let worldDelta = screenDelta / canvas.camera.zoom
         component.worldPosition += worldDelta
         grip.setComponent(component)
         grip.setComponent(LocalPosition(position: canvas.worldToPresentation(component.worldPosition)))
