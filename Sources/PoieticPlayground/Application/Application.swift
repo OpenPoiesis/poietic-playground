@@ -74,11 +74,9 @@ class Application: @MainActor TraitEnvironment {
     let settingsPanel: SettingsPanel
     
     // Help Panels
-    let metamodelPanel: MetamodelPanel
     let keyboardShortcutsPanel: KeyboardShortcutsPanel
     
     var panels: [any Panel] = []
-    
     
     // ## GUI
     //
@@ -114,8 +112,6 @@ class Application: @MainActor TraitEnvironment {
         panels.append(self.settingsPanel)
         self.keyboardShortcutsPanel = KeyboardShortcutsPanel()
         panels.append(self.keyboardShortcutsPanel)
-        self.metamodelPanel = MetamodelPanel()
-        panels.append(self.metamodelPanel)
     }
     
     func requestQuit() {
