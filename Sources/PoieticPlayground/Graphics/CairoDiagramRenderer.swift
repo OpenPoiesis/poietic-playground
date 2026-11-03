@@ -35,7 +35,8 @@ class CairoDiagramRenderer: DiagramRenderer {
         
         switch context.overlay {
         case .main:
-            let shapeStyle = style.shapeStyle(class: nodeStyle?.class ?? .pictogram)
+            let shapeStyle = style.shapeStyle(class: nodeStyle?.class ?? .pictogram,
+                                              modifiers: nodeStyle?.modifiers ?? .none)
             context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
             context.strokePath(pictogram.path)
         case .highlight:
@@ -76,7 +77,8 @@ class CairoDiagramRenderer: DiagramRenderer {
         
         switch context.overlay {
         case .main:
-            let shapeStyle = style.shapeStyle(class: nodeStyle?.class ?? .normal)
+            let shapeStyle = style.shapeStyle(class: nodeStyle?.class ?? .connector,
+                                              modifiers: nodeStyle?.modifiers ?? .none)
             context.setColor(shapeStyle?.stroke ?? CanvasStyle.DefaultStrokeColor)
             context.setLineWidth(shapeStyle?.lineWidth ?? 1.0)
             

@@ -249,10 +249,14 @@ extension CanvasStyle {
                                            fill: DefaultColors.Slate,
                                            lineWidth: 1.0),
 
+            // Preview
+            Key(.connector, modifiers: .preview): ShapeStyle(stroke: DefaultColors.Cerulean.withTransparency(0.50),
+                                                             fill: DefaultColors.Slate.withTransparency(0.60)),
+
             Key(.primaryLabel): ShapeStyle(stroke: DefaultColors.Chalk),
 
-            Key(.block, modifiers: .preview): ShapeStyle(stroke: DefaultColors.Cerulean.withTransparency(0.30),
-                                                         fill: DefaultColors.Slate.withTransparency(0.50)),
+            Key(.block, modifiers: .preview): ShapeStyle(stroke: DefaultColors.Cerulean.withTransparency(0.50),
+                                                         fill: DefaultColors.Slate.withTransparency(0.60)),
         ],
         labelStyles: [
             Key(.label): LabelStyle(family: "IBM Plex Sans", size: 11.0,
