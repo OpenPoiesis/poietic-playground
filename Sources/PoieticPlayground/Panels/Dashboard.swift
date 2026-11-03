@@ -29,10 +29,14 @@ class Dashboard: Panel, WorkspaceBound {
     func onDesignPlaneChanged(_ document: Document) {
         // TODO: Reload all charts
         let world = document.world
+        guard let plane = document.world.plane else {
+            return
+        }
         
         chartViews.removeAll()
-        for (chartEntity, _) in world.query(Chart.self) {
-            let view = ChartView(chart: chartEntity)
+        for chart in plane.filter(type: StockFlowDomain.Types.Chart) {
+            guard let entity = world.entity(chart.objectID) else { continue }
+            let view = ChartView(chart: entity)
             chartViews.append(view)
         }
     }
