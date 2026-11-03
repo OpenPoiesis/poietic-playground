@@ -58,12 +58,11 @@ class IssuesPanel: Panel, WorkspaceBound {
         
         
         if ImGui.BeginTable("issues", 2, tableFlags, ImVec2()) {
-            
             ImGui.TableSetupColumn("Message", ImGuiTableColumnFlags_None | ImGuiTableColumnFlags_WidthStretch)
 //            ImGui.TableSetupColumn("Actions", ImGuiTableColumnFlags_None | ImGuiTableColumnFlags_WidthFixed)
 //            ImGui.TableHeadersRow()
 
-            if let issues = document?.world.issues {
+            if let issues = document?.world.issues, !issues.isEmpty{
                 drawIssues(issues)
             }
             else {
