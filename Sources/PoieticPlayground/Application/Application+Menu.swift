@@ -149,6 +149,9 @@ extension Application {
                 if ImGui.MenuItem("Auto-connect Parameters", nil) {
                     handleAction(.autoConnectParameters)
                 }
+                if ImGui.MenuItem("Reset midpoints", nil) {
+                    handleAction(.resetMidpoints)
+                }
                 ImGui.EndMenu()
             }
             // Window menu (for window management)

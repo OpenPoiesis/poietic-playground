@@ -72,6 +72,10 @@ extension Workspace {
 
         // Model
         case .autoConnectParameters: self.currentDocument?.autoConnectParameters()
+        case .resetMidpoints:
+            guard let document = currentDocument  else { break }
+            let ids: [ObjectID] = Array(document.selection.ids)
+            document.enqueue(ResetMidpointsCommand(ids))
         // Simulation
         case .runPlayer: self.player.run()
         case .stopPlayer: self.player.stop()

@@ -50,7 +50,8 @@ enum Action: Hashable {
    
     // -- Model --
     case autoConnectParameters
-    
+    case resetMidpoints
+
     // -- Simulation --
     case runPlayer
     case stopPlayer
@@ -89,6 +90,7 @@ enum Action: Hashable {
         case .toggleDebugDesignPanel: "toggle_debug_design_panel"
 
         case .autoConnectParameters: "auto_connect_parameters"
+        case .resetMidpoints: "reset_midpoints"
 
         case .runPlayer: "run_player"
         case .stopPlayer: "stop_player"

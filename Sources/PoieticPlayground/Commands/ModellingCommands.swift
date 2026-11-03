@@ -42,3 +42,26 @@ struct CreateChartCommand: Command {
     }
 }
 
+struct ResetMidpointsCommand: Command {
+    let ids: [ObjectID]
+    var name: String { "reset_midpoints" }
+    
+    init(_ ids: [ObjectID]) {
+        self.ids = ids
+    }
+    
+    @MainActor
+    func run(_ context: CommandContext) throws (CommandError) {
+        let trans = context.document.createOrReuseTransaction()
+        for objectID in ids {
+            guard let object = trans[objectID],
+                  let midpoints: [Point] = object["midpoints"],
+                  !midpoints.isEmpty
+            else { continue }
+            let mutable = trans.mutate(objectID)
+            let empty: Variant = .array(VariantArray(type:.point))
+            mutable.setAttribute(value: empty, forKey: "midpoints")
+        }
+    }
+}
+
