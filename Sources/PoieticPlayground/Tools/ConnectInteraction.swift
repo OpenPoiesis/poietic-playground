@@ -228,7 +228,8 @@ class ConnectInteraction: ToolInteraction {
     {
         guard let checker,
               let plane = document.world.plane,
-              let (originObjectID, targetObjectID) = representedObjectsOfIntent()
+              let (originObjectID, targetObjectID) = representedObjectsOfIntent(),
+              originObjectID != targetObjectID
         else { return false }
         
         return checker.canConnect(type: type, from: originObjectID, to: targetObjectID, in: plane)
