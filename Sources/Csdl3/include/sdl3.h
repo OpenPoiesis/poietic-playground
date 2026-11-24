@@ -5,6 +5,8 @@
 //  Created by Stefan Urbanek on 26/01/2026.
 //
 #pragma once
+#include <float.h>
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
 #include "sdl_constants.h"
