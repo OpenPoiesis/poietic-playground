@@ -12,9 +12,9 @@ let package = Package(
             targets: ["PoieticPlayground"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/openpoiesis/poietic-core", from: "0.10.0"),
-        .package(url: "https://github.com/openpoiesis/poietic-flows", from: "0.10.0"),
-        .package(url: "https://github.com/openpoiesis/poietic-diagram", from: "0.10.0"),
+        .package(url: "https://github.com/openpoiesis/poietic-core", from: "0.11.0"),
+        .package(url: "https://github.com/openpoiesis/poietic-flows", from: "0.11.0"),
+        .package(url: "https://github.com/openpoiesis/poietic-diagram", from: "0.11.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
