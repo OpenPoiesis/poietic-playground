@@ -134,11 +134,9 @@ struct ResourceDirectory {
         return [url]
         
 #elseif os(Linux)
-        let dirs = dataDirectories()
-        let urls = dirs.map {
-            $0.appendingPathComponent(Self.InstallDirectoryName, isDirectory: true)
-        }
-        return urls
+        // TODO: XDG data directories are not implemented yet. The playground
+        // is not run on Linux, so no location is reported.
+        return []
         
 #elseif os(Windows)
         // TODO: Add and test Windows resource discovery, at least basic one.
@@ -148,38 +146,6 @@ struct ResourceDirectory {
 #endif
     }
     
-#if os(Linux)
-    func dataDirectories() -> [URL] {
-        // XDG data directories: `XDG_DATA_HOME`, then the entries of `XDG_DATA_DIRS`.
-        let paths: [String] = []
-        
-        if let dataHome = ProcessInfo.processInfo.environment["XDG_DATA_HOME"],
-           !dataHome.isEmpty
-        {
-            paths.append(dataHome)
-        }
-        else if let home = ProcessInfo.processInfo.environment["HOME"],
-                !home.isEmpty
-        {
-            paths.append(home)
-        }
-        
-        if let dataDirs = ProcessInfo.processInfo.environment["XDG_DATA_DIRS"],
-           dataDirs.isEmpty
-        {
-            paths.append("/usr/local/share")
-            paths.append("/usr/share")
-        }
-        else {
-            let items = dataDirs.split(separator: ":")
-            paths += items
-        }
-        
-        let urls = paths.map { URL(fileURLWithPath: $0, isDirectory: true) }
-        return urls
-    }
-#endif
-
 }
 
 

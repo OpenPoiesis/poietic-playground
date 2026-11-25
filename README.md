@@ -1,8 +1,6 @@
 # Poietic Playground
 
-**IMPORTANT:** This is just an unstable and experimental prototype.
-
-**IMPORTANT:** If you want to contribute, please read below.
+**IMPORTANT:** Usable for small models by careful people. Early prototype. Somewhat stable.
 
 An educational tool, a virtual laboratory for modelling and simulation of
 dynamical systems using the [Stock and Flow](https://en.wikipedia.org/wiki/Stock_and_flow)
