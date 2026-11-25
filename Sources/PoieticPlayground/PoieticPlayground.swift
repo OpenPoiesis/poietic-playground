@@ -8,7 +8,16 @@ import Foundation
 struct PoieticPlayground {
     static func main() {
         guard let resourceDir = ResourceDirectory.find() else {
-            fatalError("Unable to find resources")
+            let roots = ResourceDirectory.candidateRoots()
+                .map { "    \($0.path)" }
+                .joined(separator: "\n")
+            fatalError("""
+                Unable to find the application resources.
+                Looked for '\(ResourceDirectory.Sentinel)' in:
+                \(roots)
+                Run Scripts/fetch-resources to install the resources, or set
+                \(ResourceDirectory.ResourcesEnvironmentKey) to a resource directory.
+                """)
         }
         
         let backend: any GraphicsBackendProtocol

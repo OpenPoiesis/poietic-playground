@@ -1,5 +1,5 @@
 //
-//  ResourceLoader.swift
+//  ResourceManager.swift
 //  PoieticPlayground
 //
 //  Created by Stefan Urbanek on 31/01/2026.
@@ -33,56 +33,69 @@ struct ResourceError: Error, CustomStringConvertible {
     }
 }
 
-/// Object for locating resources.
+/// A directory with the application resources: fonts, notations and design templates.
 ///
-/// - Environment variable `POIETIC_RESOURCES`
-/// - Bundle for the executable created the by Swift Package Manager
-/// - Platform-specific locations
-///     - MacOS: Swift package manager bundle (`<PackageName>_<TargetName>.bundle`).
-///     - Linux: Appending installation directory name to the environment variables
-///         `XDG_DATA_HOME`, `HOME`, `XDG_DATA_DIRS`;
-///         then to `/usr/local/share` and `/usr/share`.
+/// ``find()`` accepts the first root that contains the sentinel file
+/// specified in ``Sentinel`` (`fonts/poietic-icons.ttf`).
 ///
-/// - Note: Windows support is not yet implemented.
+/// The roots are searched in this order:
+///
+/// 1. The directory named by the `POIETIC_RESOURCES` environment variable.
+/// 2. The Swift Package Manager resource directory:
+///    `PoieticPlayground_PoieticPlayground.bundle` (or `.resources` under the
+///    native build system) inside an application bundle or next to the executable.
+/// 3. Linux only: `poietic-playground` inside the XDG data directories:
+///    `XDG_DATA_HOME` (default `$HOME/.local/share`), then the entries of
+///    `XDG_DATA_DIRS` (default `/usr/local/share:/usr/share`).
+///
+/// - Note: Windows support is not implemented yet.
 ///
 struct ResourceDirectory {
     static let ResourcesEnvironmentKey = "POIETIC_RESOURCES"
     static let InstallDirectoryName = "poietic-playground"
-    // SwiftPM: <PackageName>_<TargetName>.bundle
-    static let SwiftPMBundleName = "PoieticPlayground_PoieticPlayground.bundle"
-    
+
+    /// Swift Package Manager resource directory name, without the suffix.
+    ///
+    /// The suffix follows the build system rather than the platform: the current
+    /// one appends `.bundle` everywhere, while the native one appends `.resources`
+    /// outside Apple platforms. Both are tried, so that neither can break the lookup.
+    static let SwiftPMBundleName = "PoieticPlayground_PoieticPlayground"
+    static let SwiftPMBundleSuffixes = [".bundle", ".resources"]
+
+    /// A root is accepted only when it contains this file.
     static let Sentinel = "fonts/poietic-icons.ttf"
     
     let rootURL: URL
     
+    /// The first resource root that is accepted, or `nil` when there is none.
     static func find() -> ResourceDirectory? {
-        var result: URL? = nil
-        var locations: [URL] = []
-        
-        if let url = Self.locationFromEnvironmentOverride() {
-            locations.append(url)
-        }
-
-        if let url = Self.locationFromSwiftPM() {
-            locations.append(url)
-        }
-
-        locations += platformLocations()
-        
-        for location in locations {
-            let sentinel = location.appendingPathComponent(Self.Sentinel)
-            if (try? sentinel.checkResourceIsReachable()) ?? false {
-                result = location
-                break
+        for root in candidateRoots() {
+            if isResourceRoot(root) {
+                return ResourceDirectory(rootURL: root)
             }
         }
+        return nil
+    }
 
-        if let result {
-            return ResourceDirectory(rootURL: result)
+    /// Resource roots to try, in order of precedence.
+    ///
+    static func candidateRoots() -> [URL] {
+        var roots: [URL] = []
+
+        if let url = locationFromEnvironmentOverride() {
+            roots.append(url)
         }
-        else {
-            return nil
-        }
+
+        roots += locationsFromSwiftPM()
+        roots += platformLocations()
+
+        return roots
+    }
+
+    /// Whether the given location is a resource root, that is, whether it
+    /// contains the sentinel file (see ``Sentinel``).
+    static func isResourceRoot(_ location: URL) -> Bool {
+        FileManager.default.fileExists(atPath: location.appending(path: Self.Sentinel).path)
     }
     
     func url(forPath path: String) -> URL {
@@ -110,40 +123,79 @@ struct ResourceDirectory {
         return URL(fileURLWithPath: path, isDirectory: true)
     }
     
-    private static func locationFromSwiftPM() -> URL? {
-        let candidates: [URL?] = [
-            Bundle.main.resourceURL,      // .app: Contents/Resources
-            Bundle.main.bundleURL,        // command-line tool / swift run: .build/<config>
+    /// Resource roots created by Swift Package Manager, if any.
+    ///
+    /// `Bundle(path:)` accepts the flat resource directory as well as the bundle,
+    /// and `resourceURL` is the directory containing the resources in both cases.
+    private static func locationsFromSwiftPM() -> [URL] {
+        // In an application bundle: `Contents/Resources`.
+        // For a command line executable: the directory containing the executable.
+        let bases: [URL?] = [
+            Bundle.main.resourceURL,
+            Bundle.main.bundleURL,
         ]
-        for candidate in candidates {
-            guard let bundleURL = candidate?.appending(path: Self.SwiftPMBundleName,
-                                                       directoryHint: .isDirectory),
-                  let bundle = Bundle(url: bundleURL)
-            else { continue }
-            return bundle.resourceURL
+
+        var locations: [URL] = []
+        for base in bases {
+            guard let base else { continue }
+            
+            for suffix in Self.SwiftPMBundleSuffixes {
+                let directory = base.appending(path: Self.SwiftPMBundleName + suffix,
+                                               directoryHint: .isDirectory)
+                guard let bundle = Bundle(path: directory.path),
+                      let root = bundle.resourceURL
+                else { continue }
+                locations.append(root)
+            }
         }
-        return nil
+        return locations
     }
     
     private static func platformLocations() -> [URL] {
         
-#if os(macOS)
-        guard let url = Bundle.main.resourceURL else {
-            return []
+#if os(Linux)
+        let environment = ProcessInfo.processInfo.environment
+        return dataDirectories(in: environment).map {
+            $0.appending(path: Self.InstallDirectoryName, directoryHint: .isDirectory)
         }
-        return [url]
-        
-#elseif os(Linux)
-        // TODO: XDG data directories are not implemented yet. The playground
-        // is not run on Linux, so no location is reported.
-        return []
         
 #elseif os(Windows)
         // TODO: Add and test Windows resource discovery, at least basic one.
         return []
 #else
+        // macOS: the SwiftPM bundle lookup above covers both the application bundle and
+        //        a `swift run` build.
         return []
 #endif
+    }
+    
+    /// Base data directories, in the order they should be searched.
+    ///
+    /// Reads paths based on the XDG Base Directory specification:
+    ///
+    /// 1. `XDG_DATA_HOME` (default `$HOME/.local/share`)
+    /// 2. The entries of `XDG_DATA_DIRS` (default `/usr/local/share` and `/usr/share`).
+    ///
+    /// Relative paths are ignored.
+    static func dataDirectories(in environment: [String: String]) -> [URL] {
+        var paths: [String] = []
+
+        if let dataHome = environment["XDG_DATA_HOME"], !dataHome.isEmpty {
+            paths.append(dataHome)
+        }
+        else if let home = environment["HOME"], !home.isEmpty {
+            paths.append(home + "/.local/share")
+        }
+
+        if let dataDirs = environment["XDG_DATA_DIRS"], !dataDirs.isEmpty {
+            paths.append(contentsOf: dataDirs.split(separator: ":").map(String.init))
+        }
+        else {
+            paths.append(contentsOf: ["/usr/local/share", "/usr/share"])
+        }
+
+        return paths.filter { $0.hasPrefix("/") }
+                    .map { URL(fileURLWithPath: $0, isDirectory: true) }
     }
     
 }
